@@ -100,7 +100,7 @@ class ApiFlowIntegrationTest {
 				.path("data").path("id").asText();
 
 		String revenueJson = """
-				{"type":"revenue","txnDate":"2026-03-10","amount":500000,"vehicleId":"%s","driverId":"%s","tripId":"%s","label":"Trip fare"}
+				{"type":"revenue","txnDate":"2026-03-12","amount":500000,"vehicleId":"%s","driverId":"%s","tripId":"%s","label":"Trip fare"}
 				""".formatted(vehicleId, driverId, tripId);
 		mockMvc.perform(post("/api/v1/transactions")
 						.header("Authorization", "Bearer " + accessToken)

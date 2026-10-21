@@ -73,7 +73,7 @@ class LedgerAndProfitShareIntegrationTest {
 						.header("Authorization", "Bearer " + token)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
-								{"type":"revenue","txnDate":"2026-03-10","amount":1000000,"vehicleId":"%s","driverId":"%s","tripId":"%s","label":"Fare"}
+								{"type":"revenue","txnDate":"2026-03-12","amount":1000000,"vehicleId":"%s","driverId":"%s","tripId":"%s","label":"Fare"}
 								""".formatted(vehicleId, driverId, tripId)))
 				.andExpect(status().isOk());
 
@@ -81,7 +81,7 @@ class LedgerAndProfitShareIntegrationTest {
 						.header("Authorization", "Bearer " + token)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
-								{"type":"expense","txnDate":"2026-03-11","amount":200000,"vehicleId":"%s","categoryCode":"bus","subcategoryCode":"tires","label":"Tires"}
+								{"type":"expense","txnDate":"2026-03-12","amount":200000,"vehicleId":"%s","categoryCode":"bus","subcategoryCode":"tires","label":"Tires"}
 								""".formatted(vehicleId)))
 				.andExpect(status().isOk());
 
@@ -102,7 +102,7 @@ class LedgerAndProfitShareIntegrationTest {
 						.header("Authorization", "Bearer " + token)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
-								{"type":"revenue","txnDate":"2026-03-10","amount":800000,"vehicleId":"%s","driverId":"%s","tripId":"%s","label":"Fare"}
+								{"type":"revenue","txnDate":"2026-03-12","amount":800000,"vehicleId":"%s","driverId":"%s","tripId":"%s","label":"Fare"}
 								""".formatted(vehicleId, driverId, tripId)))
 				.andExpect(status().isOk());
 

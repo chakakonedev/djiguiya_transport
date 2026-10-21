@@ -102,7 +102,7 @@ export interface TransactionCreateRequest {
   type: TransactionType;
   txnDate: string;
   amount: number;
-  label: string;
+  label?: string | null;
   tripId?: string | null;
   vehicleId?: string | null;
   driverId?: string | null;

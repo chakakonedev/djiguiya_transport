@@ -102,6 +102,11 @@
     "empty": "Aucune écriture.",
     "noVehiclesHint": "Aucun bus actif — configurez d’abord la flotte :",
     "goToFleet": "Aller à la flotte",
+    "labelOptional": "Optionnel — défaut : Versement voyage",
+    "errors": {
+      "departureAfterReturn": "La date de départ ne peut pas être postérieure à la date de retour.",
+      "paymentBeforeTrip": "La date de versement ne peut pas être antérieure au départ ou au retour."
+    },
     "fields": {
       "txnDate": "Date de versement",
       "amount": "Montant (FCFA)",

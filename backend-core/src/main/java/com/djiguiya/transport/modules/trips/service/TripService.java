@@ -38,6 +38,7 @@ public class TripService {
 
 	@Transactional
 	public TripResponse create(TripRequest request) {
+		validateDates(request);
 		vehicleService.findVehicle(request.vehicleId());
 		String driverId = resolveDriverId(request);
 		staffService.findEntity(driverId);
@@ -50,6 +51,7 @@ public class TripService {
 
 	@Transactional
 	public TripResponse update(String id, TripRequest request) {
+		validateDates(request);
 		TripEntity entity = findEntity(id);
 		vehicleService.findVehicle(request.vehicleId());
 		String driverId = resolveDriverId(request);
@@ -61,6 +63,12 @@ public class TripService {
 	public TripEntity findEntity(String id) {
 		return tripRepository.findByIdAndDeletedAtIsNull(id)
 				.orElseThrow(() -> new BusinessException("trip.not_found", HttpStatus.NOT_FOUND));
+	}
+
+	private void validateDates(TripRequest request) {
+		if (request.departureDate().isAfter(request.returnDate())) {
+			throw new BusinessException("trip.departure_after_return", HttpStatus.BAD_REQUEST);
+		}
 	}
 
 	private String resolveDriverId(TripRequest request) {

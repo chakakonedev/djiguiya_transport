@@ -58,8 +58,14 @@
         </label>
         <label class="span-2">
           {{ 'ledger.fields.label' | translate }}
-          <input formControlName="label" />
+          <input formControlName="label" [placeholder]="'ledger.labelOptional' | translate" />
         </label>
+        @if (revenueForm.hasError('departureAfterReturn')) {
+          <p class="error span-2">{{ 'ledger.errors.departureAfterReturn' | translate }}</p>
+        }
+        @if (revenueForm.hasError('paymentBeforeTrip')) {
+          <p class="error span-2">{{ 'ledger.errors.paymentBeforeTrip' | translate }}</p>
+        }
         @if (vehicles().length === 0) {
           <p class="hint span-2">
             {{ 'ledger.noVehiclesHint' | translate }}
@@ -85,7 +91,7 @@
         </label>
         <label class="span-2">
           {{ 'ledger.fields.label' | translate }}
-          <input formControlName="label" />
+          <input formControlName="label" [placeholder]="'ledger.labelOptional' | translate" />
         </label>
         <label>
           {{ 'ledger.fields.category' | translate }}

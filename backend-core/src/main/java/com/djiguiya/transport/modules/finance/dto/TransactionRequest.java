@@ -16,7 +16,7 @@ public record TransactionRequest(
 		@Size(max = 36) String tripId,
 		@Size(max = 40) String categoryCode,
 		@Size(max = 40) String subcategoryCode,
-		@NotBlank @Size(max = 255) String label,
+		@Size(max = 255) String label,
 		@Size(max = 7) String payrollMonth,
 		@Size(max = 20) String payrollKind,
 		String notes

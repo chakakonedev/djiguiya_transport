@@ -1,5 +1,13 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  AbstractControl,
+  FormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators
+} from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { switchMap } from 'rxjs/operators';
@@ -16,6 +24,27 @@ import { formatXof } from '../../core/format.util';
 
 type LedgerTab = 'revenue' | 'expense';
 
+const DEFAULT_REVENUE_LABEL = 'Versement voyage';
+const DEFAULT_EXPENSE_LABEL = 'Dépense';
+
+/** departure ≤ return, and payment date ≥ both trip dates. */
+export function revenueTripDatesValidator(): ValidatorFn {
+  return (group: AbstractControl): ValidationErrors | null => {
+    const departure = group.get('departureDate')?.value as string | null;
+    const ret = group.get('returnDate')?.value as string | null;
+    const txnDate = group.get('txnDate')?.value as string | null;
+    if (!departure || !ret || !txnDate) return null;
+
+    if (departure > ret) {
+      return { departureAfterReturn: true };
+    }
+    if (txnDate < departure || txnDate < ret) {
+      return { paymentBeforeTrip: true };
+    }
+    return null;
+  };
+}
+
 @Component({
   selector: 'app-ledger-page',
   standalone: true,
@@ -28,6 +57,7 @@ export class LedgerPage implements OnInit {
   private readonly tripsApi = inject(TripService);
   private readonly vehiclesApi = inject(VehicleService);
   private readonly fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly tab = signal<LedgerTab>('revenue');
   readonly transactions = signal<LedgerTransaction[]>([]);
@@ -39,19 +69,22 @@ export class LedgerPage implements OnInit {
   readonly subgroupsByGroup = SUBGROUPS_BY_GROUP;
   readonly formatXof = formatXof;
 
-  readonly revenueForm = this.fb.nonNullable.group({
-    vehicleId: ['', Validators.required],
-    departureDate: [this.today(), Validators.required],
-    returnDate: [this.today(), Validators.required],
-    txnDate: [this.today(), Validators.required],
-    amount: [null as number | null, [Validators.required, Validators.min(1)]],
-    label: ['', Validators.required]
-  });
+  readonly revenueForm = this.fb.nonNullable.group(
+    {
+      vehicleId: ['', Validators.required],
+      departureDate: [this.today(), Validators.required],
+      returnDate: [this.today(), Validators.required],
+      txnDate: [this.today(), Validators.required],
+      amount: [null as number | null, [Validators.required, Validators.min(1)]],
+      label: ['']
+    },
+    { validators: revenueTripDatesValidator() }
+  );
 
   readonly expenseForm = this.fb.nonNullable.group({
     txnDate: [this.today(), Validators.required],
     amount: [null as number | null, [Validators.required, Validators.min(1)]],
-    label: ['', Validators.required],
+    label: [''],
     categoryCode: ['bus' as ExpenseGroup, Validators.required],
     subcategoryCode: ['fuel', Validators.required]
   });
@@ -60,6 +93,13 @@ export class LedgerPage implements OnInit {
     this.vehiclesApi.list().subscribe({
       next: (list) => this.vehicles.set(list.filter((v) => v.status === 'active'))
     });
+    this.revenueForm.controls.returnDate.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((returnDate) => {
+        if (returnDate) {
+          this.revenueForm.controls.txnDate.setValue(returnDate);
+        }
+      });
     this.reload();
   }
 
@@ -104,6 +144,8 @@ export class LedgerPage implements OnInit {
     this.saving.set(true);
     this.error.set(false);
 
+    const label = raw.label.trim() || DEFAULT_REVENUE_LABEL;
+
     this.tripsApi
       .create({
         vehicleId: raw.vehicleId,
@@ -116,7 +158,7 @@ export class LedgerPage implements OnInit {
             type: 'revenue',
             txnDate: raw.txnDate,
             amount: raw.amount!,
-            label: raw.label,
+            label,
             tripId: trip.id,
             vehicleId: trip.vehicleId,
             driverId: trip.driverId
@@ -149,7 +191,7 @@ export class LedgerPage implements OnInit {
       type: 'expense',
       txnDate: raw.txnDate,
       amount: raw.amount!,
-      label: raw.label,
+      label: raw.label.trim() || DEFAULT_EXPENSE_LABEL,
       categoryCode: raw.categoryCode,
       subcategoryCode: raw.subcategoryCode
     });
@@ -160,6 +202,7 @@ export class LedgerPage implements OnInit {
     this.error.set(false);
     this.txnApi.create(body).subscribe({
       next: () => {
+        this.expenseForm.patchValue({ amount: null, label: '' });
         this.saving.set(false);
         this.reload();
       },

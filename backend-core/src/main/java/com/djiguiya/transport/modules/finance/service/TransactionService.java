@@ -72,7 +72,11 @@ public class TransactionService {
 			if (request.tripId() == null || request.tripId().isBlank()) {
 				throw new BusinessException("transaction.revenue_requires_trip", HttpStatus.BAD_REQUEST);
 			}
-			tripService.findEntity(request.tripId());
+			var trip = tripService.findEntity(request.tripId());
+			if (request.txnDate().isBefore(trip.getDepartureDate())
+					|| request.txnDate().isBefore(trip.getReturnDate())) {
+				throw new BusinessException("transaction.payment_before_trip", HttpStatus.BAD_REQUEST);
+			}
 		}
 		if (TransactionTypes.EXPENSE.equalsIgnoreCase(request.type())) {
 			if (request.categoryCode() == null || request.categoryCode().isBlank()) {
@@ -110,6 +114,15 @@ public class TransactionService {
 		return value == null || value.isBlank() ? null : value;
 	}
 
+	private static String resolveLabel(TransactionRequest request) {
+		if (request.label() != null && !request.label().isBlank()) {
+			return request.label().trim();
+		}
+		return TransactionTypes.REVENUE.equalsIgnoreCase(request.type())
+				? "Versement voyage"
+				: "Dépense";
+	}
+
 	private void apply(TransactionEntity entity, TransactionRequest request) {
 		entity.setType(request.type().toLowerCase());
 		entity.setTxnDate(request.txnDate());
@@ -120,7 +133,7 @@ public class TransactionService {
 		entity.setTripId(request.tripId());
 		entity.setCategoryCode(request.categoryCode());
 		entity.setSubcategoryCode(request.subcategoryCode());
-		entity.setLabel(request.label().trim());
+		entity.setLabel(resolveLabel(request));
 		entity.setPayrollMonth(request.payrollMonth());
 		entity.setPayrollKind(request.payrollKind());
 		entity.setNotes(request.notes());

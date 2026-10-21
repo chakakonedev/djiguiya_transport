@@ -67,4 +67,10 @@ class TripServiceTest {
 		var request = new TripRequest("v1", LocalDate.of(2026, 3, 1), LocalDate.of(2026, 3, 5), null, false, null, null);
 		assertThrows(BusinessException.class, () -> tripService.create(request));
 	}
+
+	@Test
+	void create_failsWhenDepartureAfterReturn() {
+		var request = new TripRequest("v1", LocalDate.of(2026, 3, 5), LocalDate.of(2026, 3, 1), null, false, null, null);
+		assertThrows(BusinessException.class, () -> tripService.create(request));
+	}
 }
