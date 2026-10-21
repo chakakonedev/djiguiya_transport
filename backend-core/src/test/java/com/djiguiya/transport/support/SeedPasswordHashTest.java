@@ -10,12 +10,12 @@ class SeedPasswordHashTest {
 	private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
 	@Test
-	void v3PasswordHashMatchesSeedPassword() {
-		assertTrue(encoder.matches(SeedOwnerCredentials.PASSWORD, SeedOwnerCredentials.PASSWORD_HASH));
+	void legacyV2PasswordHashStillMatchesPassword() {
+		assertTrue(encoder.matches(SeedOwnerCredentials.LEGACY_V2_PASSWORD, SeedOwnerCredentials.LEGACY_V2_PASSWORD_HASH));
 	}
 
 	@Test
-	void legacyV2PasswordHashStillMatchesPassword() {
-		assertTrue(encoder.matches(SeedOwnerCredentials.LEGACY_V2_PASSWORD, SeedOwnerCredentials.LEGACY_V2_PASSWORD_HASH));
+	void legacyV3PasswordHashStillMatchesPassword() {
+		assertTrue(encoder.matches(SeedOwnerCredentials.LEGACY_V3_PASSWORD, SeedOwnerCredentials.LEGACY_V3_PASSWORD_HASH));
 	}
 }

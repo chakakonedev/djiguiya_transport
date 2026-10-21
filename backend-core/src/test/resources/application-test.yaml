@@ -21,3 +21,6 @@ djiguiya:
     refresh-token-expiration-ms: 86400000
   security:
     cors-allowed-origins: http://localhost:4200
+    default-password: Djiguiya@2026
+  seed:
+    core-staff-enabled: false

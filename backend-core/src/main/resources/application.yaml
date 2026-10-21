@@ -16,6 +16,8 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+    # Fixes checksum drift when an already-applied migration file was edited locally (dev)
+    repair-on-migrate: true
   messages:
     basename: messages
     encoding: UTF-8
@@ -30,6 +32,10 @@ djiguiya:
     refresh-token-expiration-ms: 604800000
   security:
     cors-allowed-origins: http://localhost:4200,http://127.0.0.1:4200
+    # Override in prod: DJIGUIYA_DEFAULT_PASSWORD — never commit real secrets
+    default-password: ${DJIGUIYA_DEFAULT_PASSWORD:Djiguiya@2026}
+  seed:
+    core-staff-enabled: true
 
 springdoc:
   api-docs:

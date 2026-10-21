@@ -34,6 +34,10 @@ public class UserEntity {
 	@Column(nullable = false)
 	private boolean active = true;
 
+	/** False until the user sets a personal password (keeps bootstrap default). */
+	@Column(name = "password_changed", nullable = false)
+	private boolean passwordChanged = false;
+
 	@Column(name = "created_at", nullable = false)
 	private Instant createdAt;
 

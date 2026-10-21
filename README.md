@@ -25,15 +25,23 @@ cd backend-core
 ```
 
 - Swagger : http://localhost:8080/swagger-ui.html  
-- Seed MySQL (Flyway V3) : `chakakone93@yahoo.fr` / `Djiguiya!Owner2026` (rôle `owner` = directeur/admin ; à changer hors local)  
-- Si Flyway refuse un checksum (V2/V3 déjà altérés) : recréer la BD / volume Docker `djiguiya_mysql_data`  
-- Tests : créent un user `owner@test.local` / `password`
+- Seed au démarrage (4 personnels) : mot de passe défaut via `DJIGUIYA_DEFAULT_PASSWORD` (défaut `Djiguiya@2026`) — pas de hash en dur dans le SQL  
+  - Chaka Koné (`owner`) — `chakakone93@yahoo.fr`  
+  - Tièdiè Tièkoroba Koné (`driver_manager`) — 50 000 FCFA / jour 28 + 1 % recettes trimestre + 1 % bénéfice net annuel (01/08)  
+  - Diakaridia Koné (`accountant`) — 1 % bénéfice net annuel  
+  - Sekou Koné (`cashier_accountant`) — 1 % bénéfice net annuel  
+- Changer son mot de passe : `POST /api/v1/auth/change-password` (JWT requis)  
+- Flyway checksum mismatch (ex. V4 modifié) : `repair-on-migrate: true` dans `application.yaml` corrige au démarrage (dev). Sinon, en SQL :  
+  `UPDATE flyway_schema_history SET checksum = <nouveau> WHERE version = '4';`  
+  Vider la BD n’est utile que pour repartir de zéro.  
+- Tests unitaires : user `owner@test.local` / `password` (seed core désactivé)
 
 ### API principale
 
 | Préfixe | Rôle |
 |---------|------|
 | `/api/v1/auth/login` | Connexion JWT |
+| `/api/v1/auth/change-password` | Modifier son mot de passe |
 | `/api/v1/staff` | Personnel |
 | `/api/v1/vehicles` | Bus, chauffeur principal, documents |
 | `/api/v1/trips` | Voyages (bus + départ + retour) |

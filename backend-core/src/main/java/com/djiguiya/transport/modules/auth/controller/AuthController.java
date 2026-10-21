@@ -1,5 +1,6 @@
 package com.djiguiya.transport.modules.auth.controller;
 
+import com.djiguiya.transport.modules.auth.dto.ChangePasswordRequest;
 import com.djiguiya.transport.modules.auth.dto.LoginRequest;
 import com.djiguiya.transport.modules.auth.dto.LoginResponse;
 import com.djiguiya.transport.modules.auth.service.AuthService;
@@ -21,5 +22,11 @@ public class AuthController {
 	@PostMapping("/login")
 	public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
 		return ApiResponse.ok("auth.login_success", authService.login(request));
+	}
+
+	@PostMapping("/change-password")
+	public ApiResponse<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+		authService.changePassword(request);
+		return ApiResponse.ok("auth.password_changed", null);
 	}
 }
