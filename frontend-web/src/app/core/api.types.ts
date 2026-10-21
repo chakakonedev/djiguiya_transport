@@ -80,6 +80,7 @@ export interface TripCreateRequest {
   vehicleId: string;
   departureDate: string;
   returnDate: string;
+  driverId: string;
   notes?: string | null;
 }
 

@@ -26,7 +26,7 @@
               <td>{{ trip.vehicleName || vehicleLabel(trip.vehicleId) }}</td>
               <td>{{ trip.departureDate }}</td>
               <td>{{ trip.returnDate }}</td>
-              <td>{{ trip.driverName || '—' }}</td>
+              <td>{{ driverLabel(trip) }}</td>
               <td>{{ trip.monthKey }}</td>
             </tr>
           } @empty {

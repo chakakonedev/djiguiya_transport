@@ -14,7 +14,8 @@ import { switchMap } from 'rxjs/operators';
 import { TransactionService } from '../../core/transaction.service';
 import { TripService } from '../../core/trip.service';
 import { VehicleService } from '../../core/vehicle.service';
-import { LedgerTransaction, Vehicle } from '../../core/api.types';
+import { StaffService } from '../../core/staff.service';
+import { LedgerTransaction, StaffMember, Vehicle } from '../../core/api.types';
 import {
   EXPENSE_GROUPS,
   ExpenseGroup,
@@ -56,12 +57,14 @@ export class LedgerPage implements OnInit {
   private readonly txnApi = inject(TransactionService);
   private readonly tripsApi = inject(TripService);
   private readonly vehiclesApi = inject(VehicleService);
+  private readonly staffApi = inject(StaffService);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly tab = signal<LedgerTab>('revenue');
   readonly transactions = signal<LedgerTransaction[]>([]);
   readonly vehicles = signal<Vehicle[]>([]);
+  readonly drivers = signal<StaffMember[]>([]);
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly error = signal(false);
@@ -72,6 +75,7 @@ export class LedgerPage implements OnInit {
   readonly revenueForm = this.fb.nonNullable.group(
     {
       vehicleId: ['', Validators.required],
+      driverId: ['', Validators.required],
       departureDate: [this.today(), Validators.required],
       returnDate: [this.today(), Validators.required],
       txnDate: [this.today(), Validators.required],
@@ -93,6 +97,19 @@ export class LedgerPage implements OnInit {
     this.vehiclesApi.list().subscribe({
       next: (list) => this.vehicles.set(list.filter((v) => v.status === 'active'))
     });
+    this.staffApi.list().subscribe({
+      next: (list) =>
+        this.drivers.set(
+          list.filter(
+            (s) =>
+              s.status === 'active' &&
+              (s.staffType === 'driver' || s.staffType === 'driver_manager')
+          )
+        )
+    });
+    this.revenueForm.controls.vehicleId.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((vehicleId) => this.applyPrimaryDriver(vehicleId));
     this.revenueForm.controls.returnDate.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((returnDate) => {
@@ -105,11 +122,6 @@ export class LedgerPage implements OnInit {
 
   setTab(next: LedgerTab): void {
     this.tab.set(next);
-  }
-
-  selectedVehicle(): Vehicle | undefined {
-    const id = this.revenueForm.controls.vehicleId.value;
-    return this.vehicles().find((v) => v.id === id);
   }
 
   expenseSubgroups(): readonly string[] {
@@ -150,7 +162,8 @@ export class LedgerPage implements OnInit {
       .create({
         vehicleId: raw.vehicleId,
         departureDate: raw.departureDate,
-        returnDate: raw.returnDate
+        returnDate: raw.returnDate,
+        driverId: raw.driverId
       })
       .pipe(
         switchMap((trip) =>
@@ -167,6 +180,7 @@ export class LedgerPage implements OnInit {
       )
       .subscribe({
         next: () => {
+          const vehicleId = this.revenueForm.controls.vehicleId.value;
           this.revenueForm.patchValue({
             amount: null,
             label: '',
@@ -174,6 +188,7 @@ export class LedgerPage implements OnInit {
             returnDate: this.today(),
             txnDate: this.today()
           });
+          this.applyPrimaryDriver(vehicleId);
           this.saving.set(false);
           this.reload();
         },
@@ -195,6 +210,11 @@ export class LedgerPage implements OnInit {
       categoryCode: raw.categoryCode,
       subcategoryCode: raw.subcategoryCode
     });
+  }
+
+  private applyPrimaryDriver(vehicleId: string): void {
+    const vehicle = this.vehicles().find((v) => v.id === vehicleId);
+    this.revenueForm.controls.driverId.setValue(vehicle?.primaryDriverId ?? '');
   }
 
   private saveTxn(body: Parameters<TransactionService['create']>[0]): void {

@@ -27,13 +27,13 @@ public class TripService {
 	@Transactional(readOnly = true)
 	public List<TripResponse> listAll() {
 		return tripRepository.findByDeletedAtIsNullOrderByDepartureDateDesc().stream()
-				.map(TripResponse::from)
+				.map(this::toResponse)
 				.toList();
 	}
 
 	@Transactional(readOnly = true)
 	public TripResponse getById(String id) {
-		return TripResponse.from(findEntity(id));
+		return toResponse(findEntity(id));
 	}
 
 	@Transactional
@@ -46,7 +46,7 @@ public class TripService {
 		TripEntity entity = new TripEntity();
 		entity.setId(EntityIds.newId());
 		apply(entity, request, driverId);
-		return TripResponse.from(tripRepository.save(entity));
+		return toResponse(tripRepository.save(entity));
 	}
 
 	@Transactional
@@ -57,12 +57,18 @@ public class TripService {
 		String driverId = resolveDriverId(request);
 		staffService.findEntity(driverId);
 		apply(entity, request, driverId);
-		return TripResponse.from(tripRepository.save(entity));
+		return toResponse(tripRepository.save(entity));
 	}
 
 	public TripEntity findEntity(String id) {
 		return tripRepository.findByIdAndDeletedAtIsNull(id)
 				.orElseThrow(() -> new BusinessException("trip.not_found", HttpStatus.NOT_FOUND));
+	}
+
+	private TripResponse toResponse(TripEntity entity) {
+		String vehicleName = vehicleService.findVehicle(entity.getVehicleId()).getName();
+		String driverName = staffService.findEntity(entity.getDriverId()).getFullName();
+		return TripResponse.from(entity, vehicleName, driverName);
 	}
 
 	private void validateDates(TripRequest request) {

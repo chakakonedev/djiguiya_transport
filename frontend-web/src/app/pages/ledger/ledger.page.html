@@ -25,7 +25,7 @@
     @if (tab() === 'revenue') {
       <h2>{{ 'ledger.revenueTitle' | translate }}</h2>
       <form class="form-grid" [formGroup]="revenueForm" (ngSubmit)="submitRevenue()">
-        <label class="span-2">
+        <label>
           {{ 'ledger.fields.vehicle' | translate }}
           <select formControlName="vehicleId">
             <option value="">{{ 'common.select' | translate }}</option>
@@ -34,12 +34,15 @@
             }
           </select>
         </label>
-        @if (selectedVehicle()?.primaryDriverName) {
-          <p class="hint span-2">
-            {{ 'ledger.fields.driver' | translate }} :
-            <strong>{{ selectedVehicle()?.primaryDriverName }}</strong>
-          </p>
-        }
+        <label>
+          {{ 'ledger.fields.driver' | translate }}
+          <select formControlName="driverId">
+            <option value="">{{ 'common.select' | translate }}</option>
+            @for (d of drivers(); track d.id) {
+              <option [value]="d.id">{{ d.fullName }}</option>
+            }
+          </select>
+        </label>
         <label>
           {{ 'ledger.fields.departureDate' | translate }}
           <input type="date" formControlName="departureDate" />

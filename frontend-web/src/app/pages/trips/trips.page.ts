@@ -2,7 +2,8 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { TripService } from '../../core/trip.service';
 import { VehicleService } from '../../core/vehicle.service';
-import { Trip, Vehicle } from '../../core/api.types';
+import { StaffService } from '../../core/staff.service';
+import { StaffMember, Trip, Vehicle } from '../../core/api.types';
 
 @Component({
   selector: 'app-trips-page',
@@ -14,15 +15,20 @@ import { Trip, Vehicle } from '../../core/api.types';
 export class TripsPage implements OnInit {
   private readonly tripsApi = inject(TripService);
   private readonly vehiclesApi = inject(VehicleService);
+  private readonly staffApi = inject(StaffService);
 
   readonly trips = signal<Trip[]>([]);
   readonly vehicles = signal<Vehicle[]>([]);
+  readonly drivers = signal<StaffMember[]>([]);
   readonly loading = signal(true);
   readonly error = signal(false);
 
   ngOnInit(): void {
     this.vehiclesApi.list().subscribe({
       next: (list) => this.vehicles.set(list)
+    });
+    this.staffApi.list().subscribe({
+      next: (list) => this.drivers.set(list)
     });
     this.reload();
   }
@@ -43,5 +49,11 @@ export class TripsPage implements OnInit {
 
   vehicleLabel(vehicleId: string): string {
     return this.vehicles().find((v) => v.id === vehicleId)?.name ?? vehicleId;
+  }
+
+  driverLabel(trip: Trip): string {
+    if (trip.driverName) return trip.driverName;
+    if (!trip.driverId) return '—';
+    return this.drivers().find((d) => d.id === trip.driverId)?.fullName ?? '—';
   }
 }
