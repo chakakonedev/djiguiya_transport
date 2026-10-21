@@ -82,6 +82,11 @@ public class TransactionService {
 			if (request.categoryCode() == null || request.categoryCode().isBlank()) {
 				throw new BusinessException("common.validation_failed", HttpStatus.BAD_REQUEST);
 			}
+			if ("other".equalsIgnoreCase(request.subcategoryCode())) {
+				if (blankToNull(request.label()) == null || blankToNull(request.notes()) == null) {
+					throw new BusinessException("transaction.other_requires_details", HttpStatus.BAD_REQUEST);
+				}
+			}
 		}
 	}
 

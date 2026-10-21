@@ -2,6 +2,9 @@ export const EXPENSE_GROUPS = ['bus', 'family', 'baba', 'other'] as const;
 
 export type ExpenseGroup = (typeof EXPENSE_GROUPS)[number];
 
+/** Custom subcategory: requires a free-text label and explanation. */
+export const OTHER_SUBGROUP = 'other';
+
 export const SUBGROUPS_BY_GROUP: Record<ExpenseGroup, readonly string[]> = {
   bus: [
     'fuel',
@@ -15,11 +18,19 @@ export const SUBGROUPS_BY_GROUP: Record<ExpenseGroup, readonly string[]> = {
     'cleaning',
     'driver_salary',
     'driver_bonus',
-    'vignette'
+    'vignette',
+    OTHER_SUBGROUP
   ],
-  family: ['condiments', 'electricity', 'household', 'tontine', 'medical_family'],
-  baba: ['baba_money', 'baba_clothes', 'baba_tontine'],
-  other: ['credit', 'misc']
+  family: [
+    'condiments',
+    'electricity',
+    'household',
+    'tontine',
+    'medical_family',
+    OTHER_SUBGROUP
+  ],
+  baba: ['baba_money', 'baba_clothes', 'baba_tontine', OTHER_SUBGROUP],
+  other: ['credit', 'misc', OTHER_SUBGROUP]
 };
 
 export const STAFF_TYPES = [

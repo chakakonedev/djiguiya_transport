@@ -92,10 +92,6 @@
           {{ 'ledger.fields.amount' | translate }}
           <input type="number" formControlName="amount" />
         </label>
-        <label class="span-2">
-          {{ 'ledger.fields.label' | translate }}
-          <input formControlName="label" [placeholder]="'ledger.labelOptional' | translate" />
-        </label>
         <label>
           {{ 'ledger.fields.category' | translate }}
           <select formControlName="categoryCode" (change)="onCategoryChange()">
@@ -112,6 +108,34 @@
             }
           </select>
         </label>
+        <label class="span-2">
+          <span>
+            {{ 'ledger.fields.label' | translate }}
+            @if (otherSubgroupSelected()) {
+              <span class="required-mark" aria-hidden="true">*</span>
+            }
+          </span>
+          <input
+            formControlName="label"
+            [placeholder]="
+              (otherSubgroupSelected() ? 'ledger.otherLabelRequired' : 'ledger.labelExpenseOptional')
+                | translate
+            "
+          />
+        </label>
+        @if (otherSubgroupSelected()) {
+          <label class="span-2">
+            <span>
+              {{ 'ledger.fields.explanation' | translate }}
+              <span class="required-mark" aria-hidden="true">*</span>
+            </span>
+            <textarea
+              formControlName="notes"
+              rows="3"
+              [placeholder]="'ledger.otherExplanationRequired' | translate"
+            ></textarea>
+          </label>
+        }
         <div class="form-actions span-2">
           <button type="submit" class="btn-primary" [disabled]="saving() || expenseForm.invalid">
             {{ 'common.save' | translate }}

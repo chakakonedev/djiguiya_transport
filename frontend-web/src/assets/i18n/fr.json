@@ -103,6 +103,9 @@
     "noVehiclesHint": "Aucun bus actif — configurez d’abord la flotte :",
     "goToFleet": "Aller à la flotte",
     "labelOptional": "Optionnel — défaut : Versement voyage",
+    "labelExpenseOptional": "Optionnel — défaut : Dépense",
+    "otherLabelRequired": "Obligatoire — nommez cette dépense",
+    "otherExplanationRequired": "Expliquez en quoi consiste cette dépense",
     "errors": {
       "departureAfterReturn": "La date de départ ne peut pas être postérieure à la date de retour.",
       "paymentBeforeTrip": "La date de versement ne peut pas être antérieure au départ ou au retour."
@@ -111,6 +114,7 @@
       "txnDate": "Date de versement",
       "amount": "Montant (FCFA)",
       "label": "Libellé",
+      "explanation": "Explication",
       "vehicle": "Bus",
       "driver": "Chauffeur",
       "departureDate": "Départ",
@@ -210,6 +214,7 @@
       "baba_tontine": "Tontine Baba",
       "credit": "Crédit",
       "misc": "Divers",
+      "other": "Autre",
       "trip_revenue": "Versement voyage"
     },
     "staffTypes": {

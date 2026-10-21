@@ -19,6 +19,7 @@ import { LedgerTransaction, StaffMember, Vehicle } from '../../core/api.types';
 import {
   EXPENSE_GROUPS,
   ExpenseGroup,
+  OTHER_SUBGROUP,
   SUBGROUPS_BY_GROUP
 } from '../../core/expense-catalog';
 import { formatXof } from '../../core/format.util';
@@ -70,7 +71,9 @@ export class LedgerPage implements OnInit {
   readonly error = signal(false);
   readonly expenseGroups = EXPENSE_GROUPS;
   readonly subgroupsByGroup = SUBGROUPS_BY_GROUP;
+  readonly otherSubgroup = OTHER_SUBGROUP;
   readonly formatXof = formatXof;
+  readonly otherSubgroupSelected = signal(false);
 
   readonly revenueForm = this.fb.nonNullable.group(
     {
@@ -90,7 +93,8 @@ export class LedgerPage implements OnInit {
     amount: [null as number | null, [Validators.required, Validators.min(1)]],
     label: [''],
     categoryCode: ['bus' as ExpenseGroup, Validators.required],
-    subcategoryCode: ['fuel', Validators.required]
+    subcategoryCode: ['fuel', Validators.required],
+    notes: ['']
   });
 
   ngOnInit(): void {
@@ -117,6 +121,10 @@ export class LedgerPage implements OnInit {
           this.revenueForm.controls.txnDate.setValue(returnDate);
         }
       });
+    this.expenseForm.controls.subcategoryCode.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((code) => this.applyOtherSubgroupValidators(code));
+    this.applyOtherSubgroupValidators(this.expenseForm.controls.subcategoryCode.value);
     this.reload();
   }
 
@@ -202,14 +210,33 @@ export class LedgerPage implements OnInit {
   submitExpense(): void {
     if (this.expenseForm.invalid) return;
     const raw = this.expenseForm.getRawValue();
+    const isOther = raw.subcategoryCode === OTHER_SUBGROUP;
     this.saveTxn({
       type: 'expense',
       txnDate: raw.txnDate,
       amount: raw.amount!,
-      label: raw.label.trim() || DEFAULT_EXPENSE_LABEL,
+      label: isOther ? raw.label.trim() : (raw.label.trim() || DEFAULT_EXPENSE_LABEL),
       categoryCode: raw.categoryCode,
-      subcategoryCode: raw.subcategoryCode
+      subcategoryCode: raw.subcategoryCode,
+      notes: isOther ? raw.notes.trim() : null
     });
+  }
+
+  private applyOtherSubgroupValidators(subcategoryCode: string): void {
+    const isOther = subcategoryCode === OTHER_SUBGROUP;
+    this.otherSubgroupSelected.set(isOther);
+    const label = this.expenseForm.controls.label;
+    const notes = this.expenseForm.controls.notes;
+    if (isOther) {
+      label.setValidators([Validators.required, Validators.minLength(2)]);
+      notes.setValidators([Validators.required, Validators.minLength(5)]);
+    } else {
+      label.clearValidators();
+      notes.clearValidators();
+      notes.setValue('');
+    }
+    label.updateValueAndValidity({ emitEvent: false });
+    notes.updateValueAndValidity({ emitEvent: false });
   }
 
   private applyPrimaryDriver(vehicleId: string): void {
@@ -222,7 +249,8 @@ export class LedgerPage implements OnInit {
     this.error.set(false);
     this.txnApi.create(body).subscribe({
       next: () => {
-        this.expenseForm.patchValue({ amount: null, label: '' });
+        this.expenseForm.patchValue({ amount: null, label: '', notes: '' });
+        this.applyOtherSubgroupValidators(this.expenseForm.controls.subcategoryCode.value);
         this.saving.set(false);
         this.reload();
       },
