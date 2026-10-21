@@ -1,0 +1,50 @@
+version: "3.8"
+
+services:
+  db:
+    image: mysql:8
+    container_name: djiguiya-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: djiguiya_transport
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: djiguiya
+      MYSQL_PASSWORD: djiguiya
+    ports:
+      - "3307:3306"
+    volumes:
+      - djiguiya_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: ../backend-core
+      dockerfile: Dockerfile
+    container_name: djiguiya-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/djiguiya_transport?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: djiguiya
+      SPRING_DATASOURCE_PASSWORD: djiguiya
+      DJIGUIYA_JWT_SECRET: ChangeThisSecretKeyForProductionUseAtLeast256BitsLong!!
+
+  frontend:
+    build:
+      context: ../frontend-web
+      dockerfile: Dockerfile
+    container_name: djiguiya-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+
+volumes:
+  djiguiya_mysql_data:

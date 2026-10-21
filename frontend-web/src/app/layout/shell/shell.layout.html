@@ -1,0 +1,29 @@
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-name">{{ 'app.name' | translate }}</span>
+      <span class="brand-tag">{{ 'app.tagline' | translate }}</span>
+    </div>
+    <div class="user-block">
+      <span class="user-name">{{ auth.user()?.fullName }}</span>
+      <button type="button" class="btn-ghost" (click)="auth.logout()">
+        {{ 'nav.logout' | translate }}
+      </button>
+    </div>
+  </header>
+
+  <nav class="main-nav" aria-label="Main">
+    @for (link of navLinks; track link.path) {
+      <a
+        [routerLink]="link.path"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: link.exact }"
+        >{{ link.labelKey | translate }}</a
+      >
+    }
+  </nav>
+
+  <div class="shell-content">
+    <router-outlet />
+  </div>
+</div>

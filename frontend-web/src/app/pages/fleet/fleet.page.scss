@@ -1,0 +1,25 @@
+.row-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.panel {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.doc-block {
+  margin: 0 0 1rem;
+  padding: 0.75rem;
+  border: 1px dashed #c5d2d6;
+  border-radius: 10px;
+}
+
+.doc-block legend {
+  padding: 0 0.35rem;
+  font-weight: 600;
+  color: #0f766e;
+}

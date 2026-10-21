@@ -1,0 +1,30 @@
+package com.djiguiya.transport.modules.finance.controller;
+
+import com.djiguiya.transport.modules.finance.dto.PayrollPaymentRequest;
+import com.djiguiya.transport.modules.finance.dto.TransactionResponse;
+import com.djiguiya.transport.modules.finance.service.PayrollService;
+import com.djiguiya.transport.shared.api.ApiResponse;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/v1/payroll")
+@RequiredArgsConstructor
+public class PayrollController {
+
+	private final PayrollService payrollService;
+
+	@PostMapping("/salary")
+	public ApiResponse<TransactionResponse> salary(@Valid @RequestBody PayrollPaymentRequest request) {
+		return ApiResponse.ok("transaction.created", payrollService.postSalary(request));
+	}
+
+	@PostMapping("/bonus")
+	public ApiResponse<TransactionResponse> bonus(@Valid @RequestBody PayrollPaymentRequest request) {
+		return ApiResponse.ok("transaction.created", payrollService.postBonus(request));
+	}
+}

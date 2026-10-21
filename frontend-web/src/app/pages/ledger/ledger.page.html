@@ -1,0 +1,133 @@
+<section class="page">
+  <header class="page-header">
+    <h1>{{ 'ledger.title' | translate }}</h1>
+    <p class="muted">{{ 'ledger.subtitle' | translate }}</p>
+  </header>
+
+  <div class="tabs">
+    <button
+      type="button"
+      [class.active]="tab() === 'revenue'"
+      (click)="setTab('revenue')"
+    >
+      {{ 'ledger.tabs.revenue' | translate }}
+    </button>
+    <button
+      type="button"
+      [class.active]="tab() === 'expense'"
+      (click)="setTab('expense')"
+    >
+      {{ 'ledger.tabs.expense' | translate }}
+    </button>
+  </div>
+
+  <article class="card">
+    @if (tab() === 'revenue') {
+      <h2>{{ 'ledger.revenueTitle' | translate }}</h2>
+      <form class="form-grid" [formGroup]="revenueForm" (ngSubmit)="submitRevenue()">
+        <label>
+          {{ 'ledger.fields.txnDate' | translate }}
+          <input type="date" formControlName="txnDate" />
+        </label>
+        <label>
+          {{ 'ledger.fields.amount' | translate }}
+          <input type="number" formControlName="amount" />
+        </label>
+        <label class="span-2">
+          {{ 'ledger.fields.label' | translate }}
+          <input formControlName="label" />
+        </label>
+        <label class="span-2">
+          {{ 'ledger.fields.trip' | translate }}
+          <select formControlName="tripId">
+            <option value="">{{ 'common.select' | translate }}</option>
+            @for (trip of trips(); track trip.id) {
+              <option [value]="trip.id">{{ tripLabel(trip) }}</option>
+            }
+          </select>
+        </label>
+        @if (trips().length === 0) {
+          <p class="hint span-2">
+            {{ 'ledger.noTripsHint' | translate }}
+            <a routerLink="/trips">{{ 'ledger.createTripLink' | translate }}</a>
+          </p>
+        }
+        <div class="form-actions span-2">
+          <button type="submit" class="btn-primary" [disabled]="saving() || revenueForm.invalid">
+            {{ 'common.save' | translate }}
+          </button>
+        </div>
+      </form>
+    } @else {
+      <h2>{{ 'ledger.expenseTitle' | translate }}</h2>
+      <form class="form-grid" [formGroup]="expenseForm" (ngSubmit)="submitExpense()">
+        <label>
+          {{ 'ledger.fields.txnDate' | translate }}
+          <input type="date" formControlName="txnDate" />
+        </label>
+        <label>
+          {{ 'ledger.fields.amount' | translate }}
+          <input type="number" formControlName="amount" />
+        </label>
+        <label class="span-2">
+          {{ 'ledger.fields.label' | translate }}
+          <input formControlName="label" />
+        </label>
+        <label>
+          {{ 'ledger.fields.category' | translate }}
+          <select formControlName="categoryCode" (change)="onCategoryChange()">
+            @for (g of expenseGroups; track g) {
+              <option [value]="g">{{ 'catalog.groups.' + g | translate }}</option>
+            }
+          </select>
+        </label>
+        <label>
+          {{ 'ledger.fields.subcategory' | translate }}
+          <select formControlName="subcategoryCode">
+            @for (s of expenseSubgroups(); track s) {
+              <option [value]="s">{{ 'catalog.subgroups.' + s | translate }}</option>
+            }
+          </select>
+        </label>
+        <div class="form-actions span-2">
+          <button type="submit" class="btn-primary" [disabled]="saving() || expenseForm.invalid">
+            {{ 'common.save' | translate }}
+          </button>
+        </div>
+      </form>
+    }
+  </article>
+
+  @if (loading()) {
+    <p class="muted">{{ 'common.loading' | translate }}</p>
+  } @else if (error()) {
+    <p class="error">{{ 'common.loadError' | translate }}</p>
+  } @else {
+    <div class="table-wrap card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>{{ 'ledger.fields.txnDate' | translate }}</th>
+            <th>{{ 'ledger.fields.type' | translate }}</th>
+            <th>{{ 'ledger.fields.label' | translate }}</th>
+            <th>{{ 'ledger.fields.amount' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of transactions(); track row.id) {
+            <tr>
+              <td>{{ row.txnDate }}</td>
+              <td>{{ 'ledger.types.' + row.type | translate }}</td>
+              <td>{{ row.label }}</td>
+              <td>{{ formatXof(row.amount) }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="muted">{{ 'ledger.empty' | translate }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

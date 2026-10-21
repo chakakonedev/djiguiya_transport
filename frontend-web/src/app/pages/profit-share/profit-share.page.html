@@ -1,0 +1,68 @@
+<section class="page">
+  <header class="page-header">
+    <h1>{{ 'profitShare.title' | translate }}</h1>
+    <p class="muted">{{ 'profitShare.subtitle' | translate }}</p>
+  </header>
+
+  <article class="card">
+    <form class="form-grid compact" [formGroup]="form" (ngSubmit)="load()">
+      <label>
+        {{ 'profitShare.fields.year' | translate }}
+        <input type="number" formControlName="year" />
+      </label>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" [disabled]="loading() || form.invalid">
+          {{ 'profitShare.preview' | translate }}
+        </button>
+      </div>
+    </form>
+  </article>
+
+  @if (loading()) {
+    <p class="muted">{{ 'common.loading' | translate }}</p>
+  } @else if (error()) {
+    <p class="error">{{ 'common.loadError' | translate }}</p>
+  } @else if (preview(); as p) {
+    <div class="kpi-grid">
+      <article class="card kpi">
+        <span class="kpi-label">{{ 'profitShare.kpi.netProfit' | translate }}</span>
+        <strong>{{ formatXof(p.annualNetProfit) }}</strong>
+      </article>
+      <article class="card kpi">
+        <span class="kpi-label">{{ 'profitShare.kpi.reserve' | translate }}</span>
+        <strong>{{ formatXof(p.reserveAmount) }}</strong>
+      </article>
+      <article class="card kpi">
+        <span class="kpi-label">{{ 'profitShare.kpi.distributable' | translate }}</span>
+        <strong>{{ formatXof(p.distributableAmount) }}</strong>
+      </article>
+    </div>
+
+    <div class="table-wrap card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>{{ 'profitShare.columns.beneficiary' | translate }}</th>
+            <th>{{ 'profitShare.columns.ruleKind' | translate }}</th>
+            <th>{{ 'profitShare.columns.rate' | translate }}</th>
+            <th>{{ 'profitShare.columns.amount' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (line of p.lines; track $index) {
+            <tr>
+              <td>{{ line.beneficiaryName || ('common.notSet' | translate) }}</td>
+              <td>{{ 'profitShare.ruleKinds.' + line.ruleKind | translate }}</td>
+              <td>{{ line.ratePercent ?? '—' }}</td>
+              <td>{{ formatXof(line.amount) }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="muted">{{ 'profitShare.empty' | translate }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

@@ -1,0 +1,31 @@
+<section class="page">
+  <header class="page-header">
+    <h1>{{ 'home.welcome' | translate }}, {{ auth.user()?.fullName }}</h1>
+    <p class="muted">{{ 'home.subtitle' | translate }}</p>
+  </header>
+
+  @if (loading()) {
+    <p class="muted">{{ 'common.loading' | translate }}</p>
+  } @else if (error()) {
+    <p class="error">{{ 'home.statsError' | translate }}</p>
+  } @else {
+    <div class="kpi-grid">
+      <article class="card kpi">
+        <span class="kpi-label">{{ 'home.kpi.revenue' | translate }}</span>
+        <strong>{{ formatXof(summary()?.totalRevenue) }}</strong>
+      </article>
+      <article class="card kpi">
+        <span class="kpi-label">{{ 'home.kpi.expense' | translate }}</span>
+        <strong>{{ formatXof(summary()?.totalExpense) }}</strong>
+      </article>
+      <article class="card kpi">
+        <span class="kpi-label">{{ 'home.kpi.net' | translate }}</span>
+        <strong>{{ formatXof(summary()?.netProfit) }}</strong>
+      </article>
+      <article class="card kpi">
+        <span class="kpi-label">{{ 'home.kpi.trips' | translate }}</span>
+        <strong>{{ summary()?.tripCount ?? 0 }}</strong>
+      </article>
+    </div>
+  }
+</section>

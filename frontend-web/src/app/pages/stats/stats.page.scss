@@ -1,0 +1,42 @@
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 1rem;
+}
+
+.chip-label {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-right: 0.35rem;
+}
+
+.chip {
+  min-width: 2rem;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid #c5d2d6;
+  border-radius: 999px;
+  background: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+}
+
+.chip.active {
+  background: #0f766e;
+  border-color: #0f766e;
+  color: #fff;
+}
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.compare-grid span {
+  display: block;
+  font-size: 0.85rem;
+  color: #64748b;
+}

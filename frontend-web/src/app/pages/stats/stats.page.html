@@ -1,0 +1,156 @@
+<section class="page">
+  <header class="page-header">
+    <h1>{{ 'stats.title' | translate }}</h1>
+    <p class="muted">{{ 'stats.subtitle' | translate }}</p>
+  </header>
+
+  <article class="card">
+    <form class="form-grid" [formGroup]="filters" (ngSubmit)="refreshAll()">
+      <label>
+        {{ 'stats.fields.vehicle' | translate }}
+        <select formControlName="vehicleId">
+          <option value="">{{ 'stats.allVehicles' | translate }}</option>
+          @for (v of vehicles(); track v.id) {
+            <option [value]="v.id">{{ v.name }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        {{ 'stats.fields.driver' | translate }}
+        <select formControlName="driverId">
+          <option value="">{{ 'stats.allDrivers' | translate }}</option>
+          @for (d of drivers(); track d.id) {
+            <option [value]="d.id">{{ d.fullName }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        {{ 'stats.fields.year' | translate }}
+        <input type="number" formControlName="year" />
+      </label>
+      <label>
+        {{ 'stats.fields.compareMonth' | translate }}
+        <input type="number" min="1" max="12" formControlName="compareMonthIndex" />
+      </label>
+      <div class="form-actions span-2">
+        <button type="submit" class="btn-primary" [disabled]="loading()">
+          {{ 'stats.applyFilters' | translate }}
+        </button>
+      </div>
+    </form>
+
+    <div class="chip-row">
+      <span class="chip-label">{{ 'stats.monthChips' | translate }}</span>
+      @for (m of monthChips; track m) {
+        <button
+          type="button"
+          class="chip"
+          [class.active]="filters.controls.month.value === m"
+          (click)="selectMonth(m)"
+        >
+          {{ m }}
+        </button>
+      }
+    </div>
+  </article>
+
+  @if (loading()) {
+    <p class="muted">{{ 'common.loading' | translate }}</p>
+  } @else if (error()) {
+    <p class="error">{{ 'common.loadError' | translate }}</p>
+  } @else {
+    <div class="kpi-grid">
+      <article class="card kpi">
+        <span class="kpi-label">{{ 'home.kpi.revenue' | translate }}</span>
+        <strong>{{ formatXof(summary()?.totalRevenue) }}</strong>
+      </article>
+      <article class="card kpi">
+        <span class="kpi-label">{{ 'home.kpi.expense' | translate }}</span>
+        <strong>{{ formatXof(summary()?.totalExpense) }}</strong>
+      </article>
+      <article class="card kpi">
+        <span class="kpi-label">{{ 'home.kpi.net' | translate }}</span>
+        <strong>{{ formatXof(summary()?.netProfit) }}</strong>
+      </article>
+    </div>
+
+    <article class="card">
+      <h2>{{ 'stats.groupsTitle' | translate }}</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>{{ 'stats.columns.group' | translate }}</th>
+              <th>{{ 'stats.columns.amount' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of summary()?.groups ?? []; track $index) {
+              <tr>
+                <td>{{ groupLabel(row) | translate }}</td>
+                <td>{{ formatXof(row.amount) }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="2" class="muted">{{ 'stats.noGroups' | translate }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="card">
+      <h2>{{ 'stats.compareTitle' | translate }}</h2>
+      @if (compare(); as c) {
+        <p class="muted">{{ c.monthKey }}</p>
+        <div class="compare-grid">
+          <div>
+            <span>{{ 'home.kpi.revenue' | translate }}</span>
+            <strong>{{ formatXof(c.totalRevenue) }}</strong>
+          </div>
+          <div>
+            <span>{{ 'home.kpi.expense' | translate }}</span>
+            <strong>{{ formatXof(c.totalExpense) }}</strong>
+          </div>
+          <div>
+            <span>{{ 'home.kpi.net' | translate }}</span>
+            <strong>{{ formatXof(c.netProfit) }}</strong>
+          </div>
+        </div>
+      } @else {
+        <p class="muted">{{ 'stats.noCompare' | translate }}</p>
+      }
+    </article>
+
+    <article class="card">
+      <h2>{{ 'stats.yoyTitle' | translate }}</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>{{ 'stats.columns.month' | translate }}</th>
+              <th>{{ 'stats.columns.currentYear' | translate }}</th>
+              <th>{{ 'stats.columns.previousYear' | translate }}</th>
+              <th>{{ 'stats.columns.delta' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of yoyRows(); track row.monthIndex) {
+              <tr>
+                <td>{{ row.monthKey }}</td>
+                <td>{{ formatXof(row.currentYearAmount) }}</td>
+                <td>{{ formatXof(row.previousYearAmount) }}</td>
+                <td>{{ formatXof(row.delta) }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="muted">{{ 'stats.noYoy' | translate }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </article>
+  }
+</section>

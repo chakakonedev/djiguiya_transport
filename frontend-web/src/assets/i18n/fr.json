@@ -1,0 +1,222 @@
+{
+  "app": {
+    "name": "Djiguiya Transport",
+    "tagline": "Caisse · flotte · statistiques"
+  },
+  "nav": {
+    "home": "Accueil",
+    "trips": "Voyages",
+    "ledger": "Caisse",
+    "fleet": "Flotte",
+    "staff": "Personnel",
+    "stats": "Statistiques",
+    "profitShare": "Répartition",
+    "logout": "Déconnexion"
+  },
+  "auth": {
+    "loginTitle": "Connexion",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "error": "Identifiants incorrects",
+    "login_success": "Connexion réussie"
+  },
+  "home": {
+    "welcome": "Bienvenue",
+    "subtitle": "Vue d’ensemble de l’activité (année en cours).",
+    "statsError": "Impossible de charger les indicateurs.",
+    "kpi": {
+      "revenue": "Recettes",
+      "expense": "Dépenses",
+      "net": "Résultat net",
+      "trips": "Voyages"
+    }
+  },
+  "common": {
+    "loading": "Chargement…",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "loadError": "Une erreur est survenue.",
+    "select": "Choisir…",
+    "notSet": "Non renseigné",
+    "expand": "Détails",
+    "collapse": "Masquer"
+  },
+  "fleet": {
+    "title": "Flotte",
+    "subtitle": "Bus, chauffeur principal et échéances administratives.",
+    "createTitle": "Nouveau véhicule",
+    "empty": "Aucun véhicule enregistré.",
+    "primaryDriver": "Chauffeur principal",
+    "assignDriver": "Affecter le chauffeur principal",
+    "saveDriver": "Enregistrer le chauffeur",
+    "documentsTitle": "Documents et échéances",
+    "saveDocuments": "Enregistrer les documents",
+    "fields": {
+      "name": "Nom du bus",
+      "plate": "Immatriculation",
+      "purchasePrice": "Prix d’achat (FCFA)",
+      "purchaseDate": "Date d’achat",
+      "driver": "Chauffeur",
+      "expiresOn": "Expire le",
+      "lastRenewedOn": "Dernier renouvellement",
+      "renewalMonths": "Période (mois)",
+      "lastAmount": "Dernier montant (FCFA)"
+    }
+  },
+  "staff": {
+    "title": "Personnel",
+    "subtitle": "Chauffeurs, encadrement et bénéficiaires.",
+    "createTitle": "Nouveau membre",
+    "empty": "Aucun membre enregistré.",
+    "fields": {
+      "fullName": "Nom complet",
+      "staffType": "Type",
+      "monthlySalary": "Salaire mensuel (FCFA)",
+      "payDay": "Jour de paie (1–28)"
+    }
+  },
+  "trips": {
+    "title": "Voyages",
+    "subtitle": "Création simple liée au bus (chauffeur = principal).",
+    "createTitle": "Nouveau voyage",
+    "empty": "Aucun voyage enregistré.",
+    "fields": {
+      "vehicle": "Bus",
+      "departureDate": "Date de départ",
+      "returnDate": "Date de retour",
+      "driver": "Chauffeur",
+      "monthKey": "Mois",
+      "notes": "Notes"
+    }
+  },
+  "ledger": {
+    "title": "Caisse",
+    "subtitle": "Recettes liées aux voyages et dépenses par catégorie.",
+    "tabs": {
+      "revenue": "Recette",
+      "expense": "Dépense"
+    },
+    "revenueTitle": "Saisir une recette",
+    "expenseTitle": "Saisir une dépense",
+    "empty": "Aucune écriture.",
+    "noTripsHint": "Aucun voyage disponible — créez d’abord un voyage :",
+    "createTripLink": "Aller aux voyages",
+    "fields": {
+      "txnDate": "Date",
+      "amount": "Montant (FCFA)",
+      "label": "Libellé",
+      "trip": "Voyage",
+      "category": "Groupe",
+      "subcategory": "Sous-groupe",
+      "type": "Type"
+    },
+    "types": {
+      "revenue": "Recette",
+      "expense": "Dépense"
+    }
+  },
+  "stats": {
+    "title": "Statistiques",
+    "subtitle": "Filtres, ventilation par groupes, comparaison et évolution.",
+    "applyFilters": "Appliquer",
+    "allVehicles": "Tous les bus",
+    "allDrivers": "Tous les chauffeurs",
+    "monthChips": "Mois :",
+    "groupsTitle": "Ventilation par groupes",
+    "compareTitle": "Comparaison mensuelle",
+    "yoyTitle": "Évolution année sur année",
+    "noGroups": "Aucune donnée groupée.",
+    "noCompare": "Pas de comparaison disponible.",
+    "noYoy": "Pas de données YoY.",
+    "unknownGroup": "Autre",
+    "fields": {
+      "vehicle": "Bus",
+      "driver": "Chauffeur",
+      "year": "Année",
+      "compareMonth": "Mois comparé (1–12)"
+    },
+    "columns": {
+      "group": "Groupe",
+      "amount": "Montant",
+      "month": "Mois",
+      "currentYear": "Année courante",
+      "previousYear": "Année précédente",
+      "delta": "Écart"
+    }
+  },
+  "profitShare": {
+    "title": "Répartition des bénéfices",
+    "subtitle": "Aperçu annuel selon les règles configurées.",
+    "preview": "Calculer l’aperçu",
+    "empty": "Aucune ligne de répartition.",
+    "fields": {
+      "year": "Année"
+    },
+    "kpi": {
+      "netProfit": "Résultat net annuel",
+      "reserve": "Réserve",
+      "distributable": "Montant distribuable"
+    },
+    "columns": {
+      "beneficiary": "Bénéficiaire",
+      "ruleKind": "Règle",
+      "rate": "Taux (%)",
+      "amount": "Montant"
+    },
+    "ruleKinds": {
+      "annual_net_profit_pct": "Part du résultat net",
+      "quarterly_salary_bonus": "Prime trimestrielle",
+      "salary_months_equivalent": "Équivalent mois de salaire",
+      "fixed_amount": "Montant fixe",
+      "other": "Autre"
+    }
+  },
+  "catalog": {
+    "groups": {
+      "bus": "Bus (exploitation)",
+      "family": "Famille / foyer",
+      "baba": "Baba",
+      "other": "Autres"
+    },
+    "subgroups": {
+      "fuel": "Carburant",
+      "oil_service": "Huile / vidange",
+      "parts_brakes": "Freins",
+      "tires": "Pneus",
+      "mechanic": "Mécanique / entretien",
+      "ac_system": "Climatisation",
+      "inspection": "Visite technique",
+      "insurance": "Assurance",
+      "cleaning": "Nettoyage",
+      "driver_salary": "Salaire chauffeur",
+      "driver_bonus": "Prime chauffeur",
+      "vignette": "Vignette",
+      "condiments": "Condiments / nourriture",
+      "electricity": "Électricité / abonnements",
+      "household": "Maison",
+      "tontine": "Tontine",
+      "medical_family": "Médical famille",
+      "baba_money": "Argent Baba",
+      "baba_clothes": "Habits Baba",
+      "baba_tontine": "Tontine Baba",
+      "credit": "Crédit",
+      "misc": "Divers",
+      "trip_revenue": "Versement voyage"
+    },
+    "staffTypes": {
+      "driver": "Chauffeur",
+      "driver_manager": "Chauffeur-manager",
+      "cashier": "Caissier",
+      "accountant": "Comptable",
+      "owner": "Propriétaire",
+      "baba_beneficiary": "Bénéficiaire Baba",
+      "other": "Autre"
+    },
+    "docTypes": {
+      "insurance": "Assurance",
+      "inspection": "Visite technique",
+      "vignette": "Vignette"
+    }
+  }
+}

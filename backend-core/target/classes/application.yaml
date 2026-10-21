@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: djiguiya-transport
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/djiguiya_transport?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:djiguiya}
+    password: ${SPRING_DATASOURCE_PASSWORD:djiguiya}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+  messages:
+    basename: messages
+    encoding: UTF-8
+
+server:
+  port: 8080
+
+djiguiya:
+  jwt:
+    secret: ${DJIGUIYA_JWT_SECRET:ChangeThisSecretKeyForProductionUseAtLeast256BitsLong!!}
+    access-token-expiration-ms: 86400000
+    refresh-token-expiration-ms: 604800000
+  security:
+    cors-allowed-origins: http://localhost:4200,http://127.0.0.1:4200
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    com.djiguiya.transport: INFO
