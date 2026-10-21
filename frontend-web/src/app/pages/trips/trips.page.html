@@ -4,38 +4,6 @@
     <p class="muted">{{ 'trips.subtitle' | translate }}</p>
   </header>
 
-  <article class="card">
-    <h2>{{ 'trips.createTitle' | translate }}</h2>
-    <form class="form-grid" [formGroup]="form" (ngSubmit)="submit()">
-      <label>
-        {{ 'trips.fields.vehicle' | translate }}
-        <select formControlName="vehicleId">
-          <option value="">{{ 'common.select' | translate }}</option>
-          @for (v of vehicles(); track v.id) {
-            <option [value]="v.id">{{ v.name }}</option>
-          }
-        </select>
-      </label>
-      <label>
-        {{ 'trips.fields.departureDate' | translate }}
-        <input type="date" formControlName="departureDate" />
-      </label>
-      <label>
-        {{ 'trips.fields.returnDate' | translate }}
-        <input type="date" formControlName="returnDate" />
-      </label>
-      <label class="span-2">
-        {{ 'trips.fields.notes' | translate }}
-        <input formControlName="notes" />
-      </label>
-      <div class="form-actions">
-        <button type="submit" class="btn-primary" [disabled]="saving() || form.invalid">
-          {{ 'common.save' | translate }}
-        </button>
-      </div>
-    </form>
-  </article>
-
   @if (loading()) {
     <p class="muted">{{ 'common.loading' | translate }}</p>
   } @else if (error()) {

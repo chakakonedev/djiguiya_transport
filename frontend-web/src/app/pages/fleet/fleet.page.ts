@@ -7,6 +7,13 @@ import { StaffMember, Vehicle, VehicleDocument } from '../../core/api.types';
 import { VEHICLE_DOC_TYPES } from '../../core/expense-catalog';
 import { formatXof } from '../../core/format.util';
 
+function localIsoDate(date = new Date()): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 @Component({
   selector: 'app-fleet-page',
   standalone: true,
@@ -23,7 +30,8 @@ export class FleetPage implements OnInit {
   readonly drivers = signal<StaffMember[]>([]);
   readonly loading = signal(true);
   readonly saving = signal(false);
-  readonly error = signal(false);
+  readonly loadError = signal(false);
+  readonly actionError = signal(false);
   readonly expandedId = signal<string | null>(null);
   readonly docTypes = VEHICLE_DOC_TYPES;
   readonly formatXof = formatXof;
@@ -44,14 +52,15 @@ export class FleetPage implements OnInit {
 
   reload(): void {
     this.loading.set(true);
-    this.error.set(false);
+    this.loadError.set(false);
+    this.actionError.set(false);
     this.vehiclesApi.list().subscribe({
       next: (list) => {
         this.vehicles.set(list);
         this.loading.set(false);
       },
       error: () => {
-        this.error.set(true);
+        this.loadError.set(true);
         this.loading.set(false);
       }
     });
@@ -64,6 +73,7 @@ export class FleetPage implements OnInit {
   submitCreate(): void {
     if (this.createForm.invalid) return;
     this.saving.set(true);
+    this.actionError.set(false);
     const raw = this.createForm.getRawValue();
     this.vehiclesApi
       .create({
@@ -80,9 +90,15 @@ export class FleetPage implements OnInit {
         },
         error: () => {
           this.saving.set(false);
-          this.error.set(true);
+          this.actionError.set(true);
         }
       });
+  }
+
+  driverDisplayName(vehicle: Vehicle): string | null {
+    if (vehicle.primaryDriverName) return vehicle.primaryDriverName;
+    if (!vehicle.primaryDriverId) return null;
+    return this.drivers().find((d) => d.id === vehicle.primaryDriverId)?.fullName ?? null;
   }
 
   toggleExpand(vehicle: Vehicle): void {
@@ -98,8 +114,9 @@ export class FleetPage implements OnInit {
     if (this.driverForms.has(vehicle.id)) return;
     this.driverForms.set(
       vehicle.id,
-      this.fb.group({
-        driverId: [vehicle.primaryDriverId ?? '', Validators.required]
+      this.fb.nonNullable.group({
+        driverId: [vehicle.primaryDriverId ?? '', Validators.required],
+        startDate: [localIsoDate(), Validators.required]
       })
     );
   }
@@ -112,8 +129,10 @@ export class FleetPage implements OnInit {
     const form = this.driverForm(vehicleId);
     if (!form || form.invalid) return;
     this.saving.set(true);
+    this.actionError.set(false);
+    const { driverId, startDate } = form.getRawValue() as { driverId: string; startDate: string };
     this.vehiclesApi
-      .setPrimaryDriver(vehicleId, { driverId: form.getRawValue().driverId })
+      .setPrimaryDriver(vehicleId, { driverId, startDate })
       .subscribe({
         next: () => {
           this.saving.set(false);
@@ -121,7 +140,7 @@ export class FleetPage implements OnInit {
         },
         error: () => {
           this.saving.set(false);
-          this.error.set(true);
+          this.actionError.set(true);
         }
       });
   }
@@ -177,11 +196,12 @@ export class FleetPage implements OnInit {
     }
 
     this.saving.set(true);
+    this.actionError.set(false);
     this.vehiclesApi.saveDocuments(vehicleId, payload).subscribe({
       next: () => this.saving.set(false),
       error: () => {
         this.saving.set(false);
-        this.error.set(true);
+        this.actionError.set(true);
       }
     });
   }

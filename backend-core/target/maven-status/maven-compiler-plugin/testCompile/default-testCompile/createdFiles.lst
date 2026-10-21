@@ -1,2 +1,12 @@
 com\djiguiya\transport\modules\finance\service\StatsServiceTest.class
+com\djiguiya\transport\modules\finance\service\ProfitShareServiceTest.class
 com\djiguiya\transport\modules\trips\service\TripServiceTest.class
+com\djiguiya\transport\modules\fleet\service\VehicleServiceTest.class
+com\djiguiya\transport\integration\FleetPrimaryDriverIntegrationTest.class
+com\djiguiya\transport\integration\ApiFlowIntegrationTest.class
+com\djiguiya\transport\support\SeedOwnerCredentials.class
+com\djiguiya\transport\modules\auth\service\AuthServiceTest.class
+com\djiguiya\transport\integration\LedgerAndProfitShareIntegrationTest.class
+com\djiguiya\transport\integration\SeedOwnerFlywayIntegrationTest.class
+com\djiguiya\transport\support\SeedPasswordHashTest.class
+com\djiguiya\transport\support\TestUserFactory.class

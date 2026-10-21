@@ -31,9 +31,13 @@
     </form>
   </article>
 
+  @if (actionError()) {
+    <p class="error">{{ 'common.loadError' | translate }}</p>
+  }
+
   @if (loading()) {
     <p class="muted">{{ 'common.loading' | translate }}</p>
-  } @else if (error()) {
+  } @else if (loadError()) {
     <p class="error">{{ 'common.loadError' | translate }}</p>
   } @else {
     <div class="stack">
@@ -46,8 +50,8 @@
                 {{ vehicle.plate || ('common.notSet' | translate) }} ·
                 {{ formatXof(vehicle.purchasePrice) }}
               </p>
-              @if (vehicle.primaryDriverName) {
-                <p class="muted">{{ 'fleet.primaryDriver' | translate }}: {{ vehicle.primaryDriverName }}</p>
+              @if (driverDisplayName(vehicle); as driverName) {
+                <p class="muted">{{ 'fleet.primaryDriver' | translate }}: {{ driverName }}</p>
               }
             </div>
             <button type="button" class="btn-ghost" (click)="toggleExpand(vehicle)">
@@ -72,6 +76,10 @@
                         <option [value]="d.id">{{ d.fullName }}</option>
                       }
                     </select>
+                  </label>
+                  <label>
+                    {{ 'fleet.fields.startDate' | translate }}
+                    <input type="date" formControlName="startDate" />
                   </label>
                   <div class="form-actions">
                     <button type="submit" class="btn-primary" [disabled]="saving() || df.invalid">

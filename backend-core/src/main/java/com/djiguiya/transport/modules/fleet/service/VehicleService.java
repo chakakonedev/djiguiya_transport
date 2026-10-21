@@ -67,11 +67,16 @@ public class VehicleService {
 		findVehicle(vehicleId);
 		staffService.findEntity(request.driverId());
 
+		LocalDate startDate = request.startDate();
+
 		primaryAssignmentRepository.findActiveForVehicleOnDate(vehicleId, LocalDate.now())
 				.ifPresent(active -> {
 					if (active.getEndDate() == null) {
-						active.setEndDate(request.startDate().minusDays(1));
-						primaryAssignmentRepository.save(active);
+						LocalDate previousEnd = startDate.minusDays(1);
+						if (!previousEnd.isBefore(active.getStartDate())) {
+							active.setEndDate(previousEnd);
+							primaryAssignmentRepository.save(active);
+						}
 					}
 				});
 
@@ -79,7 +84,7 @@ public class VehicleService {
 		assignment.setId(EntityIds.newId());
 		assignment.setVehicleId(vehicleId);
 		assignment.setDriverId(request.driverId());
-		assignment.setStartDate(request.startDate());
+		assignment.setStartDate(startDate);
 		assignment.setEndDate(request.endDate());
 		assignment.setReason(request.reason());
 		primaryAssignmentRepository.save(assignment);
@@ -96,8 +101,18 @@ public class VehicleService {
 	}
 
 	@Transactional
+	public List<VehicleDocumentResponse> replaceDocuments(String vehicleId, List<VehicleDocumentRequest> requests) {
+		findVehicle(vehicleId);
+		return requests.stream().map(request -> upsertDocumentEntity(vehicleId, request)).toList();
+	}
+
+	@Transactional
 	public VehicleDocumentResponse upsertDocument(String vehicleId, VehicleDocumentRequest request) {
 		findVehicle(vehicleId);
+		return upsertDocumentEntity(vehicleId, request);
+	}
+
+	private VehicleDocumentResponse upsertDocumentEntity(String vehicleId, VehicleDocumentRequest request) {
 		VehicleDocumentEntity doc = vehicleDocumentRepository
 				.findByVehicleIdAndDocType(vehicleId, request.docType())
 				.orElseGet(() -> {

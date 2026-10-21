@@ -58,6 +58,7 @@
       "purchasePrice": "Prix d’achat (FCFA)",
       "purchaseDate": "Date d’achat",
       "driver": "Chauffeur",
+      "startDate": "Date de début",
       "expiresOn": "Expire le",
       "lastRenewedOn": "Dernier renouvellement",
       "renewalMonths": "Période (mois)",
@@ -78,9 +79,8 @@
   },
   "trips": {
     "title": "Voyages",
-    "subtitle": "Création simple liée au bus (chauffeur = principal).",
-    "createTitle": "Nouveau voyage",
-    "empty": "Aucun voyage enregistré.",
+    "subtitle": "Historique des voyages créés avec les recettes (consultation).",
+    "empty": "Aucun voyage enregistré. Les voyages se créent depuis Caisse → Recette.",
     "fields": {
       "vehicle": "Bus",
       "departureDate": "Date de départ",
@@ -92,21 +92,24 @@
   },
   "ledger": {
     "title": "Caisse",
-    "subtitle": "Recettes liées aux voyages et dépenses par catégorie.",
+    "subtitle": "Une recette crée le voyage et l’enregistre. Dépenses par catégorie.",
     "tabs": {
       "revenue": "Recette",
       "expense": "Dépense"
     },
-    "revenueTitle": "Saisir une recette",
+    "revenueTitle": "Nouvelle recette (voyage inclus)",
     "expenseTitle": "Saisir une dépense",
     "empty": "Aucune écriture.",
-    "noTripsHint": "Aucun voyage disponible — créez d’abord un voyage :",
-    "createTripLink": "Aller aux voyages",
+    "noVehiclesHint": "Aucun bus actif — configurez d’abord la flotte :",
+    "goToFleet": "Aller à la flotte",
     "fields": {
-      "txnDate": "Date",
+      "txnDate": "Date de versement",
       "amount": "Montant (FCFA)",
       "label": "Libellé",
-      "trip": "Voyage",
+      "vehicle": "Bus",
+      "driver": "Chauffeur",
+      "departureDate": "Départ",
+      "returnDate": "Retour",
       "category": "Groupe",
       "subcategory": "Sous-groupe",
       "type": "Type"

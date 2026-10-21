@@ -25,6 +25,29 @@
     @if (tab() === 'revenue') {
       <h2>{{ 'ledger.revenueTitle' | translate }}</h2>
       <form class="form-grid" [formGroup]="revenueForm" (ngSubmit)="submitRevenue()">
+        <label class="span-2">
+          {{ 'ledger.fields.vehicle' | translate }}
+          <select formControlName="vehicleId">
+            <option value="">{{ 'common.select' | translate }}</option>
+            @for (v of vehicles(); track v.id) {
+              <option [value]="v.id">{{ v.name }}{{ v.plate ? ' — ' + v.plate : '' }}</option>
+            }
+          </select>
+        </label>
+        @if (selectedVehicle()?.primaryDriverName) {
+          <p class="hint span-2">
+            {{ 'ledger.fields.driver' | translate }} :
+            <strong>{{ selectedVehicle()?.primaryDriverName }}</strong>
+          </p>
+        }
+        <label>
+          {{ 'ledger.fields.departureDate' | translate }}
+          <input type="date" formControlName="departureDate" />
+        </label>
+        <label>
+          {{ 'ledger.fields.returnDate' | translate }}
+          <input type="date" formControlName="returnDate" />
+        </label>
         <label>
           {{ 'ledger.fields.txnDate' | translate }}
           <input type="date" formControlName="txnDate" />
@@ -37,19 +60,10 @@
           {{ 'ledger.fields.label' | translate }}
           <input formControlName="label" />
         </label>
-        <label class="span-2">
-          {{ 'ledger.fields.trip' | translate }}
-          <select formControlName="tripId">
-            <option value="">{{ 'common.select' | translate }}</option>
-            @for (trip of trips(); track trip.id) {
-              <option [value]="trip.id">{{ tripLabel(trip) }}</option>
-            }
-          </select>
-        </label>
-        @if (trips().length === 0) {
+        @if (vehicles().length === 0) {
           <p class="hint span-2">
-            {{ 'ledger.noTripsHint' | translate }}
-            <a routerLink="/trips">{{ 'ledger.createTripLink' | translate }}</a>
+            {{ 'ledger.noVehiclesHint' | translate }}
+            <a routerLink="/fleet">{{ 'ledger.goToFleet' | translate }}</a>
           </p>
         }
         <div class="form-actions span-2">

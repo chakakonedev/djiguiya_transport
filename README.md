@@ -60,7 +60,7 @@ npm test -- --watch=false
 npm run build
 ```
 
-Écrans : Login, Accueil, Flotte, Personnel, Voyages, Caisse, Stats, Répartition.  
+Écrans : Login, Accueil, Flotte, Personnel, Voyages (liste), Caisse (recette = voyage + montant), Stats, Répartition.  
 Tous les textes UI passent par `src/assets/i18n/fr.json`.
 
 ## Infra

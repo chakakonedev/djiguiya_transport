@@ -2,9 +2,11 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { switchMap } from 'rxjs/operators';
 import { TransactionService } from '../../core/transaction.service';
 import { TripService } from '../../core/trip.service';
-import { LedgerTransaction, Trip } from '../../core/api.types';
+import { VehicleService } from '../../core/vehicle.service';
+import { LedgerTransaction, Vehicle } from '../../core/api.types';
 import {
   EXPENSE_GROUPS,
   ExpenseGroup,
@@ -24,11 +26,12 @@ type LedgerTab = 'revenue' | 'expense';
 export class LedgerPage implements OnInit {
   private readonly txnApi = inject(TransactionService);
   private readonly tripsApi = inject(TripService);
+  private readonly vehiclesApi = inject(VehicleService);
   private readonly fb = inject(FormBuilder);
 
   readonly tab = signal<LedgerTab>('revenue');
   readonly transactions = signal<LedgerTransaction[]>([]);
-  readonly trips = signal<Trip[]>([]);
+  readonly vehicles = signal<Vehicle[]>([]);
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly error = signal(false);
@@ -37,10 +40,12 @@ export class LedgerPage implements OnInit {
   readonly formatXof = formatXof;
 
   readonly revenueForm = this.fb.nonNullable.group({
+    vehicleId: ['', Validators.required],
+    departureDate: [this.today(), Validators.required],
+    returnDate: [this.today(), Validators.required],
     txnDate: [this.today(), Validators.required],
     amount: [null as number | null, [Validators.required, Validators.min(1)]],
-    label: ['', Validators.required],
-    tripId: ['', Validators.required]
+    label: ['', Validators.required]
   });
 
   readonly expenseForm = this.fb.nonNullable.group({
@@ -52,14 +57,19 @@ export class LedgerPage implements OnInit {
   });
 
   ngOnInit(): void {
-    this.tripsApi.list().subscribe({
-      next: (list) => this.trips.set(list)
+    this.vehiclesApi.list().subscribe({
+      next: (list) => this.vehicles.set(list.filter((v) => v.status === 'active'))
     });
     this.reload();
   }
 
   setTab(next: LedgerTab): void {
     this.tab.set(next);
+  }
+
+  selectedVehicle(): Vehicle | undefined {
+    const id = this.revenueForm.controls.vehicleId.value;
+    return this.vehicles().find((v) => v.id === id);
   }
 
   expenseSubgroups(): readonly string[] {
@@ -91,13 +101,45 @@ export class LedgerPage implements OnInit {
   submitRevenue(): void {
     if (this.revenueForm.invalid) return;
     const raw = this.revenueForm.getRawValue();
-    this.saveTxn({
-      type: 'revenue',
-      txnDate: raw.txnDate,
-      amount: raw.amount!,
-      label: raw.label,
-      tripId: raw.tripId
-    });
+    this.saving.set(true);
+    this.error.set(false);
+
+    this.tripsApi
+      .create({
+        vehicleId: raw.vehicleId,
+        departureDate: raw.departureDate,
+        returnDate: raw.returnDate
+      })
+      .pipe(
+        switchMap((trip) =>
+          this.txnApi.create({
+            type: 'revenue',
+            txnDate: raw.txnDate,
+            amount: raw.amount!,
+            label: raw.label,
+            tripId: trip.id,
+            vehicleId: trip.vehicleId,
+            driverId: trip.driverId
+          })
+        )
+      )
+      .subscribe({
+        next: () => {
+          this.revenueForm.patchValue({
+            amount: null,
+            label: '',
+            departureDate: this.today(),
+            returnDate: this.today(),
+            txnDate: this.today()
+          });
+          this.saving.set(false);
+          this.reload();
+        },
+        error: () => {
+          this.saving.set(false);
+          this.error.set(true);
+        }
+      });
   }
 
   submitExpense(): void {
@@ -115,6 +157,7 @@ export class LedgerPage implements OnInit {
 
   private saveTxn(body: Parameters<TransactionService['create']>[0]): void {
     this.saving.set(true);
+    this.error.set(false);
     this.txnApi.create(body).subscribe({
       next: () => {
         this.saving.set(false);
@@ -125,10 +168,6 @@ export class LedgerPage implements OnInit {
         this.error.set(true);
       }
     });
-  }
-
-  tripLabel(trip: Trip): string {
-    return `${trip.departureDate} → ${trip.returnDate} (${trip.monthKey})`;
   }
 
   private today(): string {

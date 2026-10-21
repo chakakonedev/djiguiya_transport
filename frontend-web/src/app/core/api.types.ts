@@ -59,7 +59,7 @@ export interface VehicleCreateRequest {
 
 export interface PrimaryDriverRequest {
   driverId: string;
-  startDate?: string;
+  startDate: string;
   reason?: string | null;
 }
 

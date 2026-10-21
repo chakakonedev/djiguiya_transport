@@ -42,7 +42,7 @@ public class TransactionService {
 		validateBusinessRules(request);
 		TransactionEntity entity = new TransactionEntity();
 		entity.setId(EntityIds.newId());
-		apply(entity, request);
+		apply(entity, enrichFromTrip(request));
 		SecurityUtils.currentUserId().ifPresent(entity::setCreatedBy);
 		return TransactionResponse.from(transactionRepository.save(entity));
 	}
@@ -51,7 +51,7 @@ public class TransactionService {
 	public TransactionResponse update(String id, TransactionRequest request) {
 		validateBusinessRules(request);
 		TransactionEntity entity = findEntity(id);
-		apply(entity, request);
+		apply(entity, enrichFromTrip(request));
 		return TransactionResponse.from(transactionRepository.save(entity));
 	}
 
@@ -79,6 +79,35 @@ public class TransactionService {
 				throw new BusinessException("common.validation_failed", HttpStatus.BAD_REQUEST);
 			}
 		}
+	}
+
+	/** Copy vehicle/driver from the linked trip when omitted on a revenue entry. */
+	private TransactionRequest enrichFromTrip(TransactionRequest request) {
+		if (!TransactionTypes.REVENUE.equalsIgnoreCase(request.type())
+				|| request.tripId() == null
+				|| request.tripId().isBlank()) {
+			return request;
+		}
+		var trip = tripService.findEntity(request.tripId());
+		String vehicleId = blankToNull(request.vehicleId()) != null ? request.vehicleId() : trip.getVehicleId();
+		String driverId = blankToNull(request.driverId()) != null ? request.driverId() : trip.getDriverId();
+		return new TransactionRequest(
+				request.type(),
+				request.txnDate(),
+				request.amount(),
+				vehicleId,
+				driverId,
+				request.tripId(),
+				request.categoryCode(),
+				request.subcategoryCode(),
+				request.label(),
+				request.payrollMonth(),
+				request.payrollKind(),
+				request.notes());
+	}
+
+	private static String blankToNull(String value) {
+		return value == null || value.isBlank() ? null : value;
 	}
 
 	private void apply(TransactionEntity entity, TransactionRequest request) {

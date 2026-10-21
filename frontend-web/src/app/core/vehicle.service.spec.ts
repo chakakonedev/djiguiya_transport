@@ -41,4 +41,35 @@ describe('VehicleService', () => {
     expect(req.request.body.name).toBe('Bus 2');
     req.flush({ success: true, messageKey: null, data: { id: 'v2', name: 'Bus 2' } });
   });
+
+  it('assigns primary driver with startDate', () => {
+    service.setPrimaryDriver('v1', { driverId: 'd1', startDate: '2026-10-21' }).subscribe();
+
+    const req = http.expectOne(`${API_BASE_URL}/vehicles/v1/primary-driver`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ driverId: 'd1', startDate: '2026-10-21' });
+    req.flush({
+      success: true,
+      messageKey: 'vehicle.primary_driver_set',
+      data: { id: 'v1', name: 'bus1', status: 'active', primaryDriverId: 'd1' }
+    });
+  });
+
+  it('saves documents as an array', () => {
+    const docs = [
+      {
+        docType: 'insurance',
+        expiresOn: '2027-01-01',
+        lastRenewedOn: '2026-01-01',
+        renewalPeriodMonths: 12,
+        lastAmount: 100000
+      }
+    ];
+    service.saveDocuments('v1', docs).subscribe();
+
+    const req = http.expectOne(`${API_BASE_URL}/vehicles/v1/documents`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual(docs);
+    req.flush({ success: true, messageKey: 'documents.updated', data: docs });
+  });
 });

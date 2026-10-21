@@ -59,9 +59,9 @@ public class VehicleController {
 	}
 
 	@PutMapping("/{id}/documents")
-	public ApiResponse<VehicleDocumentResponse> upsertDocument(
+	public ApiResponse<List<VehicleDocumentResponse>> replaceDocuments(
 			@PathVariable String id,
-			@Valid @RequestBody VehicleDocumentRequest request) {
-		return ApiResponse.ok("document.updated", vehicleService.upsertDocument(id, request));
+			@Valid @RequestBody List<VehicleDocumentRequest> requests) {
+		return ApiResponse.ok("documents.updated", vehicleService.replaceDocuments(id, requests));
 	}
 }
