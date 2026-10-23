@@ -24,3 +24,4 @@ djiguiya:
     default-password: Djiguiya@2026
   seed:
     core-staff-enabled: false
+    year1-enabled: false

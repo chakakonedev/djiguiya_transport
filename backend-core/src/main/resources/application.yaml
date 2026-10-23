@@ -36,6 +36,7 @@ djiguiya:
     default-password: ${DJIGUIYA_DEFAULT_PASSWORD:Djiguiya@2026}
   seed:
     core-staff-enabled: true
+    year1-enabled: true
 
 springdoc:
   api-docs:

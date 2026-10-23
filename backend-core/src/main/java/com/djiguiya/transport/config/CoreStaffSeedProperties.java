@@ -34,6 +34,8 @@ public class CoreStaffSeedProperties {
 
 	public static class Seed {
 		private boolean coreStaffEnabled = true;
+		/** Import year-1 trips/expenses extracted from dashboard.html + CSVs. */
+		private boolean year1Enabled = true;
 
 		public boolean isCoreStaffEnabled() {
 			return coreStaffEnabled;
@@ -41,6 +43,14 @@ public class CoreStaffSeedProperties {
 
 		public void setCoreStaffEnabled(boolean coreStaffEnabled) {
 			this.coreStaffEnabled = coreStaffEnabled;
+		}
+
+		public boolean isYear1Enabled() {
+			return year1Enabled;
+		}
+
+		public void setYear1Enabled(boolean year1Enabled) {
+			this.year1Enabled = year1Enabled;
 		}
 	}
 }

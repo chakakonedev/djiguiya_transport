@@ -23,7 +23,7 @@
   },
   "home": {
     "welcome": "Bienvenue",
-    "subtitle": "Vue d’ensemble de l’activité (année en cours).",
+    "subtitle": "Vue d’ensemble de toute l’activité enregistrée.",
     "statsError": "Impossible de charger les indicateurs.",
     "kpi": {
       "revenue": "Recettes",

@@ -1,7 +1,9 @@
+C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\test\java\com\djiguiya\transport\config\Year1DataSeederTest.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\test\java\com\djiguiya\transport\integration\ApiFlowIntegrationTest.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\test\java\com\djiguiya\transport\integration\FleetPrimaryDriverIntegrationTest.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\test\java\com\djiguiya\transport\integration\LedgerAndProfitShareIntegrationTest.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\test\java\com\djiguiya\transport\integration\SeedOwnerFlywayIntegrationTest.java
+C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\test\java\com\djiguiya\transport\integration\Year1SeedIntegrationTest.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\test\java\com\djiguiya\transport\modules\auth\service\AuthServiceTest.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\test\java\com\djiguiya\transport\modules\finance\service\ProfitShareServiceTest.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\test\java\com\djiguiya\transport\modules\finance\service\StatsServiceTest.java

@@ -48,7 +48,10 @@ export class StatsPage implements OnInit {
   ngOnInit(): void {
     this.vehiclesApi.list().subscribe({ next: (v) => this.vehicles.set(v) });
     this.staffApi.list().subscribe({
-      next: (s) => this.drivers.set(s.filter((x) => x.staffType === 'driver'))
+      next: (s) =>
+        this.drivers.set(
+          s.filter((x) => x.staffType === 'driver' || x.staffType === 'driver_manager')
+        )
     });
     this.refreshAll();
   }

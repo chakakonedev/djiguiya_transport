@@ -22,8 +22,8 @@ export class HomePage implements OnInit {
   readonly formatXof = formatXof;
 
   ngOnInit(): void {
-    const year = new Date().getFullYear();
-    this.stats.summary({ year }).subscribe({
+    // Full ledger overview (no calendar-year filter) so year-1 Aug→Jul is included.
+    this.stats.summary({}).subscribe({
       next: (data) => {
         this.summary.set(data);
         this.loading.set(false);

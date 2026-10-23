@@ -9,6 +9,7 @@ public record StatsSummaryResponse(
 		long totalRevenue,
 		long totalExpense,
 		long netProfit,
+		int tripCount,
 		int transactionCount
 ) {
 }

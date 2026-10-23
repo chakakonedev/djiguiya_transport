@@ -70,6 +70,7 @@ com\djiguiya\transport\DjiguiyaTransportApplication.class
 com\djiguiya\transport\modules\finance\service\ProfitShareService.class
 com\djiguiya\transport\modules\finance\dto\StatsCompareMonthResponse.class
 com\djiguiya\transport\modules\finance\repository\TransactionRepository.class
+com\djiguiya\transport\config\Year1DataSeeder.class
 com\djiguiya\transport\modules\auth\dto\LoginResponse.class
 com\djiguiya\transport\modules\trips\dto\TripRequest.class
 com\djiguiya\transport\modules\finance\dto\StatsYoyResponse.class

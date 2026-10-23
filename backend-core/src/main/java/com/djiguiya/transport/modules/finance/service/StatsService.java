@@ -1,5 +1,6 @@
 package com.djiguiya.transport.modules.finance.service;
 
+import com.djiguiya.transport.modules.finance.domain.TransactionTypes;
 import com.djiguiya.transport.modules.finance.dto.StatsCompareMonthResponse;
 import com.djiguiya.transport.modules.finance.dto.StatsSummaryResponse;
 import com.djiguiya.transport.modules.finance.dto.StatsYoyResponse;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,7 +43,19 @@ public class StatsService {
 				revenue,
 				expense,
 				revenue - expense,
+				countTrips(rows),
 				rows.size());
+	}
+
+	/** Distinct trips linked to revenue rows in the filtered ledger. */
+	private static int countTrips(List<TransactionEntity> rows) {
+		return (int) rows.stream()
+				.filter(t -> TransactionTypes.REVENUE.equalsIgnoreCase(t.getType()))
+				.map(TransactionEntity::getTripId)
+				.filter(Objects::nonNull)
+				.filter(id -> !id.isBlank())
+				.distinct()
+				.count();
 	}
 
 	@Transactional(readOnly = true)
