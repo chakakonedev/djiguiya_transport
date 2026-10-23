@@ -166,3 +166,23 @@ export interface ProfitSharePreview {
   distributableAmount: number;
   lines: ProfitShareLine[];
 }
+
+export interface ProfitShareRule {
+  id: string;
+  beneficiaryStaffId?: string | null;
+  beneficiaryName?: string | null;
+  ruleKind: string;
+  ratePercent?: number | null;
+  salaryMonthsEquivalent?: number | null;
+  enabled: boolean;
+  effectiveFrom: string;
+  effectiveTo?: string | null;
+  notes?: string | null;
+}
+
+export interface ProfitShareRuleUpdateRequest {
+  ratePercent?: number | null;
+  salaryMonthsEquivalent?: number | null;
+  enabled?: boolean | null;
+  notes?: string | null;
+}

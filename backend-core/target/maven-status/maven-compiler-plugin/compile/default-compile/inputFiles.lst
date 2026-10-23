@@ -18,6 +18,8 @@ C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\ma
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\modules\finance\dto\PayrollPaymentRequest.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\modules\finance\dto\ProfitShareLine.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\modules\finance\dto\ProfitSharePreviewResponse.java
+C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\modules\finance\dto\ProfitShareRuleResponse.java
+C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\modules\finance\dto\ProfitShareRuleUpdateRequest.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\modules\finance\dto\StatsCompareMonthResponse.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\modules\finance\dto\StatsSummaryResponse.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\modules\finance\dto\StatsYoyResponse.java
@@ -29,6 +31,7 @@ C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\ma
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\modules\finance\repository\TransactionRepository.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\modules\finance\service\LedgerAggregator.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\modules\finance\service\PayrollService.java
+C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\modules\finance\service\ProfitShareRuleService.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\modules\finance\service\ProfitShareService.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\modules\finance\service\StatsService.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\modules\finance\service\TransactionService.java
@@ -70,6 +73,7 @@ C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\ma
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\shared\exception\GlobalExceptionHandler.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\shared\persistence\AuditingListener.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\shared\persistence\Timestamped.java
+C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\shared\security\AppRoles.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\shared\security\JwtAuthenticationFilter.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\shared\security\JwtService.java
 C:\Users\chaka\Desktop\chaka_folder\djiguiya_transport\codes\backend-core\src\main\java\com\djiguiya\transport\shared\security\SecurityUtils.java

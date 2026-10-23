@@ -32,7 +32,7 @@ public final class CoreStaffDefinitions {
 					"driver_manager",
 					50_000L,
 					28,
-					"Driver manager — monthly salary + revenue/profit shares"
+					"Driver manager — monthly salary + quarterly bonus + profit share"
 			),
 			new Person(
 					"00000000-0000-0000-0000-000000000003",
@@ -60,15 +60,17 @@ public final class CoreStaffDefinitions {
 			new ShareRule(
 					"00000000-0000-0000-0000-000000000202",
 					"00000000-0000-0000-0000-000000000102",
-					ProfitShareRuleKinds.QUARTERLY_REVENUE_SHARE_PCT,
+					ProfitShareRuleKinds.QUARTERLY_SALARY_BONUS,
+					null,
 					new BigDecimal("1.0000"),
-					"1% of quarterly revenue (recettes)"
+					"1 × monthly salary as quarterly bonus"
 			),
 			new ShareRule(
 					"00000000-0000-0000-0000-000000000203",
 					"00000000-0000-0000-0000-000000000102",
 					ProfitShareRuleKinds.PARTNER_PROFIT_SHARE_PCT,
 					new BigDecimal("1.0000"),
+					null,
 					"1% of annual net profit — payable on August 1"
 			),
 			new ShareRule(
@@ -76,6 +78,7 @@ public final class CoreStaffDefinitions {
 					"00000000-0000-0000-0000-000000000103",
 					ProfitShareRuleKinds.PARTNER_PROFIT_SHARE_PCT,
 					new BigDecimal("1.0000"),
+					null,
 					"1% of annual net profit"
 			),
 			new ShareRule(
@@ -83,6 +86,7 @@ public final class CoreStaffDefinitions {
 					"00000000-0000-0000-0000-000000000104",
 					ProfitShareRuleKinds.PARTNER_PROFIT_SHARE_PCT,
 					new BigDecimal("1.0000"),
+					null,
 					"1% of annual net profit"
 			)
 	);
@@ -107,6 +111,7 @@ public final class CoreStaffDefinitions {
 			String beneficiaryStaffId,
 			String ruleKind,
 			BigDecimal ratePercent,
+			BigDecimal salaryMonthsEquivalent,
 			String notes
 	) {
 	}

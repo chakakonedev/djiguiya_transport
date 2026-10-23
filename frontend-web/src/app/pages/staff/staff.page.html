@@ -4,36 +4,58 @@
     <p class="muted">{{ 'staff.subtitle' | translate }}</p>
   </header>
 
-  <article class="card">
-    <h2>{{ 'staff.createTitle' | translate }}</h2>
-    <form class="form-grid" [formGroup]="form" (ngSubmit)="submit()">
-      <label>
-        {{ 'staff.fields.fullName' | translate }}
-        <input formControlName="fullName" />
-      </label>
-      <label>
-        {{ 'staff.fields.staffType' | translate }}
-        <select formControlName="staffType">
-          @for (t of staffTypes; track t) {
-            <option [value]="t">{{ 'catalog.staffTypes.' + t | translate }}</option>
+  @if (canManage()) {
+    <article class="card">
+      <h2>
+        {{
+          (editingId() ? 'staff.editTitle' : 'staff.createTitle') | translate
+        }}
+      </h2>
+      <form class="form-grid" [formGroup]="form" (ngSubmit)="submit()">
+        <label>
+          {{ 'staff.fields.fullName' | translate }}
+          <input formControlName="fullName" />
+        </label>
+        <label>
+          {{ 'staff.fields.staffType' | translate }}
+          <select formControlName="staffType">
+            @for (t of staffTypes; track t) {
+              <option [value]="t">{{ 'catalog.staffTypes.' + t | translate }}</option>
+            }
+          </select>
+        </label>
+        <label>
+          {{ 'staff.fields.monthlySalary' | translate }}
+          <input type="number" formControlName="monthlySalary" />
+        </label>
+        <label>
+          {{ 'staff.fields.payDay' | translate }}
+          <input type="number" min="1" max="28" formControlName="payDay" />
+        </label>
+        <label>
+          {{ 'staff.fields.partnerShare' | translate }}
+          <input type="number" min="0" max="100" step="0.1" formControlName="partnerSharePercent" />
+        </label>
+        <label>
+          {{ 'staff.fields.quarterlyBonus' | translate }}
+          <input type="number" min="0" max="12" step="0.5" formControlName="quarterlyBonusMonths" />
+        </label>
+        <p class="muted hint span-2">{{ 'staff.ownerHint' | translate }}</p>
+        <div class="form-actions span-2">
+          @if (editingId()) {
+            <button type="button" class="btn-ghost" (click)="cancelEdit()" [disabled]="saving()">
+              {{ 'common.cancel' | translate }}
+            </button>
           }
-        </select>
-      </label>
-      <label>
-        {{ 'staff.fields.monthlySalary' | translate }}
-        <input type="number" formControlName="monthlySalary" />
-      </label>
-      <label>
-        {{ 'staff.fields.payDay' | translate }}
-        <input type="number" min="1" max="28" formControlName="payDay" />
-      </label>
-      <div class="form-actions">
-        <button type="submit" class="btn-primary" [disabled]="saving() || form.invalid">
-          {{ 'common.save' | translate }}
-        </button>
-      </div>
-    </form>
-  </article>
+          <button type="submit" class="btn-primary" [disabled]="saving() || form.invalid">
+            {{ 'common.save' | translate }}
+          </button>
+        </div>
+      </form>
+    </article>
+  } @else {
+    <p class="muted card owner-only-note">{{ 'staff.readOnlyHint' | translate }}</p>
+  }
 
   @if (loading()) {
     <p class="muted">{{ 'common.loading' | translate }}</p>
@@ -48,19 +70,35 @@
             <th>{{ 'staff.fields.staffType' | translate }}</th>
             <th>{{ 'staff.fields.monthlySalary' | translate }}</th>
             <th>{{ 'staff.fields.payDay' | translate }}</th>
+            <th>{{ 'staff.fields.partnerShare' | translate }}</th>
+            <th>{{ 'staff.fields.quarterlyBonus' | translate }}</th>
+            @if (canManage()) {
+              <th>{{ 'common.actions' | translate }}</th>
+            }
           </tr>
         </thead>
         <tbody>
-          @for (row of staffList(); track row.id) {
-            <tr>
-              <td>{{ row.fullName }}</td>
-              <td>{{ 'catalog.staffTypes.' + row.staffType | translate }}</td>
-              <td>{{ formatXof(row.monthlySalary) }}</td>
-              <td>{{ row.payDay ?? '—' }}</td>
+          @for (row of rows(); track row.staff.id) {
+            <tr [class.is-editing]="editingId() === row.staff.id">
+              <td>{{ row.staff.fullName }}</td>
+              <td>{{ 'catalog.staffTypes.' + row.staff.staffType | translate }}</td>
+              <td>{{ formatXof(row.staff.monthlySalary) }}</td>
+              <td>{{ row.staff.payDay ?? '—' }}</td>
+              <td>{{ formatSharePercent(row.partnerShareRule) }}</td>
+              <td>{{ formatQuarterlyBonus(row.quarterlyBonusRule, row.staff.monthlySalary) }}</td>
+              @if (canManage()) {
+                <td>
+                  <button type="button" class="btn-ghost" (click)="startEdit(row)">
+                    {{ 'common.edit' | translate }}
+                  </button>
+                </td>
+              }
             </tr>
           } @empty {
             <tr>
-              <td colspan="4" class="muted">{{ 'staff.empty' | translate }}</td>
+              <td [attr.colspan]="canManage() ? 7 : 6" class="muted">
+                {{ 'staff.empty' | translate }}
+              </td>
             </tr>
           }
         </tbody>

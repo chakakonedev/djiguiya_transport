@@ -104,6 +104,7 @@ public class CoreStaffSeeder implements ApplicationRunner {
 		rule.setBeneficiaryStaffId(definition.beneficiaryStaffId());
 		rule.setRuleKind(definition.ruleKind());
 		rule.setRatePercent(definition.ratePercent());
+		rule.setSalaryMonthsEquivalent(definition.salaryMonthsEquivalent());
 		rule.setEnabled(true);
 		rule.setEffectiveFrom(CoreStaffDefinitions.EFFECTIVE_FROM);
 		rule.setEffectiveTo(null);

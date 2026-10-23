@@ -4,8 +4,10 @@ import com.djiguiya.transport.modules.staff.dto.StaffRequest;
 import com.djiguiya.transport.modules.staff.dto.StaffResponse;
 import com.djiguiya.transport.modules.staff.service.StaffService;
 import com.djiguiya.transport.shared.api.ApiResponse;
+import com.djiguiya.transport.shared.security.AppRoles;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,11 +36,13 @@ public class StaffController {
 	}
 
 	@PostMapping
+	@PreAuthorize(AppRoles.OWNER_ONLY)
 	public ApiResponse<StaffResponse> create(@Valid @RequestBody StaffRequest request) {
 		return ApiResponse.ok("staff.created", staffService.create(request));
 	}
 
 	@PutMapping("/{id}")
+	@PreAuthorize(AppRoles.OWNER_ONLY)
 	public ApiResponse<StaffResponse> update(@PathVariable String id, @Valid @RequestBody StaffRequest request) {
 		return ApiResponse.ok("staff.updated", staffService.update(id, request));
 	}

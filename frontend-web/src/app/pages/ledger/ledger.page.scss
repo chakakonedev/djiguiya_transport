@@ -8,3 +8,18 @@
   margin-left: 0.15rem;
   font-weight: 700;
 }
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.btn-ghost.danger {
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.is-editing {
+  background: #f0fdfa;
+}

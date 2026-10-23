@@ -104,8 +104,9 @@ class SeedOwnerFlywayIntegrationTest {
 		assertEquals(28, manager.getPayDay());
 
 		assertTrue(profitShareRuleRepository.findById("00000000-0000-0000-0000-000000000202")
-				.filter(r -> ProfitShareRuleKinds.QUARTERLY_REVENUE_SHARE_PCT.equals(r.getRuleKind()))
-				.filter(r -> r.getRatePercent().compareTo(new BigDecimal("1.0000")) == 0)
+				.filter(r -> ProfitShareRuleKinds.QUARTERLY_SALARY_BONUS.equals(r.getRuleKind()))
+				.filter(r -> r.getSalaryMonthsEquivalent() != null
+						&& r.getSalaryMonthsEquivalent().compareTo(new BigDecimal("1.0000")) == 0)
 				.isPresent());
 		assertEquals(4, CoreStaffDefinitions.SHARE_RULES.size());
 		for (CoreStaffDefinitions.ShareRule rule : CoreStaffDefinitions.SHARE_RULES) {

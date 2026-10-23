@@ -36,6 +36,9 @@
     "loading": "Chargement…",
     "save": "Enregistrer",
     "cancel": "Annuler",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "actions": "Actions",
     "loadError": "Une erreur est survenue.",
     "select": "Choisir…",
     "notSet": "Non renseigné",
@@ -69,12 +72,17 @@
     "title": "Personnel",
     "subtitle": "Chauffeurs, encadrement et bénéficiaires.",
     "createTitle": "Nouveau membre",
+    "editTitle": "Modifier le membre",
     "empty": "Aucun membre enregistré.",
+    "ownerHint": "Part (%) et prime trimestre (N × salaire) : réservées au PDG. Laisser vide si non applicable.",
+    "readOnlyHint": "Consultation seule — seuls le PDG peut créer ou modifier le personnel et les parts.",
     "fields": {
       "fullName": "Nom complet",
       "staffType": "Type",
       "monthlySalary": "Salaire mensuel (FCFA)",
-      "payDay": "Jour de paie (1–28)"
+      "payDay": "Jour de paie (1–28)",
+      "partnerShare": "Part bénéfice (%)",
+      "quarterlyBonus": "Prime trimestre (× salaire)"
     }
   },
   "trips": {
@@ -98,7 +106,10 @@
       "expense": "Dépense"
     },
     "revenueTitle": "Nouvelle recette (voyage inclus)",
+    "editRevenueTitle": "Modifier la recette",
     "expenseTitle": "Saisir une dépense",
+    "editExpenseTitle": "Modifier la dépense",
+    "readOnlyHint": "Consultation seule — édition réservée au PDG, caissier et comptable.",
     "empty": "Aucune écriture.",
     "noVehiclesHint": "Aucun bus actif — configurez d’abord la flotte :",
     "goToFleet": "Aller à la flotte",
@@ -181,9 +192,8 @@
     "ruleKinds": {
       "partner_profit_share_pct": "Part du bénéfice net",
       "company_growth_reserve_pct": "Réserve évolution entreprise",
-      "quarterly_revenue_share_pct": "Part sur recettes trimestrielles",
       "annual_net_profit_pct": "Part du résultat net",
-      "quarterly_salary_bonus": "Prime trimestrielle",
+      "quarterly_salary_bonus": "Prime trimestre (× salaire)",
       "salary_months_equivalent": "Équivalent mois de salaire",
       "fixed_amount": "Montant fixe",
       "other": "Autre"

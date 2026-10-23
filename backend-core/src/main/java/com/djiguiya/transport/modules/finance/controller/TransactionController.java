@@ -4,8 +4,10 @@ import com.djiguiya.transport.modules.finance.dto.TransactionRequest;
 import com.djiguiya.transport.modules.finance.dto.TransactionResponse;
 import com.djiguiya.transport.modules.finance.service.TransactionService;
 import com.djiguiya.transport.shared.api.ApiResponse;
+import com.djiguiya.transport.shared.security.AppRoles;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,11 +37,13 @@ public class TransactionController {
 	}
 
 	@PostMapping
+	@PreAuthorize(AppRoles.LEDGER_WRITE)
 	public ApiResponse<TransactionResponse> create(@Valid @RequestBody TransactionRequest request) {
 		return ApiResponse.ok("transaction.created", transactionService.create(request));
 	}
 
 	@PutMapping("/{id}")
+	@PreAuthorize(AppRoles.LEDGER_WRITE)
 	public ApiResponse<TransactionResponse> update(
 			@PathVariable String id,
 			@Valid @RequestBody TransactionRequest request) {
@@ -47,6 +51,7 @@ public class TransactionController {
 	}
 
 	@DeleteMapping("/{id}")
+	@PreAuthorize(AppRoles.LEDGER_WRITE)
 	public ApiResponse<Void> delete(@PathVariable String id) {
 		transactionService.delete(id);
 		return ApiResponse.ok("transaction.deleted", null);

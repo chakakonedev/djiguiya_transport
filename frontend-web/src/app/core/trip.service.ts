@@ -19,6 +19,10 @@ export class TripService {
       .pipe(map((res) => res.data ?? []));
   }
 
+  get(id: string) {
+    return this.http.get<ApiResponse<Trip>>(`${this.base}/${id}`).pipe(map((res) => res.data));
+  }
+
   create(body: TripCreateRequest) {
     return this.http
       .post<ApiResponse<Trip>>(this.base, body)

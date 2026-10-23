@@ -21,129 +21,151 @@
     </button>
   </div>
 
-  <article class="card">
-    @if (tab() === 'revenue') {
-      <h2>{{ 'ledger.revenueTitle' | translate }}</h2>
-      <form class="form-grid" [formGroup]="revenueForm" (ngSubmit)="submitRevenue()">
-        <label>
-          {{ 'ledger.fields.vehicle' | translate }}
-          <select formControlName="vehicleId">
-            <option value="">{{ 'common.select' | translate }}</option>
-            @for (v of vehicles(); track v.id) {
-              <option [value]="v.id">{{ v.name }}{{ v.plate ? ' — ' + v.plate : '' }}</option>
-            }
-          </select>
-        </label>
-        <label>
-          {{ 'ledger.fields.driver' | translate }}
-          <select formControlName="driverId">
-            <option value="">{{ 'common.select' | translate }}</option>
-            @for (d of drivers(); track d.id) {
-              <option [value]="d.id">{{ d.fullName }}</option>
-            }
-          </select>
-        </label>
-        <label>
-          {{ 'ledger.fields.departureDate' | translate }}
-          <input type="date" formControlName="departureDate" />
-        </label>
-        <label>
-          {{ 'ledger.fields.returnDate' | translate }}
-          <input type="date" formControlName="returnDate" />
-        </label>
-        <label>
-          {{ 'ledger.fields.txnDate' | translate }}
-          <input type="date" formControlName="txnDate" />
-        </label>
-        <label>
-          {{ 'ledger.fields.amount' | translate }}
-          <input type="number" formControlName="amount" />
-        </label>
-        <label class="span-2">
-          {{ 'ledger.fields.label' | translate }}
-          <input formControlName="label" [placeholder]="'ledger.labelOptional' | translate" />
-        </label>
-        @if (revenueForm.hasError('departureAfterReturn')) {
-          <p class="error span-2">{{ 'ledger.errors.departureAfterReturn' | translate }}</p>
-        }
-        @if (revenueForm.hasError('paymentBeforeTrip')) {
-          <p class="error span-2">{{ 'ledger.errors.paymentBeforeTrip' | translate }}</p>
-        }
-        @if (vehicles().length === 0) {
-          <p class="hint span-2">
-            {{ 'ledger.noVehiclesHint' | translate }}
-            <a routerLink="/fleet">{{ 'ledger.goToFleet' | translate }}</a>
-          </p>
-        }
-        <div class="form-actions span-2">
-          <button type="submit" class="btn-primary" [disabled]="saving() || revenueForm.invalid">
-            {{ 'common.save' | translate }}
-          </button>
-        </div>
-      </form>
-    } @else {
-      <h2>{{ 'ledger.expenseTitle' | translate }}</h2>
-      <form class="form-grid" [formGroup]="expenseForm" (ngSubmit)="submitExpense()">
-        <label>
-          {{ 'ledger.fields.txnDate' | translate }}
-          <input type="date" formControlName="txnDate" />
-        </label>
-        <label>
-          {{ 'ledger.fields.amount' | translate }}
-          <input type="number" formControlName="amount" />
-        </label>
-        <label>
-          {{ 'ledger.fields.category' | translate }}
-          <select formControlName="categoryCode" (change)="onCategoryChange()">
-            @for (g of expenseGroups; track g) {
-              <option [value]="g">{{ 'catalog.groups.' + g | translate }}</option>
-            }
-          </select>
-        </label>
-        <label>
-          {{ 'ledger.fields.subcategory' | translate }}
-          <select formControlName="subcategoryCode">
-            @for (s of expenseSubgroups(); track s) {
-              <option [value]="s">{{ 'catalog.subgroups.' + s | translate }}</option>
-            }
-          </select>
-        </label>
-        <label class="span-2">
-          <span>
+  @if (canWrite()) {
+    <article class="card">
+      @if (tab() === 'revenue') {
+        <h2>
+          {{
+            (editingId() ? 'ledger.editRevenueTitle' : 'ledger.revenueTitle') | translate
+          }}
+        </h2>
+        <form class="form-grid" [formGroup]="revenueForm" (ngSubmit)="submitRevenue()">
+          <label>
+            {{ 'ledger.fields.vehicle' | translate }}
+            <select formControlName="vehicleId">
+              <option value="">{{ 'common.select' | translate }}</option>
+              @for (v of vehicles(); track v.id) {
+                <option [value]="v.id">{{ v.name }}{{ v.plate ? ' — ' + v.plate : '' }}</option>
+              }
+            </select>
+          </label>
+          <label>
+            {{ 'ledger.fields.driver' | translate }}
+            <select formControlName="driverId">
+              <option value="">{{ 'common.select' | translate }}</option>
+              @for (d of drivers(); track d.id) {
+                <option [value]="d.id">{{ d.fullName }}</option>
+              }
+            </select>
+          </label>
+          <label>
+            {{ 'ledger.fields.departureDate' | translate }}
+            <input type="date" formControlName="departureDate" />
+          </label>
+          <label>
+            {{ 'ledger.fields.returnDate' | translate }}
+            <input type="date" formControlName="returnDate" />
+          </label>
+          <label>
+            {{ 'ledger.fields.txnDate' | translate }}
+            <input type="date" formControlName="txnDate" />
+          </label>
+          <label>
+            {{ 'ledger.fields.amount' | translate }}
+            <input type="number" formControlName="amount" />
+          </label>
+          <label class="span-2">
             {{ 'ledger.fields.label' | translate }}
-            @if (otherSubgroupSelected()) {
-              <span class="required-mark" aria-hidden="true">*</span>
+            <input formControlName="label" [placeholder]="'ledger.labelOptional' | translate" />
+          </label>
+          @if (revenueForm.hasError('departureAfterReturn')) {
+            <p class="error span-2">{{ 'ledger.errors.departureAfterReturn' | translate }}</p>
+          }
+          @if (revenueForm.hasError('paymentBeforeTrip')) {
+            <p class="error span-2">{{ 'ledger.errors.paymentBeforeTrip' | translate }}</p>
+          }
+          @if (vehicles().length === 0) {
+            <p class="hint span-2">
+              {{ 'ledger.noVehiclesHint' | translate }}
+              <a routerLink="/fleet">{{ 'ledger.goToFleet' | translate }}</a>
+            </p>
+          }
+          <div class="form-actions span-2">
+            @if (editingId()) {
+              <button type="button" class="btn-ghost" (click)="cancelEdit()" [disabled]="saving()">
+                {{ 'common.cancel' | translate }}
+              </button>
             }
-          </span>
-          <input
-            formControlName="label"
-            [placeholder]="
-              (otherSubgroupSelected() ? 'ledger.otherLabelRequired' : 'ledger.labelExpenseOptional')
-                | translate
-            "
-          />
-        </label>
-        @if (otherSubgroupSelected()) {
+            <button type="submit" class="btn-primary" [disabled]="saving() || revenueForm.invalid">
+              {{ 'common.save' | translate }}
+            </button>
+          </div>
+        </form>
+      } @else {
+        <h2>
+          {{
+            (editingId() ? 'ledger.editExpenseTitle' : 'ledger.expenseTitle') | translate
+          }}
+        </h2>
+        <form class="form-grid" [formGroup]="expenseForm" (ngSubmit)="submitExpense()">
+          <label>
+            {{ 'ledger.fields.txnDate' | translate }}
+            <input type="date" formControlName="txnDate" />
+          </label>
+          <label>
+            {{ 'ledger.fields.amount' | translate }}
+            <input type="number" formControlName="amount" />
+          </label>
+          <label>
+            {{ 'ledger.fields.category' | translate }}
+            <select formControlName="categoryCode" (change)="onCategoryChange()">
+              @for (g of expenseGroups; track g) {
+                <option [value]="g">{{ 'catalog.groups.' + g | translate }}</option>
+              }
+            </select>
+          </label>
+          <label>
+            {{ 'ledger.fields.subcategory' | translate }}
+            <select formControlName="subcategoryCode">
+              @for (s of expenseSubgroups(); track s) {
+                <option [value]="s">{{ 'catalog.subgroups.' + s | translate }}</option>
+              }
+            </select>
+          </label>
           <label class="span-2">
             <span>
-              {{ 'ledger.fields.explanation' | translate }}
-              <span class="required-mark" aria-hidden="true">*</span>
+              {{ 'ledger.fields.label' | translate }}
+              @if (otherSubgroupSelected()) {
+                <span class="required-mark" aria-hidden="true">*</span>
+              }
             </span>
-            <textarea
-              formControlName="notes"
-              rows="3"
-              [placeholder]="'ledger.otherExplanationRequired' | translate"
-            ></textarea>
+            <input
+              formControlName="label"
+              [placeholder]="
+                (otherSubgroupSelected() ? 'ledger.otherLabelRequired' : 'ledger.labelExpenseOptional')
+                  | translate
+              "
+            />
           </label>
-        }
-        <div class="form-actions span-2">
-          <button type="submit" class="btn-primary" [disabled]="saving() || expenseForm.invalid">
-            {{ 'common.save' | translate }}
-          </button>
-        </div>
-      </form>
-    }
-  </article>
+          @if (otherSubgroupSelected()) {
+            <label class="span-2">
+              <span>
+                {{ 'ledger.fields.explanation' | translate }}
+                <span class="required-mark" aria-hidden="true">*</span>
+              </span>
+              <textarea
+                formControlName="notes"
+                rows="3"
+                [placeholder]="'ledger.otherExplanationRequired' | translate"
+              ></textarea>
+            </label>
+          }
+          <div class="form-actions span-2">
+            @if (editingId()) {
+              <button type="button" class="btn-ghost" (click)="cancelEdit()" [disabled]="saving()">
+                {{ 'common.cancel' | translate }}
+              </button>
+            }
+            <button type="submit" class="btn-primary" [disabled]="saving() || expenseForm.invalid">
+              {{ 'common.save' | translate }}
+            </button>
+          </div>
+        </form>
+      }
+    </article>
+  } @else {
+    <p class="muted card">{{ 'ledger.readOnlyHint' | translate }}</p>
+  }
 
   @if (loading()) {
     <p class="muted">{{ 'common.loading' | translate }}</p>
@@ -158,19 +180,32 @@
             <th>{{ 'ledger.fields.type' | translate }}</th>
             <th>{{ 'ledger.fields.label' | translate }}</th>
             <th>{{ 'ledger.fields.amount' | translate }}</th>
+            @if (canWrite()) {
+              <th>{{ 'common.actions' | translate }}</th>
+            }
           </tr>
         </thead>
         <tbody>
           @for (row of transactions(); track row.id) {
-            <tr>
+            <tr [class.is-editing]="editingId() === row.id">
               <td>{{ row.txnDate }}</td>
               <td>{{ 'ledger.types.' + row.type | translate }}</td>
               <td>{{ row.label }}</td>
               <td>{{ formatXof(row.amount) }}</td>
+              @if (canWrite()) {
+                <td class="row-actions">
+                  <button type="button" class="btn-ghost" (click)="startEdit(row)" [disabled]="saving()">
+                    {{ 'common.edit' | translate }}
+                  </button>
+                  <button type="button" class="btn-ghost danger" (click)="remove(row)" [disabled]="saving()">
+                    {{ 'common.delete' | translate }}
+                  </button>
+                </td>
+              }
             </tr>
           } @empty {
             <tr>
-              <td colspan="4" class="muted">{{ 'ledger.empty' | translate }}</td>
+              <td [attr.colspan]="canWrite() ? 5 : 4" class="muted">{{ 'ledger.empty' | translate }}</td>
             </tr>
           }
         </tbody>

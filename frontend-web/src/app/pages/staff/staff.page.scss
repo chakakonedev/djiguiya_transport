@@ -1,3 +1,23 @@
 :host {
   display: block;
 }
+
+.hint,
+.owner-only-note {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.span-2 {
+  grid-column: span 2;
+}
+
+.is-editing {
+  background: #f0fdfa;
+}
+
+@media (max-width: 720px) {
+  .span-2 {
+    grid-column: span 1;
+  }
+}
