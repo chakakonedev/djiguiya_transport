@@ -41,4 +41,18 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
 			@Param("yearPrefix") String yearPrefix,
 			@Param("vehicleId") String vehicleId,
 			@Param("driverId") String driverId);
+
+	@Query("""
+			select t from TransactionEntity t
+			where t.deletedAt is null
+			and t.monthKey >= :fromMonth
+			and t.monthKey <= :toMonth
+			and (:vehicleId is null or t.vehicleId = :vehicleId)
+			and (:driverId is null or t.driverId = :driverId)
+			""")
+	List<TransactionEntity> findByMonthKeyRange(
+			@Param("fromMonth") String fromMonth,
+			@Param("toMonth") String toMonth,
+			@Param("vehicleId") String vehicleId,
+			@Param("driverId") String driverId);
 }

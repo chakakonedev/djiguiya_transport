@@ -159,14 +159,16 @@
   },
   "profitShare": {
     "title": "Répartition des bénéfices",
-    "subtitle": "Aperçu annuel selon les règles configurées.",
+    "subtitle": "Aperçu par exercice (1er août → 31 juillet) selon les règles configurées.",
     "preview": "Calculer l’aperçu",
     "empty": "Aucune ligne de répartition.",
+    "period": "Période : {{start}} → {{end}}",
     "fields": {
-      "year": "Année"
+      "year": "Exercice (année de début)"
     },
+    "hint": "Ex. 2025 = 1er août 2025 → 31 juillet 2026",
     "kpi": {
-      "netProfit": "Résultat net annuel",
+      "netProfit": "Résultat net de l’exercice",
       "reserve": "Réserve",
       "distributable": "Montant distribuable"
     },
@@ -177,6 +179,9 @@
       "amount": "Montant"
     },
     "ruleKinds": {
+      "partner_profit_share_pct": "Part du bénéfice net",
+      "company_growth_reserve_pct": "Réserve évolution entreprise",
+      "quarterly_revenue_share_pct": "Part sur recettes trimestrielles",
       "annual_net_profit_pct": "Part du résultat net",
       "quarterly_salary_bonus": "Prime trimestrielle",
       "salary_months_equivalent": "Équivalent mois de salaire",

@@ -9,6 +9,7 @@
       <label>
         {{ 'profitShare.fields.year' | translate }}
         <input type="number" formControlName="year" />
+        <span class="muted hint">{{ 'profitShare.hint' | translate }}</span>
       </label>
       <div class="form-actions">
         <button type="submit" class="btn-primary" [disabled]="loading() || form.invalid">
@@ -23,6 +24,9 @@
   } @else if (error()) {
     <p class="error">{{ 'common.loadError' | translate }}</p>
   } @else if (preview(); as p) {
+    <p class="muted">
+      {{ 'profitShare.period' | translate: { start: p.periodStart, end: p.periodEnd } }}
+    </p>
     <div class="kpi-grid">
       <article class="card kpi">
         <span class="kpi-label">{{ 'profitShare.kpi.netProfit' | translate }}</span>

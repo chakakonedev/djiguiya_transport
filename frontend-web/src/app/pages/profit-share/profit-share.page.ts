@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ProfitShareService } from '../../core/profit-share.service';
 import { ProfitSharePreview } from '../../core/api.types';
+import { fiscalStartYearContaining } from '../../core/fiscal-year.util';
 import { formatXof } from '../../core/format.util';
 
 @Component({
@@ -22,7 +23,7 @@ export class ProfitSharePage implements OnInit {
   readonly formatXof = formatXof;
 
   readonly form = this.fb.nonNullable.group({
-    year: [new Date().getFullYear(), [Validators.required, Validators.min(2000)]]
+    year: [fiscalStartYearContaining(), [Validators.required, Validators.min(2000)]]
   });
 
   ngOnInit(): void {

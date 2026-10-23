@@ -157,6 +157,10 @@ export interface ProfitShareLine {
 
 export interface ProfitSharePreview {
   year: number;
+  periodStart: string;
+  periodEnd: string;
+  totalRevenue?: number;
+  totalExpense?: number;
   annualNetProfit: number;
   reserveAmount: number;
   distributableAmount: number;

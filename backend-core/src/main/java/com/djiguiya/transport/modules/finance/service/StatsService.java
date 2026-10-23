@@ -6,6 +6,7 @@ import com.djiguiya.transport.modules.finance.dto.StatsSummaryResponse;
 import com.djiguiya.transport.modules.finance.dto.StatsYoyResponse;
 import com.djiguiya.transport.modules.finance.entities.TransactionEntity;
 import com.djiguiya.transport.modules.finance.repository.TransactionRepository;
+import com.djiguiya.transport.shared.util.FiscalYearUtil;
 import com.djiguiya.transport.shared.util.MonthKeyUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -80,13 +81,19 @@ public class StatsService {
 	}
 
 	@Transactional(readOnly = true)
-	public StatsYoyResponse yearOverYear(int year, String vehicleId, String driverId) {
-		List<TransactionEntity> current = transactionRepository.findByYearPrefix(String.valueOf(year), vehicleId, driverId);
-		List<TransactionEntity> previous = transactionRepository.findByYearPrefix(String.valueOf(year - 1), vehicleId, driverId);
+	public StatsYoyResponse yearOverYear(int fiscalStartYear, String vehicleId, String driverId) {
+		List<TransactionEntity> current = loadFiscalYear(fiscalStartYear, vehicleId, driverId);
+		List<TransactionEntity> previous = loadFiscalYear(fiscalStartYear - 1, vehicleId, driverId);
 		long currentNet = LedgerAggregator.netProfit(current);
 		long previousNet = LedgerAggregator.netProfit(previous);
 		Double pct = previousNet == 0 ? null : ((double) (currentNet - previousNet) / previousNet) * 100.0;
-		return new StatsYoyResponse(year, year - 1, currentNet, previousNet, currentNet - previousNet, pct);
+		return new StatsYoyResponse(
+				fiscalStartYear,
+				fiscalStartYear - 1,
+				currentNet,
+				previousNet,
+				currentNet - previousNet,
+				pct);
 	}
 
 	private List<TransactionEntity> loadForSummary(
@@ -99,11 +106,19 @@ public class StatsService {
 			return transactionRepository.findFiltered(monthKey, vehicleId, driverId, category, null);
 		}
 		if (year != null) {
-			return transactionRepository.findByYearPrefix(String.valueOf(year), vehicleId, driverId).stream()
+			return loadFiscalYear(year, vehicleId, driverId).stream()
 					.filter(t -> category == null || category.equals(t.getCategoryCode()))
 					.collect(Collectors.toList());
 		}
 		return transactionRepository.findFiltered(null, vehicleId, driverId, category, null);
+	}
+
+	private List<TransactionEntity> loadFiscalYear(int fiscalStartYear, String vehicleId, String driverId) {
+		return transactionRepository.findByMonthKeyRange(
+				FiscalYearUtil.startMonthKey(fiscalStartYear),
+				FiscalYearUtil.endMonthKey(fiscalStartYear),
+				vehicleId,
+				driverId);
 	}
 
 	private String resolveMonthKey(Integer month, Integer year) {
