@@ -38,6 +38,7 @@ export const STAFF_TYPES = [
   'driver_manager',
   'cashier',
   'accountant',
+  'cashier_accountant',
   'owner',
   'baba_beneficiary',
   'other'

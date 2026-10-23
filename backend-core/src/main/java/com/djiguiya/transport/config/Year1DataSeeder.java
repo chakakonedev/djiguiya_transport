@@ -62,12 +62,14 @@ public class Year1DataSeeder implements ApplicationRunner {
 		}
 
 		String vehicleId = text(root.path("vehicle").path("id"));
+		Instant now = Instant.now();
 		if (vehicleRepository.existsById(vehicleId)) {
-			log.info("Year-1 seed skipped — vehicle {} already present", vehicleId);
+			// Keep identity fields aligned with seed (plate / purchase) without re-importing ledger.
+			syncVehicleIdentity(root.path("vehicle"), now);
+			log.info("Year-1 seed skipped — vehicle {} already present (identity synced)", vehicleId);
 			return;
 		}
 
-		Instant now = Instant.now();
 		upsertVehicle(root.path("vehicle"), now);
 		upsertAssignment(root.path("primary_assignment"));
 
@@ -101,25 +103,40 @@ public class Year1DataSeeder implements ApplicationRunner {
 	private void upsertVehicle(JsonNode node, Instant now) {
 		VehicleEntity vehicle = new VehicleEntity();
 		vehicle.setId(text(node.path("id")));
+		applyVehicleFields(vehicle, node);
+		vehicle.setCreatedAt(now);
+		vehicle.setUpdatedAt(now);
+		vehicleRepository.save(vehicle);
+	}
+
+	private void syncVehicleIdentity(JsonNode node, Instant now) {
+		String id = text(node.path("id"));
+		VehicleEntity vehicle = vehicleRepository.findById(id).orElseThrow(
+				() -> new IllegalStateException("Year-1 vehicle missing during identity sync: " + id));
+		applyVehicleFields(vehicle, node);
+		vehicle.setUpdatedAt(now);
+		vehicleRepository.save(vehicle);
+	}
+
+	private void applyVehicleFields(VehicleEntity vehicle, JsonNode node) {
 		vehicle.setName(text(node.path("name")));
 		vehicle.setPlate(textOrNull(node.path("plate")));
 		vehicle.setBrand(textOrNull(node.path("brand")));
 		vehicle.setModel(textOrNull(node.path("model")));
 		if (!node.path("year_built").isNull() && !node.path("year_built").isMissingNode()) {
 			vehicle.setYearBuilt(node.path("year_built").asInt());
+		} else {
+			vehicle.setYearBuilt(null);
 		}
 		if (!node.path("purchase_price").isNull() && !node.path("purchase_price").isMissingNode()) {
 			vehicle.setPurchasePrice(node.path("purchase_price").asLong());
+		} else {
+			vehicle.setPurchasePrice(null);
 		}
 		String purchaseDate = textOrNull(node.path("purchase_date"));
-		if (purchaseDate != null) {
-			vehicle.setPurchaseDate(LocalDate.parse(purchaseDate));
-		}
+		vehicle.setPurchaseDate(purchaseDate != null ? LocalDate.parse(purchaseDate) : null);
 		vehicle.setStatus(text(node.path("status")));
 		vehicle.setNotes(textOrNull(node.path("notes")));
-		vehicle.setCreatedAt(now);
-		vehicle.setUpdatedAt(now);
-		vehicleRepository.save(vehicle);
 	}
 
 	private void upsertAssignment(JsonNode node) {

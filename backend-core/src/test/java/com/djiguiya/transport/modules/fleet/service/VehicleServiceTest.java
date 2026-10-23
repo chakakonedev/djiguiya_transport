@@ -47,6 +47,8 @@ class VehicleServiceTest {
 		VehicleEntity vehicle = vehicle("v1");
 		when(vehicleRepository.findById("v1")).thenReturn(Optional.of(vehicle));
 		when(staffService.findEntity("d1")).thenReturn(staff("d1"));
+		when(primaryAssignmentRepository.findByVehicleIdAndEndDateIsNullOrderByStartDateAsc("v1"))
+				.thenReturn(List.of());
 		when(primaryAssignmentRepository.findActiveForVehicleOnDate(eq("v1"), any()))
 				.thenReturn(Optional.empty());
 		when(primaryAssignmentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -74,8 +76,9 @@ class VehicleServiceTest {
 
 		when(vehicleRepository.findById("v1")).thenReturn(Optional.of(vehicle));
 		when(staffService.findEntity("d1")).thenReturn(staff("d1"));
+		when(primaryAssignmentRepository.findByVehicleIdAndEndDateIsNullOrderByStartDateAsc("v1"))
+				.thenReturn(List.of(previous));
 		when(primaryAssignmentRepository.findActiveForVehicleOnDate(eq("v1"), any()))
-				.thenReturn(Optional.of(previous))
 				.thenReturn(Optional.of(previous));
 		when(primaryAssignmentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -92,6 +95,30 @@ class VehicleServiceTest {
 				.orElseThrow();
 		assertEquals(start, created.getStartDate());
 		assertEquals("rotation", created.getReason());
+	}
+
+	@Test
+	void assignPrimaryDriver_sameDayReassignmentClosesPrevious() {
+		VehicleEntity vehicle = vehicle("v1");
+		LocalDate today = LocalDate.of(2026, 10, 23);
+		PrimaryAssignmentEntity previous = new PrimaryAssignmentEntity();
+		previous.setId("a0");
+		previous.setVehicleId("v1");
+		previous.setDriverId("d0");
+		previous.setStartDate(today);
+		previous.setEndDate(null);
+
+		when(vehicleRepository.findById("v1")).thenReturn(Optional.of(vehicle));
+		when(staffService.findEntity("d1")).thenReturn(staff("d1"));
+		when(primaryAssignmentRepository.findByVehicleIdAndEndDateIsNullOrderByStartDateAsc("v1"))
+				.thenReturn(List.of(previous));
+		when(primaryAssignmentRepository.findActiveForVehicleOnDate(eq("v1"), any()))
+				.thenReturn(Optional.of(previous));
+		when(primaryAssignmentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+		vehicleService.assignPrimaryDriver("v1", new PrimaryDriverRequest("d1", today, null, null));
+
+		assertEquals(today, previous.getEndDate());
 	}
 
 	@Test

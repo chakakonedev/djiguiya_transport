@@ -64,21 +64,11 @@ public class VehicleService {
 
 	@Transactional
 	public VehicleResponse assignPrimaryDriver(String vehicleId, PrimaryDriverRequest request) {
-		findVehicle(vehicleId);
+		VehicleEntity vehicle = findVehicle(vehicleId);
 		staffService.findEntity(request.driverId());
 
 		LocalDate startDate = request.startDate();
-
-		primaryAssignmentRepository.findActiveForVehicleOnDate(vehicleId, LocalDate.now())
-				.ifPresent(active -> {
-					if (active.getEndDate() == null) {
-						LocalDate previousEnd = startDate.minusDays(1);
-						if (!previousEnd.isBefore(active.getStartDate())) {
-							active.setEndDate(previousEnd);
-							primaryAssignmentRepository.save(active);
-						}
-					}
-				});
+		closeOpenAssignments(vehicleId, startDate);
 
 		PrimaryAssignmentEntity assignment = new PrimaryAssignmentEntity();
 		assignment.setId(EntityIds.newId());
@@ -88,8 +78,24 @@ public class VehicleService {
 		assignment.setEndDate(request.endDate());
 		assignment.setReason(request.reason());
 		primaryAssignmentRepository.save(assignment);
+		primaryAssignmentRepository.flush();
 
-		return getById(vehicleId);
+		String driverId = resolvePrimaryDriverId(vehicleId, LocalDate.now()).orElse(null);
+		return VehicleResponse.from(vehicle, driverId);
+	}
+
+	private void closeOpenAssignments(String vehicleId, LocalDate newStartDate) {
+		List<PrimaryAssignmentEntity> open =
+				primaryAssignmentRepository.findByVehicleIdAndEndDateIsNullOrderByStartDateAsc(vehicleId);
+		for (PrimaryAssignmentEntity active : open) {
+			LocalDate previousEnd = newStartDate.minusDays(1);
+			// Same-day (or earlier) reassignment: collapse the previous row to a one-day span.
+			active.setEndDate(previousEnd.isBefore(active.getStartDate())
+					? active.getStartDate()
+					: previousEnd);
+			primaryAssignmentRepository.save(active);
+		}
+		primaryAssignmentRepository.flush();
 	}
 
 	@Transactional(readOnly = true)

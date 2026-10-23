@@ -17,6 +17,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.DefaultApplicationArguments;
 import org.springframework.core.io.ClassPathResource;
 
+import java.time.LocalDate;
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -68,14 +71,25 @@ class Year1DataSeederTest {
 	}
 
 	@Test
-	void skipsWhenVehicleAlreadyPresent() throws Exception {
+	void syncsVehicleIdentityWhenAlreadyPresent() throws Exception {
 		properties.getSeed().setYear1Enabled(true);
-		when(vehicleRepository.existsById("00000000-0000-0000-0000-000000000301")).thenReturn(true);
+		String vehicleId = "00000000-0000-0000-0000-000000000301";
+		VehicleEntity existing = new VehicleEntity();
+		existing.setId(vehicleId);
+		existing.setName("Bus 1");
+		existing.setStatus("active");
+		when(vehicleRepository.existsById(vehicleId)).thenReturn(true);
+		when(vehicleRepository.findById(vehicleId)).thenReturn(Optional.of(existing));
 
 		seeder.run(new DefaultApplicationArguments());
 
-		verify(vehicleRepository, never()).save(any());
+		ArgumentCaptor<VehicleEntity> vehicleCaptor = ArgumentCaptor.forClass(VehicleEntity.class);
+		verify(vehicleRepository).save(vehicleCaptor.capture());
+		assertEquals("AA-496-ER", vehicleCaptor.getValue().getPlate());
+		assertEquals(25_000_000L, vehicleCaptor.getValue().getPurchasePrice());
+		assertEquals(LocalDate.of(2025, 7, 1), vehicleCaptor.getValue().getPurchaseDate());
 		verify(tripRepository, never()).save(any());
+		verify(transactionRepository, never()).save(any());
 	}
 
 	@Test
@@ -88,6 +102,9 @@ class Year1DataSeederTest {
 		ArgumentCaptor<VehicleEntity> vehicleCaptor = ArgumentCaptor.forClass(VehicleEntity.class);
 		verify(vehicleRepository).save(vehicleCaptor.capture());
 		assertEquals("Bus 1", vehicleCaptor.getValue().getName());
+		assertEquals("AA-496-ER", vehicleCaptor.getValue().getPlate());
+		assertEquals(25_000_000L, vehicleCaptor.getValue().getPurchasePrice());
+		assertEquals(LocalDate.of(2025, 7, 1), vehicleCaptor.getValue().getPurchaseDate());
 
 		verify(primaryAssignmentRepository).save(any());
 		verify(tripRepository, atLeast(180)).save(any(TripEntity.class));

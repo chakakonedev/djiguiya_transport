@@ -222,6 +222,7 @@
       "driver_manager": "Chauffeur-manager",
       "cashier": "Caissier",
       "accountant": "Comptable",
+      "cashier_accountant": "Caissier-comptable",
       "owner": "Propriétaire",
       "baba_beneficiary": "Bénéficiaire Baba",
       "other": "Autre"

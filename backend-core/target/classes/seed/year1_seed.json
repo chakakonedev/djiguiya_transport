@@ -1024,14 +1024,14 @@
   "vehicle": {
     "id": "00000000-0000-0000-0000-000000000301",
     "name": "Bus 1",
-    "plate": null,
+    "plate": "AA-496-ER",
     "brand": null,
     "model": null,
     "year_built": null,
-    "purchase_price": null,
-    "purchase_date": "2025-08-01",
+    "purchase_price": 25000000,
+    "purchase_date": "2025-07-01",
     "status": "active",
-    "notes": "Year-1 primary bus (source=year1_import)"
+    "notes": "Year-1 primary bus (source=year1_import); purchased Jul 2025 for 25M FCFA; first trip 2025-07-26"
   },
   "primary_assignment": {
     "id": "00000000-0000-0000-0000-000000000302",

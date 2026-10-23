@@ -6,9 +6,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 public interface PrimaryAssignmentRepository extends JpaRepository<PrimaryAssignmentEntity, String> {
+
+	List<PrimaryAssignmentEntity> findByVehicleIdAndEndDateIsNullOrderByStartDateAsc(String vehicleId);
 
 	@Query("""
 			select a from PrimaryAssignmentEntity a
@@ -17,7 +20,11 @@ public interface PrimaryAssignmentRepository extends JpaRepository<PrimaryAssign
 			and (a.endDate is null or a.endDate >= :onDate)
 			order by a.startDate desc
 			""")
-	Optional<PrimaryAssignmentEntity> findActiveForVehicleOnDate(
+	List<PrimaryAssignmentEntity> findActiveAssignmentsForVehicleOnDate(
 			@Param("vehicleId") String vehicleId,
 			@Param("onDate") LocalDate onDate);
+
+	default Optional<PrimaryAssignmentEntity> findActiveForVehicleOnDate(String vehicleId, LocalDate onDate) {
+		return findActiveAssignmentsForVehicleOnDate(vehicleId, onDate).stream().findFirst();
+	}
 }
