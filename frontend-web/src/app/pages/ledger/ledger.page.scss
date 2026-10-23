@@ -23,3 +23,150 @@
 .is-editing {
   background: #f0fdfa;
 }
+
+.type-tone {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.type-tone--revenue {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.type-tone--expense {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+/* Bus — warm reds / oranges */
+.type-tone--fuel {
+  color: #9a3412;
+  background: #ffedd5;
+}
+.type-tone--oil_service {
+  color: #92400e;
+  background: #fef3c7;
+}
+.type-tone--parts_brakes {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+.type-tone--tires {
+  color: #9f1239;
+  background: #ffe4e6;
+}
+.type-tone--mechanic {
+  color: #991b1b;
+  background: #fecaca;
+}
+.type-tone--ac_system {
+  color: #be123c;
+  background: #fecdd3;
+}
+.type-tone--inspection {
+  color: #7f1d1d;
+  background: #fecaca;
+}
+.type-tone--insurance {
+  color: #881337;
+  background: #fda4af;
+}
+.type-tone--cleaning {
+  color: #c2410c;
+  background: #fed7aa;
+}
+.type-tone--driver_salary {
+  color: #9d174d;
+  background: #fce7f3;
+}
+.type-tone--driver_bonus {
+  color: #a21caf;
+  background: #fae8ff;
+}
+.type-tone--vignette {
+  color: #7c2d12;
+  background: #ffedd5;
+}
+
+/* Family — rose / violet */
+.type-tone--condiments {
+  color: #9d174d;
+  background: #fce7f3;
+}
+.type-tone--electricity {
+  color: #6b21a8;
+  background: #f3e8ff;
+}
+.type-tone--household {
+  color: #86198f;
+  background: #fae8ff;
+}
+.type-tone--tontine {
+  color: #be185d;
+  background: #fbcfe8;
+}
+.type-tone--medical_family {
+  color: #9f1239;
+  background: #ffe4e6;
+}
+
+/* Baba — amber / gold */
+.type-tone--baba_money {
+  color: #a16207;
+  background: #fef9c3;
+}
+.type-tone--baba_clothes {
+  color: #b45309;
+  background: #ffedd5;
+}
+.type-tone--baba_tontine {
+  color: #c2410c;
+  background: #ffedd5;
+}
+
+/* Other — slate / muted red */
+.type-tone--credit {
+  color: #475569;
+  background: #e2e8f0;
+}
+.type-tone--misc {
+  color: #57534e;
+  background: #e7e5e4;
+}
+.type-tone--other {
+  color: #7f1d1d;
+  background: #fecaca;
+}
+
+/* Fallback by expense group when subcategory is missing */
+.type-tone--bus {
+  color: #991b1b;
+  background: #fee2e2;
+}
+.type-tone--family {
+  color: #9d174d;
+  background: #fce7f3;
+}
+.type-tone--baba {
+  color: #a16207;
+  background: #fef9c3;
+}
+
+.amount-tone {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.amount-tone--revenue {
+  color: #15803d;
+}
+
+.amount-tone--expense {
+  color: #b91c1c;
+}

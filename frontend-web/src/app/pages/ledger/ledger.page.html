@@ -189,9 +189,13 @@
           @for (row of transactions(); track row.id) {
             <tr [class.is-editing]="editingId() === row.id">
               <td>{{ row.txnDate }}</td>
-              <td>{{ 'ledger.types.' + row.type | translate }}</td>
+              <td>
+                <span [class]="typeToneClass(row)">
+                  {{ 'ledger.types.' + row.type | translate }}
+                </span>
+              </td>
               <td>{{ row.label }}</td>
-              <td>{{ formatXof(row.amount) }}</td>
+              <td [class]="amountToneClass(row)">{{ formatXof(row.amount) }}</td>
               @if (canWrite()) {
                 <td class="row-actions">
                   <button type="button" class="btn-ghost" (click)="startEdit(row)" [disabled]="saving()">

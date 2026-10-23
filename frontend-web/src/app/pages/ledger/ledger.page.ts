@@ -19,6 +19,7 @@ import { StaffService } from '../../core/staff.service';
 import { LedgerTransaction, StaffMember, Vehicle } from '../../core/api.types';
 import {
   EXPENSE_GROUPS,
+  EXPENSE_SUBGROUP_TONES,
   ExpenseGroup,
   OTHER_SUBGROUP,
   SUBGROUPS_BY_GROUP
@@ -149,6 +150,27 @@ export class LedgerPage implements OnInit {
   expenseSubgroups(): readonly string[] {
     const group = this.expenseForm.controls.categoryCode.value as ExpenseGroup;
     return this.subgroupsByGroup[group] ?? [];
+  }
+
+  /**
+   * Type badge tone: green for revenue; expense shades follow subcategory
+   * (falls back to category group, then "other").
+   */
+  typeToneClass(row: LedgerTransaction): string {
+    if (row.type === 'revenue') {
+      return 'type-tone type-tone--revenue';
+    }
+    const sub = row.subcategoryCode?.trim();
+    if (sub && EXPENSE_SUBGROUP_TONES.has(sub)) {
+      return `type-tone type-tone--expense type-tone--${sub}`;
+    }
+    const group = (row.categoryCode as ExpenseGroup) || 'other';
+    const known = EXPENSE_GROUPS.includes(group) ? group : 'other';
+    return `type-tone type-tone--expense type-tone--${known}`;
+  }
+
+  amountToneClass(row: LedgerTransaction): string {
+    return row.type === 'revenue' ? 'amount-tone amount-tone--revenue' : 'amount-tone amount-tone--expense';
   }
 
   onCategoryChange(): void {

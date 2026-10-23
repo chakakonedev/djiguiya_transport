@@ -33,6 +33,11 @@ export const SUBGROUPS_BY_GROUP: Record<ExpenseGroup, readonly string[]> = {
   other: ['credit', 'misc', OTHER_SUBGROUP]
 };
 
+/** Known subcategory codes used for ledger type-badge color tones. */
+export const EXPENSE_SUBGROUP_TONES: ReadonlySet<string> = new Set(
+  Object.values(SUBGROUPS_BY_GROUP).flat()
+);
+
 export const STAFF_TYPES = [
   'driver',
   'driver_manager',
