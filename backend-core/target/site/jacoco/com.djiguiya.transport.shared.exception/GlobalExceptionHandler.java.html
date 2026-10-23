@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GlobalExceptionHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">djiguiya-transport-backend</a> &gt; <a href="index.source.html" class="el_package">com.djiguiya.transport.shared.exception</a> &gt; <span class="el_source">GlobalExceptionHandler.java</span></div><h1>GlobalExceptionHandler.java</h1><pre class="source lang-java linenums">package com.djiguiya.transport.shared.exception;
+
+import com.djiguiya.transport.shared.api.ErrorResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Locale;
+import java.util.stream.Collectors;
+
+@RestControllerAdvice
+@RequiredArgsConstructor
+public class GlobalExceptionHandler {
+
+	private final MessageSource messageSource;
+
+	@ExceptionHandler(BusinessException.class)
+	public ResponseEntity&lt;ErrorResponse&gt; handleBusiness(BusinessException ex) {
+<span class="fc" id="L26">		return build(ex.getMessageKey(), ex.getStatus());</span>
+	}
+
+	@ExceptionHandler(ResponseStatusException.class)
+	public ResponseEntity&lt;ErrorResponse&gt; handleStatus(ResponseStatusException ex) {
+<span class="fc bfc" id="L31" title="All 2 branches covered.">		String key = ex.getReason() != null ? ex.getReason() : &quot;common.not_found&quot;;</span>
+<span class="fc" id="L32">		HttpStatus status = HttpStatus.valueOf(ex.getStatusCode().value());</span>
+<span class="fc" id="L33">		return build(key, status);</span>
+	}
+
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity&lt;ErrorResponse&gt; handleValidation(MethodArgumentNotValidException ex) {
+<span class="fc" id="L38">		String details = ex.getBindingResult().getFieldErrors().stream()</span>
+<span class="fc" id="L39">				.map(FieldError::getField)</span>
+<span class="fc" id="L40">				.collect(Collectors.joining(&quot;, &quot;));</span>
+<span class="fc" id="L41">		Locale locale = LocaleContextHolder.getLocale();</span>
+<span class="fc" id="L42">		String message = messageSource.getMessage(&quot;common.validation_failed&quot;, null, locale)</span>
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">				+ (details.isEmpty() ? &quot;&quot; : &quot;: &quot; + details);</span>
+<span class="fc" id="L44">		ErrorResponse body = ErrorResponse.of(&quot;common.validation_failed&quot;, message, HttpStatus.BAD_REQUEST.value());</span>
+<span class="fc" id="L45">		return ResponseEntity.badRequest().body(body);</span>
+	}
+
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity&lt;ErrorResponse&gt; handleGeneric(Exception ex) {
+<span class="fc" id="L50">		ErrorResponse body = ErrorResponse.of(</span>
+				&quot;common.internal_error&quot;,
+<span class="fc bfc" id="L52" title="All 2 branches covered.">				ex.getMessage() != null ? ex.getMessage() : &quot;Unexpected error&quot;,</span>
+<span class="fc" id="L53">				HttpStatus.INTERNAL_SERVER_ERROR.value());</span>
+<span class="fc" id="L54">		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);</span>
+	}
+
+	private ResponseEntity&lt;ErrorResponse&gt; build(String messageKey, HttpStatus status) {
+<span class="fc" id="L58">		Locale locale = LocaleContextHolder.getLocale();</span>
+<span class="fc" id="L59">		String message = messageSource.getMessage(messageKey, null, messageKey, locale);</span>
+<span class="fc" id="L60">		return ResponseEntity.status(status).body(ErrorResponse.of(messageKey, message, status.value()));</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

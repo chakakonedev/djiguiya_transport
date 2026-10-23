@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProfitShareRuleService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">djiguiya-transport-backend</a> &gt; <a href="index.source.html" class="el_package">com.djiguiya.transport.modules.finance.service</a> &gt; <span class="el_source">ProfitShareRuleService.java</span></div><h1>ProfitShareRuleService.java</h1><pre class="source lang-java linenums">package com.djiguiya.transport.modules.finance.service;
+
+import com.djiguiya.transport.modules.finance.dto.ProfitShareRuleResponse;
+import com.djiguiya.transport.modules.finance.dto.ProfitShareRuleUpdateRequest;
+import com.djiguiya.transport.modules.finance.entities.ProfitShareRuleEntity;
+import com.djiguiya.transport.modules.finance.repository.ProfitShareRuleRepository;
+import com.djiguiya.transport.modules.staff.entities.StaffEntity;
+import com.djiguiya.transport.modules.staff.repository.StaffRepository;
+import com.djiguiya.transport.shared.exception.BusinessException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class ProfitShareRuleService {
+
+	private final ProfitShareRuleRepository profitShareRuleRepository;
+	private final StaffRepository staffRepository;
+
+	@Transactional(readOnly = true)
+	public List&lt;ProfitShareRuleResponse&gt; listAll() {
+<span class="fc" id="L30">		List&lt;ProfitShareRuleEntity&gt; rules = profitShareRuleRepository.findAll();</span>
+<span class="fc" id="L31">		Map&lt;String, StaffEntity&gt; staffById = staffRepository.findAllById(</span>
+<span class="fc" id="L32">						rules.stream()</span>
+<span class="fc" id="L33">								.map(ProfitShareRuleEntity::getBeneficiaryStaffId)</span>
+<span class="fc" id="L34">								.filter(Objects::nonNull)</span>
+<span class="fc" id="L35">								.distinct()</span>
+<span class="fc" id="L36">								.toList())</span>
+<span class="fc" id="L37">				.stream()</span>
+<span class="fc" id="L38">				.collect(Collectors.toMap(StaffEntity::getId, Function.identity()));</span>
+
+<span class="fc" id="L40">		return rules.stream()</span>
+<span class="fc" id="L41">				.map(rule -&gt; {</span>
+<span class="fc" id="L42">					StaffEntity staff = staffById.get(rule.getBeneficiaryStaffId());</span>
+<span class="fc bfc" id="L43" title="All 2 branches covered.">					return ProfitShareRuleResponse.from(rule, staff != null ? staff.getFullName() : null);</span>
+				})
+<span class="fc" id="L45">				.toList();</span>
+	}
+
+	@Transactional
+	public ProfitShareRuleResponse update(String id, ProfitShareRuleUpdateRequest request) {
+<span class="fc" id="L50">		ProfitShareRuleEntity rule = profitShareRuleRepository.findById(id)</span>
+<span class="fc" id="L51">				.orElseThrow(() -&gt; new BusinessException(&quot;profit_share.rule_not_found&quot;, HttpStatus.NOT_FOUND));</span>
+
+<span class="fc bfc" id="L53" title="All 2 branches covered.">		if (request.ratePercent() != null) {</span>
+<span class="fc" id="L54">			rule.setRatePercent(request.ratePercent());</span>
+		}
+<span class="fc bfc" id="L56" title="All 2 branches covered.">		if (request.salaryMonthsEquivalent() != null) {</span>
+<span class="fc" id="L57">			rule.setSalaryMonthsEquivalent(request.salaryMonthsEquivalent());</span>
+		}
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">		if (request.enabled() != null) {</span>
+<span class="fc" id="L60">			rule.setEnabled(request.enabled());</span>
+		}
+<span class="fc bfc" id="L62" title="All 2 branches covered.">		if (request.notes() != null) {</span>
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">			rule.setNotes(request.notes().isBlank() ? null : request.notes().trim());</span>
+		}
+
+<span class="fc" id="L66">		ProfitShareRuleEntity saved = profitShareRuleRepository.save(rule);</span>
+<span class="fc" id="L67">		String name = null;</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">		if (saved.getBeneficiaryStaffId() != null) {</span>
+<span class="fc" id="L69">			name = staffRepository.findById(saved.getBeneficiaryStaffId())</span>
+<span class="fc" id="L70">					.map(StaffEntity::getFullName)</span>
+<span class="fc" id="L71">					.orElse(null);</span>
+		}
+<span class="fc" id="L73">		return ProfitShareRuleResponse.from(saved, name);</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

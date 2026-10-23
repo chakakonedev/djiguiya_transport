@@ -72,4 +72,20 @@ describe('VehicleService', () => {
     expect(req.request.body).toEqual(docs);
     req.flush({ success: true, messageKey: 'documents.updated', data: docs });
   });
+
+  it('updates vehicle and loads documents', () => {
+    service.update('v1', { name: 'Renamed' }).subscribe();
+    http.expectOne(`${API_BASE_URL}/vehicles/v1`).flush({
+      success: true,
+      messageKey: null,
+      data: { id: 'v1', name: 'Renamed', status: 'active' }
+    });
+
+    service.getDocuments('v1').subscribe();
+    http.expectOne(`${API_BASE_URL}/vehicles/v1/documents`).flush({
+      success: true,
+      messageKey: null,
+      data: []
+    });
+  });
 });

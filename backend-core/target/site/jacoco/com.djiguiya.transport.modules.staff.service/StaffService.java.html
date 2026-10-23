@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StaffService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">djiguiya-transport-backend</a> &gt; <a href="index.source.html" class="el_package">com.djiguiya.transport.modules.staff.service</a> &gt; <span class="el_source">StaffService.java</span></div><h1>StaffService.java</h1><pre class="source lang-java linenums">package com.djiguiya.transport.modules.staff.service;
+
+import com.djiguiya.transport.modules.staff.dto.StaffRequest;
+import com.djiguiya.transport.modules.staff.dto.StaffResponse;
+import com.djiguiya.transport.modules.staff.entities.StaffEntity;
+import com.djiguiya.transport.modules.staff.repository.StaffRepository;
+import com.djiguiya.transport.shared.exception.BusinessException;
+import com.djiguiya.transport.shared.util.EntityIds;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class StaffService {
+
+	private final StaffRepository staffRepository;
+
+	@Transactional(readOnly = true)
+	public List&lt;StaffResponse&gt; listAll() {
+<span class="fc" id="L24">		return staffRepository.findAll().stream().map(StaffResponse::from).toList();</span>
+	}
+
+	@Transactional(readOnly = true)
+	public StaffResponse getById(String id) {
+<span class="fc" id="L29">		return StaffResponse.from(findEntity(id));</span>
+	}
+
+	@Transactional
+	public StaffResponse create(StaffRequest request) {
+<span class="fc" id="L34">		StaffEntity entity = new StaffEntity();</span>
+<span class="fc" id="L35">		entity.setId(EntityIds.newId());</span>
+<span class="fc" id="L36">		apply(entity, request);</span>
+<span class="fc" id="L37">		return StaffResponse.from(staffRepository.save(entity));</span>
+	}
+
+	@Transactional
+	public StaffResponse update(String id, StaffRequest request) {
+<span class="fc" id="L42">		StaffEntity entity = findEntity(id);</span>
+<span class="fc" id="L43">		apply(entity, request);</span>
+<span class="fc" id="L44">		return StaffResponse.from(staffRepository.save(entity));</span>
+	}
+
+	public StaffEntity findEntity(String id) {
+<span class="fc" id="L48">		return staffRepository.findById(id)</span>
+<span class="fc" id="L49">				.orElseThrow(() -&gt; new BusinessException(&quot;staff.not_found&quot;, HttpStatus.NOT_FOUND));</span>
+	}
+
+	private void apply(StaffEntity entity, StaffRequest request) {
+<span class="fc" id="L53">		entity.setFullName(request.fullName().trim());</span>
+<span class="fc" id="L54">		entity.setStaffType(request.staffType().trim());</span>
+<span class="fc" id="L55">		entity.setPhone(request.phone());</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">		entity.setStatus(request.status() != null ? request.status() : &quot;active&quot;);</span>
+<span class="fc" id="L57">		entity.setMonthlySalary(request.monthlySalary());</span>
+<span class="fc" id="L58">		entity.setPayDay(request.payDay());</span>
+<span class="fc" id="L59">		entity.setUserId(request.userId());</span>
+<span class="fc" id="L60">		entity.setNotes(request.notes());</span>
+<span class="fc" id="L61">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

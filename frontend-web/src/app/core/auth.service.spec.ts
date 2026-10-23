@@ -61,4 +61,27 @@ describe('AuthService', () => {
     expect(service.user()).toBeNull();
     expect(router.navigateByUrl).toHaveBeenCalledWith('/login');
   });
+
+  it('isLoggedIn reflects token presence', () => {
+    expect(service.isLoggedIn()).toBe(false);
+    localStorage.setItem('djiguiya_token', 'jwt');
+    expect(service.isLoggedIn()).toBe(true);
+  });
+
+  it('ignores corrupt stored user JSON', () => {
+    localStorage.setItem('djiguiya_user', '{not-json');
+    const fresh = TestBed.inject(AuthService);
+    // existing instance already constructed; construct via new providers
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        AuthService,
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: Router, useValue: router }
+      ]
+    });
+    const rebuilt = TestBed.inject(AuthService);
+    expect(rebuilt.user()).toBeNull();
+  });
 });

@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Year1DataSeeder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">djiguiya-transport-backend</a> &gt; <a href="index.source.html" class="el_package">com.djiguiya.transport.config</a> &gt; <span class="el_source">Year1DataSeeder.java</span></div><h1>Year1DataSeeder.java</h1><pre class="source lang-java linenums">package com.djiguiya.transport.config;
+
+import com.djiguiya.transport.modules.finance.domain.TransactionTypes;
+import com.djiguiya.transport.modules.finance.entities.TransactionEntity;
+import com.djiguiya.transport.modules.finance.repository.TransactionRepository;
+import com.djiguiya.transport.modules.fleet.entities.PrimaryAssignmentEntity;
+import com.djiguiya.transport.modules.fleet.entities.VehicleEntity;
+import com.djiguiya.transport.modules.fleet.repository.PrimaryAssignmentRepository;
+import com.djiguiya.transport.modules.fleet.repository.VehicleRepository;
+import com.djiguiya.transport.modules.trips.entities.TripEntity;
+import com.djiguiya.transport.modules.trips.repository.TripRepository;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.InputStream;
+import java.time.Instant;
+import java.time.LocalDate;
+
+/**
+ * Imports year-1 ledger data extracted from {@code dashboard.html} + CSV detail.
+ * Idempotent: skips when the year-1 vehicle already exists.
+ */
+@Component
+@Order(200)
+@RequiredArgsConstructor
+<span class="fc" id="L34">@Slf4j</span>
+public class Year1DataSeeder implements ApplicationRunner {
+
+	private static final String SEED_RESOURCE = &quot;seed/year1_seed.json&quot;;
+
+	private final CoreStaffSeedProperties properties;
+	private final ObjectMapper objectMapper;
+	private final VehicleRepository vehicleRepository;
+	private final PrimaryAssignmentRepository primaryAssignmentRepository;
+	private final TripRepository tripRepository;
+	private final TransactionRepository transactionRepository;
+
+	@Override
+	@Transactional
+	public void run(ApplicationArguments args) throws Exception {
+<span class="fc bfc" id="L49" title="All 2 branches covered.">		if (!properties.getSeed().isYear1Enabled()) {</span>
+<span class="fc" id="L50">			return;</span>
+		}
+
+<span class="fc" id="L53">		ClassPathResource resource = new ClassPathResource(SEED_RESOURCE);</span>
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">		if (!resource.exists()) {</span>
+<span class="nc" id="L55">			throw new IllegalStateException(&quot;Missing classpath resource: &quot; + SEED_RESOURCE</span>
+					+ &quot; — run: python scripts/extract_dashboard_to_app.py&quot;);
+		}
+
+		JsonNode root;
+<span class="fc" id="L60">		try (InputStream in = resource.getInputStream()) {</span>
+<span class="fc" id="L61">			root = objectMapper.readTree(in);</span>
+		}
+
+<span class="fc" id="L64">		String vehicleId = text(root.path(&quot;vehicle&quot;).path(&quot;id&quot;));</span>
+<span class="fc" id="L65">		Instant now = Instant.now();</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">		if (vehicleRepository.existsById(vehicleId)) {</span>
+			// Keep identity fields aligned with seed (plate / purchase) without re-importing ledger.
+<span class="fc" id="L68">			syncVehicleIdentity(root.path(&quot;vehicle&quot;), now);</span>
+<span class="fc" id="L69">			log.info(&quot;Year-1 seed skipped — vehicle {} already present (identity synced)&quot;, vehicleId);</span>
+<span class="fc" id="L70">			return;</span>
+		}
+
+<span class="fc" id="L73">		upsertVehicle(root.path(&quot;vehicle&quot;), now);</span>
+<span class="fc" id="L74">		upsertAssignment(root.path(&quot;primary_assignment&quot;));</span>
+
+<span class="fc" id="L76">		String createdBy = textOrNull(root.path(&quot;created_by&quot;));</span>
+<span class="fc" id="L77">		int tripCount = 0;</span>
+<span class="fc" id="L78">		int revenueCount = 0;</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">		for (JsonNode tripNode : root.path(&quot;trips&quot;)) {</span>
+<span class="fc" id="L80">			saveTrip(tripNode, now);</span>
+<span class="fc" id="L81">			saveRevenue(tripNode, createdBy, now);</span>
+<span class="fc" id="L82">			tripCount++;</span>
+<span class="fc" id="L83">			revenueCount++;</span>
+<span class="fc" id="L84">		}</span>
+
+<span class="fc" id="L86">		int expenseCount = 0;</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">		for (JsonNode expenseNode : root.path(&quot;expenses&quot;)) {</span>
+<span class="fc" id="L88">			saveExpense(expenseNode, createdBy, now);</span>
+<span class="fc" id="L89">			expenseCount++;</span>
+<span class="fc" id="L90">		}</span>
+
+<span class="fc" id="L92">		JsonNode ledger = root.path(&quot;ledger_year&quot;);</span>
+<span class="fc" id="L93">		log.info(</span>
+				&quot;Year-1 seed applied: {} trips, {} revenues, {} expenses (ledger R={} D={} S={})&quot;,
+<span class="fc" id="L95">				tripCount,</span>
+<span class="fc" id="L96">				revenueCount,</span>
+<span class="fc" id="L97">				expenseCount,</span>
+<span class="fc" id="L98">				ledger.path(&quot;revenue&quot;).asLong(),</span>
+<span class="fc" id="L99">				ledger.path(&quot;expenses&quot;).asLong(),</span>
+<span class="fc" id="L100">				ledger.path(&quot;savings&quot;).asLong());</span>
+<span class="fc" id="L101">	}</span>
+
+	private void upsertVehicle(JsonNode node, Instant now) {
+<span class="fc" id="L104">		VehicleEntity vehicle = new VehicleEntity();</span>
+<span class="fc" id="L105">		vehicle.setId(text(node.path(&quot;id&quot;)));</span>
+<span class="fc" id="L106">		applyVehicleFields(vehicle, node);</span>
+<span class="fc" id="L107">		vehicle.setCreatedAt(now);</span>
+<span class="fc" id="L108">		vehicle.setUpdatedAt(now);</span>
+<span class="fc" id="L109">		vehicleRepository.save(vehicle);</span>
+<span class="fc" id="L110">	}</span>
+
+	private void syncVehicleIdentity(JsonNode node, Instant now) {
+<span class="fc" id="L113">		String id = text(node.path(&quot;id&quot;));</span>
+<span class="fc" id="L114">		VehicleEntity vehicle = vehicleRepository.findById(id).orElseThrow(</span>
+<span class="nc" id="L115">				() -&gt; new IllegalStateException(&quot;Year-1 vehicle missing during identity sync: &quot; + id));</span>
+<span class="fc" id="L116">		applyVehicleFields(vehicle, node);</span>
+<span class="fc" id="L117">		vehicle.setUpdatedAt(now);</span>
+<span class="fc" id="L118">		vehicleRepository.save(vehicle);</span>
+<span class="fc" id="L119">	}</span>
+
+	private void applyVehicleFields(VehicleEntity vehicle, JsonNode node) {
+<span class="fc" id="L122">		vehicle.setName(text(node.path(&quot;name&quot;)));</span>
+<span class="fc" id="L123">		vehicle.setPlate(textOrNull(node.path(&quot;plate&quot;)));</span>
+<span class="fc" id="L124">		vehicle.setBrand(textOrNull(node.path(&quot;brand&quot;)));</span>
+<span class="fc" id="L125">		vehicle.setModel(textOrNull(node.path(&quot;model&quot;)));</span>
+<span class="pc bpc" id="L126" title="3 of 4 branches missed.">		if (!node.path(&quot;year_built&quot;).isNull() &amp;&amp; !node.path(&quot;year_built&quot;).isMissingNode()) {</span>
+<span class="nc" id="L127">			vehicle.setYearBuilt(node.path(&quot;year_built&quot;).asInt());</span>
+		} else {
+<span class="fc" id="L129">			vehicle.setYearBuilt(null);</span>
+		}
+<span class="pc bpc" id="L131" title="2 of 4 branches missed.">		if (!node.path(&quot;purchase_price&quot;).isNull() &amp;&amp; !node.path(&quot;purchase_price&quot;).isMissingNode()) {</span>
+<span class="fc" id="L132">			vehicle.setPurchasePrice(node.path(&quot;purchase_price&quot;).asLong());</span>
+		} else {
+<span class="nc" id="L134">			vehicle.setPurchasePrice(null);</span>
+		}
+<span class="fc" id="L136">		String purchaseDate = textOrNull(node.path(&quot;purchase_date&quot;));</span>
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">		vehicle.setPurchaseDate(purchaseDate != null ? LocalDate.parse(purchaseDate) : null);</span>
+<span class="fc" id="L138">		vehicle.setStatus(text(node.path(&quot;status&quot;)));</span>
+<span class="fc" id="L139">		vehicle.setNotes(textOrNull(node.path(&quot;notes&quot;)));</span>
+<span class="fc" id="L140">	}</span>
+
+	private void upsertAssignment(JsonNode node) {
+<span class="fc" id="L143">		PrimaryAssignmentEntity assignment = new PrimaryAssignmentEntity();</span>
+<span class="fc" id="L144">		assignment.setId(text(node.path(&quot;id&quot;)));</span>
+<span class="fc" id="L145">		assignment.setVehicleId(text(node.path(&quot;vehicle_id&quot;)));</span>
+<span class="fc" id="L146">		assignment.setDriverId(text(node.path(&quot;driver_id&quot;)));</span>
+<span class="fc" id="L147">		assignment.setStartDate(LocalDate.parse(text(node.path(&quot;start_date&quot;))));</span>
+<span class="fc" id="L148">		String endDate = textOrNull(node.path(&quot;end_date&quot;));</span>
+<span class="pc bpc" id="L149" title="1 of 2 branches missed.">		assignment.setEndDate(endDate != null ? LocalDate.parse(endDate) : null);</span>
+<span class="fc" id="L150">		assignment.setReason(textOrNull(node.path(&quot;reason&quot;)));</span>
+<span class="fc" id="L151">		primaryAssignmentRepository.save(assignment);</span>
+<span class="fc" id="L152">	}</span>
+
+	private void saveTrip(JsonNode node, Instant now) {
+<span class="fc" id="L155">		LocalDate date = LocalDate.parse(text(node.path(&quot;date&quot;)));</span>
+<span class="fc" id="L156">		TripEntity trip = new TripEntity();</span>
+<span class="fc" id="L157">		trip.setId(text(node.path(&quot;id&quot;)));</span>
+<span class="fc" id="L158">		trip.setVehicleId(text(node.path(&quot;vehicle_id&quot;)));</span>
+<span class="fc" id="L159">		trip.setDepartureDate(date);</span>
+<span class="fc" id="L160">		trip.setReturnDate(date);</span>
+<span class="fc" id="L161">		trip.setMonthKey(text(node.path(&quot;month_key&quot;)));</span>
+<span class="fc" id="L162">		trip.setDriverId(text(node.path(&quot;driver_id&quot;)));</span>
+<span class="fc" id="L163">		trip.setReplacement(false);</span>
+<span class="fc" id="L164">		trip.setNotes(textOrNull(node.path(&quot;notes&quot;)));</span>
+<span class="fc" id="L165">		trip.setCreatedAt(now);</span>
+<span class="fc" id="L166">		trip.setUpdatedAt(now);</span>
+<span class="fc" id="L167">		tripRepository.save(trip);</span>
+<span class="fc" id="L168">	}</span>
+
+	private void saveRevenue(JsonNode tripNode, String createdBy, Instant now) {
+<span class="fc" id="L171">		LocalDate date = LocalDate.parse(text(tripNode.path(&quot;date&quot;)));</span>
+<span class="fc" id="L172">		TransactionEntity txn = new TransactionEntity();</span>
+<span class="fc" id="L173">		txn.setId(text(tripNode.path(&quot;revenue_txn_id&quot;)));</span>
+<span class="fc" id="L174">		txn.setType(TransactionTypes.REVENUE);</span>
+<span class="fc" id="L175">		txn.setTxnDate(date);</span>
+<span class="fc" id="L176">		txn.setMonthKey(text(tripNode.path(&quot;month_key&quot;)));</span>
+<span class="fc" id="L177">		txn.setAmount(tripNode.path(&quot;amount&quot;).asLong());</span>
+<span class="fc" id="L178">		txn.setVehicleId(text(tripNode.path(&quot;vehicle_id&quot;)));</span>
+<span class="fc" id="L179">		txn.setDriverId(text(tripNode.path(&quot;driver_id&quot;)));</span>
+<span class="fc" id="L180">		txn.setTripId(text(tripNode.path(&quot;id&quot;)));</span>
+<span class="fc" id="L181">		txn.setLabel(&quot;Versement voyage&quot;);</span>
+<span class="fc" id="L182">		txn.setNotes(textOrNull(tripNode.path(&quot;notes&quot;)));</span>
+<span class="fc" id="L183">		txn.setCreatedBy(createdBy);</span>
+<span class="fc" id="L184">		txn.setCreatedAt(now);</span>
+<span class="fc" id="L185">		txn.setUpdatedAt(now);</span>
+<span class="fc" id="L186">		transactionRepository.save(txn);</span>
+<span class="fc" id="L187">	}</span>
+
+	private void saveExpense(JsonNode node, String createdBy, Instant now) {
+<span class="fc" id="L190">		TransactionEntity txn = new TransactionEntity();</span>
+<span class="fc" id="L191">		txn.setId(text(node.path(&quot;id&quot;)));</span>
+<span class="fc" id="L192">		txn.setType(TransactionTypes.EXPENSE);</span>
+<span class="fc" id="L193">		txn.setTxnDate(LocalDate.parse(text(node.path(&quot;date&quot;))));</span>
+<span class="fc" id="L194">		txn.setMonthKey(text(node.path(&quot;month_key&quot;)));</span>
+<span class="fc" id="L195">		txn.setAmount(node.path(&quot;amount&quot;).asLong());</span>
+<span class="fc" id="L196">		txn.setVehicleId(textOrNull(node.path(&quot;vehicle_id&quot;)));</span>
+<span class="fc" id="L197">		txn.setDriverId(textOrNull(node.path(&quot;driver_id&quot;)));</span>
+<span class="fc" id="L198">		txn.setCategoryCode(text(node.path(&quot;category_code&quot;)));</span>
+<span class="fc" id="L199">		txn.setSubcategoryCode(text(node.path(&quot;subcategory_code&quot;)));</span>
+<span class="fc" id="L200">		txn.setLabel(text(node.path(&quot;label&quot;)));</span>
+<span class="fc" id="L201">		txn.setPayrollMonth(textOrNull(node.path(&quot;payroll_month&quot;)));</span>
+<span class="fc" id="L202">		txn.setPayrollKind(textOrNull(node.path(&quot;payroll_kind&quot;)));</span>
+<span class="fc" id="L203">		txn.setNotes(textOrNull(node.path(&quot;notes&quot;)));</span>
+<span class="fc" id="L204">		txn.setCreatedBy(createdBy);</span>
+<span class="fc" id="L205">		txn.setCreatedAt(now);</span>
+<span class="fc" id="L206">		txn.setUpdatedAt(now);</span>
+<span class="fc" id="L207">		transactionRepository.save(txn);</span>
+<span class="fc" id="L208">	}</span>
+
+	private static String text(JsonNode node) {
+<span class="fc" id="L211">		String value = textOrNull(node);</span>
+<span class="pc bpc" id="L212" title="1 of 2 branches missed.">		if (value == null) {</span>
+<span class="nc" id="L213">			throw new IllegalStateException(&quot;Missing required JSON text field&quot;);</span>
+		}
+<span class="fc" id="L215">		return value;</span>
+	}
+
+	private static String textOrNull(JsonNode node) {
+<span class="pc bpc" id="L219" title="2 of 6 branches missed.">		if (node == null || node.isNull() || node.isMissingNode()) {</span>
+<span class="fc" id="L220">			return null;</span>
+		}
+<span class="fc" id="L222">		String value = node.asText();</span>
+<span class="pc bpc" id="L223" title="3 of 6 branches missed.">		return value == null || value.isBlank() || &quot;null&quot;.equals(value) ? null : value;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

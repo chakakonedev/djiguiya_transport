@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VehicleDocumentEntity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">djiguiya-transport-backend</a> &gt; <a href="index.source.html" class="el_package">com.djiguiya.transport.modules.fleet.entities</a> &gt; <span class="el_source">VehicleDocumentEntity.java</span></div><h1>VehicleDocumentEntity.java</h1><pre class="source lang-java linenums">package com.djiguiya.transport.modules.fleet.entities;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.Instant;
+import java.time.LocalDate;
+
+@Entity
+@Table(name = &quot;vehicle_documents&quot;)
+@Getter
+@Setter
+<span class="fc" id="L19">public class VehicleDocumentEntity {</span>
+
+	@Id
+	@Column(length = 36)
+	private String id;
+
+	@Column(name = &quot;vehicle_id&quot;, nullable = false, length = 36)
+	private String vehicleId;
+
+	@Column(name = &quot;doc_type&quot;, nullable = false, length = 40)
+	private String docType;
+
+	@Column(name = &quot;expires_on&quot;, nullable = false)
+	private LocalDate expiresOn;
+
+	@Column(name = &quot;last_renewed_on&quot;)
+	private LocalDate lastRenewedOn;
+
+<span class="fc" id="L37">	@Column(name = &quot;renewal_period_months&quot;, nullable = false)</span>
+	private int renewalPeriodMonths = 12;
+
+	@Column(name = &quot;last_amount&quot;)
+	private Long lastAmount;
+
+	@Column(columnDefinition = &quot;TEXT&quot;)
+	private String notes;
+
+	@Column(name = &quot;updated_at&quot;, nullable = false)
+	private Instant updatedAt;
+
+	@PrePersist
+	@PreUpdate
+	void touchUpdatedAt() {
+<span class="fc" id="L52">		updatedAt = Instant.now();</span>
+<span class="fc" id="L53">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

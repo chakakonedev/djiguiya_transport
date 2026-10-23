@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CoreStaffSeeder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">djiguiya-transport-backend</a> &gt; <a href="index.source.html" class="el_package">com.djiguiya.transport.config</a> &gt; <span class="el_source">CoreStaffSeeder.java</span></div><h1>CoreStaffSeeder.java</h1><pre class="source lang-java linenums">package com.djiguiya.transport.config;
+
+import com.djiguiya.transport.modules.finance.entities.ProfitShareRuleEntity;
+import com.djiguiya.transport.modules.finance.repository.ProfitShareRuleRepository;
+import com.djiguiya.transport.modules.identity.entities.UserEntity;
+import com.djiguiya.transport.modules.identity.repository.UserRepository;
+import com.djiguiya.transport.modules.staff.entities.StaffEntity;
+import com.djiguiya.transport.modules.staff.repository.StaffRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+
+@Component
+@Order(100)
+@EnableConfigurationProperties(CoreStaffSeedProperties.class)
+@RequiredArgsConstructor
+<span class="fc" id="L25">@Slf4j</span>
+public class CoreStaffSeeder implements ApplicationRunner {
+
+	private final CoreStaffSeedProperties properties;
+	private final UserRepository userRepository;
+	private final StaffRepository staffRepository;
+	private final ProfitShareRuleRepository profitShareRuleRepository;
+	private final PasswordEncoder passwordEncoder;
+
+	@Override
+	@Transactional
+	public void run(ApplicationArguments args) {
+<span class="fc bfc" id="L37" title="All 2 branches covered.">		if (!properties.getSeed().isCoreStaffEnabled()) {</span>
+<span class="fc" id="L38">			return;</span>
+		}
+
+<span class="fc" id="L41">		String defaultPassword = properties.getSecurity().getDefaultPassword();</span>
+<span class="pc bpc" id="L42" title="2 of 4 branches missed.">		if (defaultPassword == null || defaultPassword.isBlank()) {</span>
+<span class="nc" id="L43">			throw new IllegalStateException(&quot;djiguiya.security.default-password must be set when core staff seed is enabled&quot;);</span>
+		}
+
+<span class="fc bfc" id="L46" title="All 2 branches covered.">		for (CoreStaffDefinitions.Person person : CoreStaffDefinitions.PEOPLE) {</span>
+<span class="fc" id="L47">			upsertUser(person, defaultPassword);</span>
+<span class="fc" id="L48">			upsertStaff(person);</span>
+<span class="fc" id="L49">		}</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">		for (CoreStaffDefinitions.ShareRule rule : CoreStaffDefinitions.SHARE_RULES) {</span>
+<span class="fc" id="L51">			upsertShareRule(rule);</span>
+<span class="fc" id="L52">		}</span>
+
+<span class="fc" id="L54">		log.info(&quot;Core staff seed applied ({} people, {} share rules)&quot;,</span>
+<span class="fc" id="L55">				CoreStaffDefinitions.PEOPLE.size(),</span>
+<span class="fc" id="L56">				CoreStaffDefinitions.SHARE_RULES.size());</span>
+<span class="fc" id="L57">	}</span>
+
+	private void upsertUser(CoreStaffDefinitions.Person person, String defaultPassword) {
+<span class="fc" id="L60">		UserEntity user = userRepository.findById(person.userId()).orElseGet(UserEntity::new);</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">		boolean created = user.getId() == null;</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">		if (created) {</span>
+<span class="fc" id="L63">			user.setId(person.userId());</span>
+<span class="fc" id="L64">			user.setCreatedAt(Instant.now());</span>
+<span class="fc" id="L65">			user.setPasswordChanged(false);</span>
+		}
+
+<span class="fc" id="L68">		user.setEmail(person.email());</span>
+<span class="fc" id="L69">		user.setFullName(person.fullName());</span>
+<span class="fc" id="L70">		user.setRoleCode(person.roleCode());</span>
+<span class="fc" id="L71">		user.setActive(true);</span>
+<span class="fc" id="L72">		user.setUpdatedAt(Instant.now());</span>
+
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">		if (!user.isPasswordChanged()) {</span>
+<span class="pc bpc" id="L75" title="1 of 4 branches missed.">			if (created || user.getPasswordHash() == null</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">					|| !passwordEncoder.matches(defaultPassword, user.getPasswordHash())) {</span>
+<span class="fc" id="L77">				user.setPasswordHash(passwordEncoder.encode(defaultPassword));</span>
+			}
+		}
+
+<span class="fc" id="L81">		userRepository.save(user);</span>
+<span class="fc" id="L82">	}</span>
+
+	private void upsertStaff(CoreStaffDefinitions.Person person) {
+<span class="fc" id="L85">		StaffEntity staff = staffRepository.findById(person.staffId()).orElseGet(StaffEntity::new);</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">		if (staff.getId() == null) {</span>
+<span class="fc" id="L87">			staff.setId(person.staffId());</span>
+		}
+<span class="fc" id="L89">		staff.setFullName(person.fullName());</span>
+<span class="fc" id="L90">		staff.setStaffType(person.roleCode());</span>
+<span class="fc" id="L91">		staff.setStatus(&quot;active&quot;);</span>
+<span class="fc" id="L92">		staff.setMonthlySalary(person.monthlySalary());</span>
+<span class="fc" id="L93">		staff.setPayDay(person.payDay());</span>
+<span class="fc" id="L94">		staff.setUserId(person.userId());</span>
+<span class="fc" id="L95">		staff.setNotes(person.notes());</span>
+<span class="fc" id="L96">		staffRepository.save(staff);</span>
+<span class="fc" id="L97">	}</span>
+
+	private void upsertShareRule(CoreStaffDefinitions.ShareRule definition) {
+<span class="fc" id="L100">		ProfitShareRuleEntity rule = profitShareRuleRepository.findById(definition.id()).orElseGet(ProfitShareRuleEntity::new);</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">		if (rule.getId() == null) {</span>
+<span class="fc" id="L102">			rule.setId(definition.id());</span>
+		}
+<span class="fc" id="L104">		rule.setBeneficiaryStaffId(definition.beneficiaryStaffId());</span>
+<span class="fc" id="L105">		rule.setRuleKind(definition.ruleKind());</span>
+<span class="fc" id="L106">		rule.setRatePercent(definition.ratePercent());</span>
+<span class="fc" id="L107">		rule.setSalaryMonthsEquivalent(definition.salaryMonthsEquivalent());</span>
+<span class="fc" id="L108">		rule.setEnabled(true);</span>
+<span class="fc" id="L109">		rule.setEffectiveFrom(CoreStaffDefinitions.EFFECTIVE_FROM);</span>
+<span class="fc" id="L110">		rule.setEffectiveTo(null);</span>
+<span class="fc" id="L111">		rule.setNotes(definition.notes());</span>
+<span class="fc" id="L112">		profitShareRuleRepository.save(rule);</span>
+<span class="fc" id="L113">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

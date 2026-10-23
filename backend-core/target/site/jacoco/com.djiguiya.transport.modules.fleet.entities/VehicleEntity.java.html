@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VehicleEntity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">djiguiya-transport-backend</a> &gt; <a href="index.source.html" class="el_package">com.djiguiya.transport.modules.fleet.entities</a> &gt; <span class="el_source">VehicleEntity.java</span></div><h1>VehicleEntity.java</h1><pre class="source lang-java linenums">package com.djiguiya.transport.modules.fleet.entities;
+
+import com.djiguiya.transport.shared.persistence.AuditingListener;
+import com.djiguiya.transport.shared.persistence.Timestamped;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.Instant;
+import java.time.LocalDate;
+
+@Entity
+@Table(name = &quot;vehicles&quot;)
+@EntityListeners(AuditingListener.class)
+@Getter
+@Setter
+<span class="fc" id="L21">public class VehicleEntity implements Timestamped {</span>
+
+	@Id
+	@Column(length = 36)
+	private String id;
+
+	@Column(nullable = false, length = 120)
+	private String name;
+
+	@Column(length = 60)
+	private String plate;
+
+	@Column(length = 80)
+	private String brand;
+
+	@Column(length = 80)
+	private String model;
+
+	@Column(name = &quot;year_built&quot;)
+	private Integer yearBuilt;
+
+	@Column(name = &quot;purchase_price&quot;)
+	private Long purchasePrice;
+
+	@Column(name = &quot;purchase_date&quot;)
+	private LocalDate purchaseDate;
+
+<span class="fc" id="L48">	@Column(nullable = false, length = 20)</span>
+	private String status = &quot;active&quot;;
+
+	@Column(columnDefinition = &quot;TEXT&quot;)
+	private String notes;
+
+	@Column(name = &quot;created_at&quot;, nullable = false)
+	private Instant createdAt;
+
+	@Column(name = &quot;updated_at&quot;, nullable = false)
+	private Instant updatedAt;
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

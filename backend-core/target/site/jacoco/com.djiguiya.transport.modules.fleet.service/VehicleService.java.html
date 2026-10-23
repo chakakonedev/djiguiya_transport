@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VehicleService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">djiguiya-transport-backend</a> &gt; <a href="index.source.html" class="el_package">com.djiguiya.transport.modules.fleet.service</a> &gt; <span class="el_source">VehicleService.java</span></div><h1>VehicleService.java</h1><pre class="source lang-java linenums">package com.djiguiya.transport.modules.fleet.service;
+
+import com.djiguiya.transport.modules.fleet.dto.PrimaryDriverRequest;
+import com.djiguiya.transport.modules.fleet.dto.VehicleDocumentRequest;
+import com.djiguiya.transport.modules.fleet.dto.VehicleDocumentResponse;
+import com.djiguiya.transport.modules.fleet.dto.VehicleRequest;
+import com.djiguiya.transport.modules.fleet.dto.VehicleResponse;
+import com.djiguiya.transport.modules.fleet.entities.PrimaryAssignmentEntity;
+import com.djiguiya.transport.modules.fleet.entities.VehicleDocumentEntity;
+import com.djiguiya.transport.modules.fleet.entities.VehicleEntity;
+import com.djiguiya.transport.modules.fleet.repository.PrimaryAssignmentRepository;
+import com.djiguiya.transport.modules.fleet.repository.VehicleDocumentRepository;
+import com.djiguiya.transport.modules.fleet.repository.VehicleRepository;
+import com.djiguiya.transport.modules.staff.service.StaffService;
+import com.djiguiya.transport.shared.exception.BusinessException;
+import com.djiguiya.transport.shared.util.EntityIds;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+public class VehicleService {
+
+	private final VehicleRepository vehicleRepository;
+	private final PrimaryAssignmentRepository primaryAssignmentRepository;
+	private final VehicleDocumentRepository vehicleDocumentRepository;
+	private final StaffService staffService;
+
+	@Transactional(readOnly = true)
+	public List&lt;VehicleResponse&gt; listAll() {
+<span class="fc" id="L37">		return vehicleRepository.findAll().stream()</span>
+<span class="fc" id="L38">				.map(v -&gt; VehicleResponse.from(v, resolvePrimaryDriverId(v.getId(), LocalDate.now()).orElse(null)))</span>
+<span class="fc" id="L39">				.toList();</span>
+	}
+
+	@Transactional(readOnly = true)
+	public VehicleResponse getById(String id) {
+<span class="fc" id="L44">		VehicleEntity vehicle = findVehicle(id);</span>
+<span class="fc" id="L45">		String driverId = resolvePrimaryDriverId(id, LocalDate.now()).orElse(null);</span>
+<span class="fc" id="L46">		return VehicleResponse.from(vehicle, driverId);</span>
+	}
+
+	@Transactional
+	public VehicleResponse create(VehicleRequest request) {
+<span class="fc" id="L51">		VehicleEntity entity = new VehicleEntity();</span>
+<span class="fc" id="L52">		entity.setId(EntityIds.newId());</span>
+<span class="fc" id="L53">		apply(entity, request);</span>
+<span class="fc" id="L54">		return VehicleResponse.from(vehicleRepository.save(entity), null);</span>
+	}
+
+	@Transactional
+	public VehicleResponse update(String id, VehicleRequest request) {
+<span class="fc" id="L59">		VehicleEntity entity = findVehicle(id);</span>
+<span class="fc" id="L60">		apply(entity, request);</span>
+<span class="fc" id="L61">		String driverId = resolvePrimaryDriverId(id, LocalDate.now()).orElse(null);</span>
+<span class="fc" id="L62">		return VehicleResponse.from(vehicleRepository.save(entity), driverId);</span>
+	}
+
+	@Transactional
+	public VehicleResponse assignPrimaryDriver(String vehicleId, PrimaryDriverRequest request) {
+<span class="fc" id="L67">		VehicleEntity vehicle = findVehicle(vehicleId);</span>
+<span class="fc" id="L68">		staffService.findEntity(request.driverId());</span>
+
+<span class="fc" id="L70">		LocalDate startDate = request.startDate();</span>
+<span class="fc" id="L71">		closeOpenAssignments(vehicleId, startDate);</span>
+
+<span class="fc" id="L73">		PrimaryAssignmentEntity assignment = new PrimaryAssignmentEntity();</span>
+<span class="fc" id="L74">		assignment.setId(EntityIds.newId());</span>
+<span class="fc" id="L75">		assignment.setVehicleId(vehicleId);</span>
+<span class="fc" id="L76">		assignment.setDriverId(request.driverId());</span>
+<span class="fc" id="L77">		assignment.setStartDate(startDate);</span>
+<span class="fc" id="L78">		assignment.setEndDate(request.endDate());</span>
+<span class="fc" id="L79">		assignment.setReason(request.reason());</span>
+<span class="fc" id="L80">		primaryAssignmentRepository.save(assignment);</span>
+<span class="fc" id="L81">		primaryAssignmentRepository.flush();</span>
+
+<span class="fc" id="L83">		String driverId = resolvePrimaryDriverId(vehicleId, LocalDate.now()).orElse(null);</span>
+<span class="fc" id="L84">		return VehicleResponse.from(vehicle, driverId);</span>
+	}
+
+	private void closeOpenAssignments(String vehicleId, LocalDate newStartDate) {
+<span class="fc" id="L88">		List&lt;PrimaryAssignmentEntity&gt; open =</span>
+<span class="fc" id="L89">				primaryAssignmentRepository.findByVehicleIdAndEndDateIsNullOrderByStartDateAsc(vehicleId);</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">		for (PrimaryAssignmentEntity active : open) {</span>
+<span class="fc" id="L91">			LocalDate previousEnd = newStartDate.minusDays(1);</span>
+			// Same-day (or earlier) reassignment: collapse the previous row to a one-day span.
+<span class="fc bfc" id="L93" title="All 2 branches covered.">			active.setEndDate(previousEnd.isBefore(active.getStartDate())</span>
+<span class="fc" id="L94">					? active.getStartDate()</span>
+<span class="fc" id="L95">					: previousEnd);</span>
+<span class="fc" id="L96">			primaryAssignmentRepository.save(active);</span>
+<span class="fc" id="L97">		}</span>
+<span class="fc" id="L98">		primaryAssignmentRepository.flush();</span>
+<span class="fc" id="L99">	}</span>
+
+	@Transactional(readOnly = true)
+	public List&lt;VehicleDocumentResponse&gt; listDocuments(String vehicleId) {
+<span class="fc" id="L103">		findVehicle(vehicleId);</span>
+<span class="fc" id="L104">		return vehicleDocumentRepository.findByVehicleIdOrderByDocTypeAsc(vehicleId).stream()</span>
+<span class="fc" id="L105">				.map(VehicleDocumentResponse::from)</span>
+<span class="fc" id="L106">				.toList();</span>
+	}
+
+	@Transactional
+	public List&lt;VehicleDocumentResponse&gt; replaceDocuments(String vehicleId, List&lt;VehicleDocumentRequest&gt; requests) {
+<span class="fc" id="L111">		findVehicle(vehicleId);</span>
+<span class="fc" id="L112">		return requests.stream().map(request -&gt; upsertDocumentEntity(vehicleId, request)).toList();</span>
+	}
+
+	@Transactional
+	public VehicleDocumentResponse upsertDocument(String vehicleId, VehicleDocumentRequest request) {
+<span class="nc" id="L117">		findVehicle(vehicleId);</span>
+<span class="nc" id="L118">		return upsertDocumentEntity(vehicleId, request);</span>
+	}
+
+	private VehicleDocumentResponse upsertDocumentEntity(String vehicleId, VehicleDocumentRequest request) {
+<span class="fc" id="L122">		VehicleDocumentEntity doc = vehicleDocumentRepository</span>
+<span class="fc" id="L123">				.findByVehicleIdAndDocType(vehicleId, request.docType())</span>
+<span class="fc" id="L124">				.orElseGet(() -&gt; {</span>
+<span class="fc" id="L125">					VehicleDocumentEntity created = new VehicleDocumentEntity();</span>
+<span class="fc" id="L126">					created.setId(EntityIds.newId());</span>
+<span class="fc" id="L127">					created.setVehicleId(vehicleId);</span>
+<span class="fc" id="L128">					return created;</span>
+				});
+<span class="fc" id="L130">		doc.setDocType(request.docType());</span>
+<span class="fc" id="L131">		doc.setExpiresOn(request.expiresOn());</span>
+<span class="fc" id="L132">		doc.setLastRenewedOn(request.lastRenewedOn());</span>
+<span class="fc" id="L133">		doc.setRenewalPeriodMonths(</span>
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">				request.renewalPeriodMonths() != null ? request.renewalPeriodMonths() : 12);</span>
+<span class="fc" id="L135">		doc.setLastAmount(request.lastAmount());</span>
+<span class="fc" id="L136">		doc.setNotes(request.notes());</span>
+<span class="fc" id="L137">		return VehicleDocumentResponse.from(vehicleDocumentRepository.save(doc));</span>
+	}
+
+	public Optional&lt;String&gt; resolvePrimaryDriverId(String vehicleId, LocalDate onDate) {
+<span class="fc" id="L141">		return primaryAssignmentRepository.findActiveForVehicleOnDate(vehicleId, onDate)</span>
+<span class="fc" id="L142">				.map(PrimaryAssignmentEntity::getDriverId);</span>
+	}
+
+	public VehicleEntity findVehicle(String id) {
+<span class="fc" id="L146">		return vehicleRepository.findById(id)</span>
+<span class="fc" id="L147">				.orElseThrow(() -&gt; new BusinessException(&quot;vehicle.not_found&quot;, HttpStatus.NOT_FOUND));</span>
+	}
+
+	private void apply(VehicleEntity entity, VehicleRequest request) {
+<span class="fc" id="L151">		entity.setName(request.name().trim());</span>
+<span class="fc" id="L152">		entity.setPlate(request.plate());</span>
+<span class="fc" id="L153">		entity.setBrand(request.brand());</span>
+<span class="fc" id="L154">		entity.setModel(request.model());</span>
+<span class="fc" id="L155">		entity.setYearBuilt(request.yearBuilt());</span>
+<span class="fc" id="L156">		entity.setPurchasePrice(request.purchasePrice());</span>
+<span class="fc" id="L157">		entity.setPurchaseDate(request.purchaseDate());</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">		entity.setStatus(request.status() != null ? request.status() : &quot;active&quot;);</span>
+<span class="fc" id="L159">		entity.setNotes(request.notes());</span>
+<span class="fc" id="L160">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

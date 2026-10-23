@@ -78,4 +78,65 @@ describe('FleetPage', () => {
     expect(page.loadError()).toBe(false);
     expect(page.vehicles().length).toBe(1);
   });
+
+  it('creates a vehicle and reloads', () => {
+    vehiclesApi.create.mockReturnValue(of({ id: 'v2', name: 'Bus 2', status: 'active' }));
+    const fixture = TestBed.createComponent(FleetPage);
+    const page = fixture.componentInstance;
+    fixture.detectChanges();
+
+    page.createForm.setValue({ name: 'Bus 2', plate: 'ML-2', purchasePrice: 1000, purchaseDate: '2026-01-01' });
+    page.submitCreate();
+
+    expect(vehiclesApi.create).toHaveBeenCalledWith({
+      name: 'Bus 2',
+      plate: 'ML-2',
+      purchasePrice: 1000,
+      purchaseDate: '2026-01-01'
+    });
+    expect(vehiclesApi.list.mock.calls.length).toBeGreaterThan(1);
+  });
+
+  it('resolves driver display name from staff list', () => {
+    const fixture = TestBed.createComponent(FleetPage);
+    const page = fixture.componentInstance;
+    fixture.detectChanges();
+    expect(page.driverDisplayName({ id: 'v1', name: 'bus1', status: 'active', primaryDriverId: 'd1' })).toBe(
+      'Tièdiè Koné'
+    );
+    expect(page.driverDisplayName({ id: 'v1', name: 'bus1', status: 'active', primaryDriverName: 'Named' })).toBe(
+      'Named'
+    );
+  });
+
+  it('saves documents with expiresOn only', () => {
+    vehiclesApi.saveDocuments.mockReturnValue(of([]));
+    const fixture = TestBed.createComponent(FleetPage);
+    const page = fixture.componentInstance;
+    fixture.detectChanges();
+
+    page.toggleExpand({ id: 'v1', name: 'bus1', status: 'active' });
+    page.syncDocForm('v1', []);
+    page.docForm('v1')!.get('insurance')!.patchValue({
+      expiresOn: '2027-01-01',
+      lastRenewedOn: '2026-01-01',
+      renewalPeriodMonths: 12,
+      lastAmount: 100000
+    });
+    page.saveDocuments('v1');
+
+    expect(vehiclesApi.saveDocuments).toHaveBeenCalledWith(
+      'v1',
+      expect.arrayContaining([
+        expect.objectContaining({ docType: 'insurance', expiresOn: '2027-01-01', lastAmount: 100000 })
+      ])
+    );
+  });
+
+  it('sets loadError when list fails', () => {
+    vehiclesApi.list.mockReturnValue(throwError(() => new Error('fail')));
+    const fixture = TestBed.createComponent(FleetPage);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.loadError()).toBe(true);
+  });
 });

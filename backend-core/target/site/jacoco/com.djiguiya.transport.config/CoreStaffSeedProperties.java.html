@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CoreStaffSeedProperties.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">djiguiya-transport-backend</a> &gt; <a href="index.source.html" class="el_package">com.djiguiya.transport.config</a> &gt; <span class="el_source">CoreStaffSeedProperties.java</span></div><h1>CoreStaffSeedProperties.java</h1><pre class="source lang-java linenums">package com.djiguiya.transport.config;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@ConfigurationProperties(prefix = &quot;djiguiya&quot;)
+<span class="fc" id="L6">public class CoreStaffSeedProperties {</span>
+
+<span class="fc" id="L8">	private final Security security = new Security();</span>
+<span class="fc" id="L9">	private final Seed seed = new Seed();</span>
+
+	public Security getSecurity() {
+<span class="fc" id="L12">		return security;</span>
+	}
+
+	public Seed getSeed() {
+<span class="fc" id="L16">		return seed;</span>
+	}
+
+<span class="fc" id="L19">	public static class Security {</span>
+		/**
+		 * Bootstrap password for seed accounts that have not changed theirs yet.
+		 * Override with env {@code DJIGUIYA_DEFAULT_PASSWORD}.
+		 */
+<span class="fc" id="L24">		private String defaultPassword = &quot;Djiguiya@2026&quot;;</span>
+
+		public String getDefaultPassword() {
+<span class="fc" id="L27">			return defaultPassword;</span>
+		}
+
+		public void setDefaultPassword(String defaultPassword) {
+<span class="fc" id="L31">			this.defaultPassword = defaultPassword;</span>
+<span class="fc" id="L32">		}</span>
+	}
+
+<span class="fc" id="L35">	public static class Seed {</span>
+<span class="fc" id="L36">		private boolean coreStaffEnabled = true;</span>
+		/** Import year-1 trips/expenses extracted from dashboard.html + CSVs. */
+<span class="fc" id="L38">		private boolean year1Enabled = true;</span>
+
+		public boolean isCoreStaffEnabled() {
+<span class="fc" id="L41">			return coreStaffEnabled;</span>
+		}
+
+		public void setCoreStaffEnabled(boolean coreStaffEnabled) {
+<span class="fc" id="L45">			this.coreStaffEnabled = coreStaffEnabled;</span>
+<span class="fc" id="L46">		}</span>
+
+		public boolean isYear1Enabled() {
+<span class="fc" id="L49">			return year1Enabled;</span>
+		}
+
+		public void setYear1Enabled(boolean year1Enabled) {
+<span class="fc" id="L53">			this.year1Enabled = year1Enabled;</span>
+<span class="fc" id="L54">		}</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

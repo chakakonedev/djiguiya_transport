@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StatsService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">djiguiya-transport-backend</a> &gt; <a href="index.source.html" class="el_package">com.djiguiya.transport.modules.finance.service</a> &gt; <span class="el_source">StatsService.java</span></div><h1>StatsService.java</h1><pre class="source lang-java linenums">package com.djiguiya.transport.modules.finance.service;
+
+import com.djiguiya.transport.modules.finance.domain.TransactionTypes;
+import com.djiguiya.transport.modules.finance.dto.StatsCompareMonthResponse;
+import com.djiguiya.transport.modules.finance.dto.StatsMonthPointResponse;
+import com.djiguiya.transport.modules.finance.dto.StatsMonthlySeriesResponse;
+import com.djiguiya.transport.modules.finance.dto.StatsSummaryResponse;
+import com.djiguiya.transport.modules.finance.dto.StatsYoyResponse;
+import com.djiguiya.transport.modules.finance.entities.TransactionEntity;
+import com.djiguiya.transport.modules.finance.repository.TransactionRepository;
+import com.djiguiya.transport.shared.util.FiscalYearUtil;
+import com.djiguiya.transport.shared.util.MonthKeyUtil;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class StatsService {
+
+	private final TransactionRepository transactionRepository;
+
+	@Transactional(readOnly = true)
+	public StatsSummaryResponse summary(
+			String vehicleId,
+			String driverId,
+			Integer month,
+			Integer year,
+			String category) {
+<span class="fc" id="L37">		String monthKey = resolveMonthKey(month, year);</span>
+<span class="fc" id="L38">		List&lt;TransactionEntity&gt; rows = loadForSummary(monthKey, year, vehicleId, driverId, category);</span>
+<span class="fc" id="L39">		long revenue = LedgerAggregator.totalRevenue(rows);</span>
+<span class="fc" id="L40">		long expense = LedgerAggregator.totalExpense(rows);</span>
+<span class="fc" id="L41">		return new StatsSummaryResponse(</span>
+				monthKey,
+				year,
+				vehicleId,
+				driverId,
+				category,
+				revenue,
+				expense,
+				revenue - expense,
+<span class="fc" id="L50">				countTrips(rows),</span>
+<span class="fc" id="L51">				rows.size(),</span>
+<span class="fc" id="L52">				LedgerAggregator.expenseByGroup(rows));</span>
+	}
+
+	/** Twelve fiscal-year months (Aug → Jul) with revenue / expense / net. */
+	@Transactional(readOnly = true)
+	public StatsMonthlySeriesResponse monthlySeries(int fiscalStartYear, String vehicleId, String driverId) {
+<span class="fc" id="L58">		List&lt;TransactionEntity&gt; all = loadFiscalYear(fiscalStartYear, vehicleId, driverId);</span>
+<span class="fc" id="L59">		List&lt;StatsMonthPointResponse&gt; months = new ArrayList&lt;&gt;(12);</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">		for (int offset = 0; offset &lt; 12; offset++) {</span>
+<span class="fc" id="L61">			int calendarMonth = ((FiscalYearUtil.START_MONTH - 1 + offset) % 12) + 1;</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">			int calendarYear = calendarMonth &gt;= FiscalYearUtil.START_MONTH</span>
+<span class="fc" id="L63">					? fiscalStartYear</span>
+<span class="fc" id="L64">					: fiscalStartYear + 1;</span>
+<span class="fc" id="L65">			String key = MonthKeyUtil.forMonthYear(calendarMonth, calendarYear);</span>
+<span class="fc" id="L66">			List&lt;TransactionEntity&gt; monthRows = all.stream()</span>
+<span class="fc" id="L67">					.filter(t -&gt; key.equals(t.getMonthKey()))</span>
+<span class="fc" id="L68">					.collect(Collectors.toList());</span>
+<span class="fc" id="L69">			long revenue = LedgerAggregator.totalRevenue(monthRows);</span>
+<span class="fc" id="L70">			long expense = LedgerAggregator.totalExpense(monthRows);</span>
+<span class="fc" id="L71">			months.add(new StatsMonthPointResponse(</span>
+					key,
+					calendarMonth,
+					calendarYear,
+					revenue,
+					expense,
+					revenue - expense,
+<span class="fc" id="L78">					countTrips(monthRows)));</span>
+		}
+<span class="fc" id="L80">		return new StatsMonthlySeriesResponse(fiscalStartYear, months);</span>
+	}
+
+	/** Distinct trips linked to revenue rows in the filtered ledger. */
+	private static int countTrips(List&lt;TransactionEntity&gt; rows) {
+<span class="fc" id="L85">		return (int) rows.stream()</span>
+<span class="fc" id="L86">				.filter(t -&gt; TransactionTypes.REVENUE.equalsIgnoreCase(t.getType()))</span>
+<span class="fc" id="L87">				.map(TransactionEntity::getTripId)</span>
+<span class="fc" id="L88">				.filter(Objects::nonNull)</span>
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">				.filter(id -&gt; !id.isBlank())</span>
+<span class="fc" id="L90">				.distinct()</span>
+<span class="fc" id="L91">				.count();</span>
+	}
+
+	@Transactional(readOnly = true)
+	public StatsCompareMonthResponse compareMonth(int monthIndex, String vehicleId, String driverId) {
+<span class="fc" id="L96">		int year = LocalDate.now().getYear();</span>
+<span class="fc" id="L97">		YearMonth current = YearMonth.of(year, monthIndex);</span>
+<span class="fc" id="L98">		YearMonth previous = current.minusMonths(1);</span>
+<span class="fc" id="L99">		String currentKey = MonthKeyUtil.forMonthYear(monthIndex, year);</span>
+<span class="fc" id="L100">		String previousKey = MonthKeyUtil.forMonthYear(previous.getMonthValue(), previous.getYear());</span>
+<span class="fc" id="L101">		List&lt;TransactionEntity&gt; currentRows = transactionRepository.findFiltered(currentKey, vehicleId, driverId, null, null);</span>
+<span class="fc" id="L102">		List&lt;TransactionEntity&gt; previousRows = transactionRepository.findFiltered(previousKey, vehicleId, driverId, null, null);</span>
+<span class="fc" id="L103">		long currentNet = LedgerAggregator.netProfit(currentRows);</span>
+<span class="fc" id="L104">		long previousNet = LedgerAggregator.netProfit(previousRows);</span>
+<span class="fc" id="L105">		return new StatsCompareMonthResponse(</span>
+				monthIndex,
+				year,
+				currentKey,
+				previousKey,
+				currentNet,
+				previousNet,
+				currentNet - previousNet);
+	}
+
+	@Transactional(readOnly = true)
+	public StatsYoyResponse yearOverYear(int fiscalStartYear, String vehicleId, String driverId) {
+<span class="fc" id="L117">		List&lt;TransactionEntity&gt; current = loadFiscalYear(fiscalStartYear, vehicleId, driverId);</span>
+<span class="fc" id="L118">		List&lt;TransactionEntity&gt; previous = loadFiscalYear(fiscalStartYear - 1, vehicleId, driverId);</span>
+<span class="fc" id="L119">		long currentNet = LedgerAggregator.netProfit(current);</span>
+<span class="fc" id="L120">		long previousNet = LedgerAggregator.netProfit(previous);</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">		Double pct = previousNet == 0 ? null : ((double) (currentNet - previousNet) / previousNet) * 100.0;</span>
+<span class="fc" id="L122">		return new StatsYoyResponse(</span>
+				fiscalStartYear,
+				fiscalStartYear - 1,
+				currentNet,
+				previousNet,
+				currentNet - previousNet,
+				pct);
+	}
+
+	private List&lt;TransactionEntity&gt; loadForSummary(
+			String monthKey,
+			Integer year,
+			String vehicleId,
+			String driverId,
+			String category) {
+<span class="fc bfc" id="L137" title="All 2 branches covered.">		if (monthKey != null) {</span>
+<span class="fc" id="L138">			return transactionRepository.findFiltered(monthKey, vehicleId, driverId, category, null);</span>
+		}
+<span class="fc bfc" id="L140" title="All 2 branches covered.">		if (year != null) {</span>
+<span class="fc" id="L141">			return loadFiscalYear(year, vehicleId, driverId).stream()</span>
+<span class="pc bpc" id="L142" title="1 of 4 branches missed.">					.filter(t -&gt; category == null || category.equals(t.getCategoryCode()))</span>
+<span class="fc" id="L143">					.collect(Collectors.toList());</span>
+		}
+<span class="fc" id="L145">		return transactionRepository.findFiltered(null, vehicleId, driverId, category, null);</span>
+	}
+
+	private List&lt;TransactionEntity&gt; loadFiscalYear(int fiscalStartYear, String vehicleId, String driverId) {
+<span class="fc" id="L149">		return transactionRepository.findByMonthKeyRange(</span>
+<span class="fc" id="L150">				FiscalYearUtil.startMonthKey(fiscalStartYear),</span>
+<span class="fc" id="L151">				FiscalYearUtil.endMonthKey(fiscalStartYear),</span>
+				vehicleId,
+				driverId);
+	}
+
+	private String resolveMonthKey(Integer month, Integer year) {
+<span class="pc bpc" id="L157" title="1 of 4 branches missed.">		if (month == null || year == null) {</span>
+<span class="fc" id="L158">			return null;</span>
+		}
+<span class="fc" id="L160">		return MonthKeyUtil.forMonthYear(month, year);</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

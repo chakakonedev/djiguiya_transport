@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProfitShareService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">djiguiya-transport-backend</a> &gt; <a href="index.source.html" class="el_package">com.djiguiya.transport.modules.finance.service</a> &gt; <span class="el_source">ProfitShareService.java</span></div><h1>ProfitShareService.java</h1><pre class="source lang-java linenums">package com.djiguiya.transport.modules.finance.service;
+
+import com.djiguiya.transport.modules.finance.domain.ProfitShareRuleKinds;
+import com.djiguiya.transport.modules.finance.dto.ProfitShareLine;
+import com.djiguiya.transport.modules.finance.dto.ProfitSharePreviewResponse;
+import com.djiguiya.transport.modules.finance.entities.ProfitShareRuleEntity;
+import com.djiguiya.transport.modules.finance.entities.TransactionEntity;
+import com.djiguiya.transport.modules.finance.repository.ProfitShareRuleRepository;
+import com.djiguiya.transport.modules.finance.repository.TransactionRepository;
+import com.djiguiya.transport.modules.staff.entities.StaffEntity;
+import com.djiguiya.transport.modules.staff.repository.StaffRepository;
+import com.djiguiya.transport.shared.util.FiscalYearUtil;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class ProfitShareService {
+
+	private final TransactionRepository transactionRepository;
+	private final ProfitShareRuleRepository profitShareRuleRepository;
+	private final StaffRepository staffRepository;
+
+	@Transactional(readOnly = true)
+	public ProfitSharePreviewResponse preview(int fiscalStartYear) {
+<span class="fc" id="L36">		String fromMonth = FiscalYearUtil.startMonthKey(fiscalStartYear);</span>
+<span class="fc" id="L37">		String toMonth = FiscalYearUtil.endMonthKey(fiscalStartYear);</span>
+<span class="fc" id="L38">		List&lt;TransactionEntity&gt; ledger = transactionRepository.findByMonthKeyRange(fromMonth, toMonth, null, null);</span>
+<span class="fc" id="L39">		long revenue = LedgerAggregator.totalRevenue(ledger);</span>
+<span class="fc" id="L40">		long expense = LedgerAggregator.totalExpense(ledger);</span>
+<span class="fc" id="L41">		long netProfit = revenue - expense;</span>
+
+<span class="fc" id="L43">		List&lt;ProfitShareRuleEntity&gt; rules = profitShareRuleRepository.findActiveOnDate(</span>
+<span class="fc" id="L44">				FiscalYearUtil.endDate(fiscalStartYear));</span>
+
+<span class="fc" id="L46">		BigDecimal reserveRate = rules.stream()</span>
+<span class="fc" id="L47">				.filter(r -&gt; ProfitShareRuleKinds.COMPANY_GROWTH_RESERVE_PCT.equals(r.getRuleKind()))</span>
+<span class="fc" id="L48">				.map(ProfitShareRuleEntity::getRatePercent)</span>
+<span class="fc" id="L49">				.findFirst()</span>
+<span class="fc" id="L50">				.orElse(BigDecimal.ZERO);</span>
+
+<span class="fc" id="L52">		long reserveAmount = percentOf(netProfit, reserveRate);</span>
+<span class="fc" id="L53">		long distributable = Math.max(0, netProfit - reserveAmount);</span>
+
+<span class="fc" id="L55">		Map&lt;String, StaffEntity&gt; staffById = staffRepository.findAllById(</span>
+<span class="fc" id="L56">						rules.stream()</span>
+<span class="fc" id="L57">								.map(ProfitShareRuleEntity::getBeneficiaryStaffId)</span>
+<span class="fc" id="L58">								.filter(Objects::nonNull)</span>
+<span class="fc" id="L59">								.distinct()</span>
+<span class="fc" id="L60">								.toList())</span>
+<span class="fc" id="L61">				.stream()</span>
+<span class="fc" id="L62">				.collect(Collectors.toMap(StaffEntity::getId, Function.identity()));</span>
+
+<span class="fc" id="L64">		List&lt;ProfitShareLine&gt; lines = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">		for (ProfitShareRuleEntity rule : rules) {</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">			if (!ProfitShareRuleKinds.PARTNER_PROFIT_SHARE_PCT.equals(rule.getRuleKind())) {</span>
+<span class="fc" id="L67">				continue;</span>
+			}
+<span class="fc" id="L69">			long share = percentOf(distributable, rule.getRatePercent());</span>
+<span class="fc" id="L70">			StaffEntity staff = staffById.get(rule.getBeneficiaryStaffId());</span>
+<span class="fc" id="L71">			lines.add(new ProfitShareLine(</span>
+<span class="fc" id="L72">					rule.getRuleKind(),</span>
+<span class="fc" id="L73">					rule.getBeneficiaryStaffId(),</span>
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">					staff != null ? staff.getFullName() : null,</span>
+<span class="fc" id="L75">					rule.getRatePercent(),</span>
+					share));
+<span class="fc" id="L77">		}</span>
+
+<span class="fc" id="L79">		return new ProfitSharePreviewResponse(</span>
+				fiscalStartYear,
+				fromMonth,
+				toMonth,
+				revenue,
+				expense,
+				netProfit,
+				reserveAmount,
+				distributable,
+				lines);
+	}
+
+	private static long percentOf(long base, BigDecimal ratePercent) {
+<span class="pc bpc" id="L92" title="1 of 4 branches missed.">		if (ratePercent == null || base &lt;= 0) {</span>
+<span class="fc" id="L93">			return 0L;</span>
+		}
+<span class="fc" id="L95">		BigDecimal amount = BigDecimal.valueOf(base)</span>
+<span class="fc" id="L96">				.multiply(ratePercent)</span>
+<span class="fc" id="L97">				.divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP);</span>
+<span class="fc" id="L98">		return amount.longValue();</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

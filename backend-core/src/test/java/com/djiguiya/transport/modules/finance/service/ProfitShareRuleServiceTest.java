@@ -76,4 +76,50 @@ class ProfitShareRuleServiceTest {
 		assertEquals("Tièdiè", list.getFirst().beneficiaryName());
 		assertEquals(new BigDecimal("1.0000"), list.getFirst().salaryMonthsEquivalent());
 	}
+
+	@Test
+	void update_clearsBlankNotesAndDisables() {
+		ProfitShareRuleEntity rule = new ProfitShareRuleEntity();
+		rule.setId("rule-1");
+		rule.setBeneficiaryStaffId(null);
+		rule.setNotes("keep");
+		rule.setEnabled(true);
+
+		when(profitShareRuleRepository.findById("rule-1")).thenReturn(Optional.of(rule));
+		when(profitShareRuleRepository.save(any(ProfitShareRuleEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		var updated = profitShareRuleService.update(
+				"rule-1",
+				new ProfitShareRuleUpdateRequest(null, new BigDecimal("2.0"), false, "   "));
+
+		assertEquals(false, updated.enabled());
+		assertEquals(new BigDecimal("2.0"), updated.salaryMonthsEquivalent());
+		assertEquals(null, updated.notes());
+		assertEquals(null, updated.beneficiaryName());
+	}
+
+	@Test
+	void update_notFound() {
+		when(profitShareRuleRepository.findById("missing")).thenReturn(Optional.empty());
+		org.junit.jupiter.api.Assertions.assertThrows(
+				com.djiguiya.transport.shared.exception.BusinessException.class,
+				() -> profitShareRuleService.update(
+						"missing",
+						new ProfitShareRuleUpdateRequest(null, null, null, null)));
+	}
+
+	@Test
+	void listAll_nullBeneficiaryNameWhenStaffMissing() {
+		ProfitShareRuleEntity rule = new ProfitShareRuleEntity();
+		rule.setId("rule-1");
+		rule.setBeneficiaryStaffId("gone");
+		rule.setRuleKind(ProfitShareRuleKinds.PARTNER_PROFIT_SHARE_PCT);
+		rule.setEnabled(true);
+
+		when(profitShareRuleRepository.findAll()).thenReturn(List.of(rule));
+		when(staffRepository.findAllById(List.of("gone"))).thenReturn(List.of());
+
+		var list = profitShareRuleService.listAll();
+		assertEquals(null, list.getFirst().beneficiaryName());
+	}
 }

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">djiguiya-transport-backend</a> &gt; <a href="index.source.html" class="el_package">com.djiguiya.transport.shared.security</a> &gt; <span class="el_source">JwtService.java</span></div><h1>JwtService.java</h1><pre class="source lang-java linenums">package com.djiguiya.transport.shared.security;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.Map;
+
+@Service
+public class JwtService {
+
+	private final SecretKey key;
+	private final long accessExpirationMs;
+
+	public JwtService(
+			@Value(&quot;${djiguiya.jwt.secret}&quot;) String secret,
+			@Value(&quot;${djiguiya.jwt.access-token-expiration-ms}&quot;) long accessExpirationMs
+<span class="fc" id="L23">	) {</span>
+<span class="fc" id="L24">		this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));</span>
+<span class="fc" id="L25">		this.accessExpirationMs = accessExpirationMs;</span>
+<span class="fc" id="L26">	}</span>
+
+	public String generateAccessToken(String userId, String email, String roleCode) {
+<span class="fc" id="L29">		Date now = new Date();</span>
+<span class="fc" id="L30">		return Jwts.builder()</span>
+<span class="fc" id="L31">				.subject(userId)</span>
+<span class="fc" id="L32">				.claims(Map.of(&quot;email&quot;, email, &quot;role&quot;, roleCode))</span>
+<span class="fc" id="L33">				.issuedAt(now)</span>
+<span class="fc" id="L34">				.expiration(new Date(now.getTime() + accessExpirationMs))</span>
+<span class="fc" id="L35">				.signWith(key)</span>
+<span class="fc" id="L36">				.compact();</span>
+	}
+
+	public Claims parse(String token) {
+<span class="fc" id="L40">		return Jwts.parser()</span>
+<span class="fc" id="L41">				.verifyWith(key)</span>
+<span class="fc" id="L42">				.build()</span>
+<span class="fc" id="L43">				.parseSignedClaims(token)</span>
+<span class="fc" id="L44">				.getPayload();</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
