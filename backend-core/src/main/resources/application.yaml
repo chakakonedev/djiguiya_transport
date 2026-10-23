@@ -34,6 +34,8 @@ djiguiya:
     cors-allowed-origins: http://localhost:4200,http://127.0.0.1:4200
     # Override in prod: DJIGUIYA_DEFAULT_PASSWORD — never commit real secrets
     default-password: ${DJIGUIYA_DEFAULT_PASSWORD:Djiguiya@2026}
+    # Set DJIGUIYA_OPENAPI_ENABLED=false in production to disable anonymous Swagger/OpenAPI
+    openapi-enabled: ${DJIGUIYA_OPENAPI_ENABLED:true}
   seed:
     core-staff-enabled: true
     year1-enabled: true
@@ -41,8 +43,10 @@ djiguiya:
 springdoc:
   api-docs:
     path: /api-docs
+    enabled: ${DJIGUIYA_OPENAPI_ENABLED:true}
   swagger-ui:
     path: /swagger-ui.html
+    enabled: ${DJIGUIYA_OPENAPI_ENABLED:true}
 
 management:
   endpoints:

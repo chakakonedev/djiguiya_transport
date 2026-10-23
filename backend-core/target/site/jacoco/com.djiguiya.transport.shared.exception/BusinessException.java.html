@@ -2,23 +2,34 @@
 
 import org.springframework.http.HttpStatus;
 
+/**
+ * Domain/business failure raised by services when a rule is violated
+ * (e.g. entity not found, invalid state).
+ * &lt;p&gt;
+ * Carries an i18n {@code messageKey} (resolved by {@link GlobalExceptionHandler})
+ * and the HTTP status the API should return — so controllers stay thin.
+ */
 public class BusinessException extends RuntimeException {
 
+	/** Message bundle key, e.g. {@code staff.not_found}. */
 	private final String messageKey;
+
+	/** HTTP status mapped for the client response. */
 	private final HttpStatus status;
 
+	/** {@code messageKey} is resolved to a localized message in {@link GlobalExceptionHandler}. */
 	public BusinessException(String messageKey, HttpStatus status) {
-<span class="fc" id="L11">		super(messageKey);</span>
-<span class="fc" id="L12">		this.messageKey = messageKey;</span>
-<span class="fc" id="L13">		this.status = status;</span>
-<span class="fc" id="L14">	}</span>
+<span class="fc" id="L22">		super(messageKey);</span>
+<span class="fc" id="L23">		this.messageKey = messageKey;</span>
+<span class="fc" id="L24">		this.status = status;</span>
+<span class="fc" id="L25">	}</span>
 
 	public String getMessageKey() {
-<span class="fc" id="L17">		return messageKey;</span>
+<span class="fc" id="L28">		return messageKey;</span>
 	}
 
 	public HttpStatus getStatus() {
-<span class="fc" id="L21">		return status;</span>
+<span class="fc" id="L32">		return status;</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -4,23 +4,29 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Canonical {@code yyyy-MM} keys for grouping ledger entries and month-scoped reporting.
+ */
 public final class MonthKeyUtil {
 
-<span class="fc" id="L9">	private static final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern(&quot;yyyy-MM&quot;);</span>
+<span class="fc" id="L12">	private static final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern(&quot;yyyy-MM&quot;);</span>
 
 	private MonthKeyUtil() {
 	}
 
+	/** Month bucket for a calendar date (trip or transaction day). */
 	public static String fromDate(LocalDate date) {
-<span class="fc" id="L15">		return YearMonth.from(date).format(FORMAT);</span>
+<span class="fc" id="L19">		return YearMonth.from(date).format(FORMAT);</span>
 	}
 
+	/** Builds a key for fiscal/report boundaries (see {@link FiscalYearUtil}). */
 	public static String forMonthYear(int month, int year) {
-<span class="fc" id="L19">		return YearMonth.of(year, month).format(FORMAT);</span>
+<span class="fc" id="L24">		return YearMonth.of(year, month).format(FORMAT);</span>
 	}
 
+	/** Parses API/query month keys back to {@link YearMonth}. */
 	public static YearMonth parse(String monthKey) {
-<span class="fc" id="L23">		return YearMonth.parse(monthKey, FORMAT);</span>
+<span class="nc" id="L29">		return YearMonth.parse(monthKey, FORMAT);</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

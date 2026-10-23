@@ -9,60 +9,70 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Pure functions over in-memory transaction lists: revenue/expense sums, net profit,
+ * and expense breakdown for stats dashboards (no persistence).
+ */
 public final class LedgerAggregator {
 
 	private LedgerAggregator() {
 	}
 
+	/** Sums amounts where {@code type} is {@link TransactionTypes#REVENUE}. */
 	public static long totalRevenue(List&lt;TransactionEntity&gt; transactions) {
-<span class="fc" id="L18">		return sumByType(transactions, TransactionTypes.REVENUE);</span>
+<span class="fc" id="L23">		return sumByType(transactions, TransactionTypes.REVENUE);</span>
 	}
 
+	/** Sums amounts where {@code type} is {@link TransactionTypes#EXPENSE}. */
 	public static long totalExpense(List&lt;TransactionEntity&gt; transactions) {
-<span class="fc" id="L22">		return sumByType(transactions, TransactionTypes.EXPENSE);</span>
+<span class="fc" id="L28">		return sumByType(transactions, TransactionTypes.EXPENSE);</span>
 	}
 
+	/** {@code totalRevenue - totalExpense} for the given rows. */
 	public static long netProfit(List&lt;TransactionEntity&gt; transactions) {
-<span class="fc" id="L26">		return totalRevenue(transactions) - totalExpense(transactions);</span>
+<span class="fc" id="L33">		return totalRevenue(transactions) - totalExpense(transactions);</span>
 	}
 
-	/** Expense totals grouped by category (then subcategory). */
+	/**
+	 * Groups expenses by {@code categoryCode} (blank → {@code other}), sorted by amount descending,
+	 * then appends subcategory rows ({@code category|subcategory}) for non-blank subcategories.
+	 */
 	public static List&lt;StatsGroupRowResponse&gt; expenseByGroup(List&lt;TransactionEntity&gt; transactions) {
-<span class="fc" id="L31">		Map&lt;String, Long&gt; byCategory = new LinkedHashMap&lt;&gt;();</span>
-<span class="fc" id="L32">		Map&lt;String, Long&gt; bySubcategory = new LinkedHashMap&lt;&gt;();</span>
-<span class="fc bfc" id="L33" title="All 2 branches covered.">		for (TransactionEntity t : transactions) {</span>
-<span class="fc bfc" id="L34" title="All 2 branches covered.">			if (!TransactionTypes.EXPENSE.equalsIgnoreCase(t.getType())) {</span>
-<span class="fc" id="L35">				continue;</span>
+<span class="fc" id="L41">		Map&lt;String, Long&gt; byCategory = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L42">		Map&lt;String, Long&gt; bySubcategory = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L43" title="All 2 branches covered.">		for (TransactionEntity t : transactions) {</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">			if (!TransactionTypes.EXPENSE.equalsIgnoreCase(t.getType())) {</span>
+<span class="fc" id="L45">				continue;</span>
 			}
-<span class="fc" id="L37">			String category = blankToOther(t.getCategoryCode());</span>
-<span class="fc" id="L38">			byCategory.merge(category, t.getAmount(), Long::sum);</span>
-<span class="fc" id="L39">			String sub = t.getSubcategoryCode();</span>
-<span class="pc bpc" id="L40" title="1 of 4 branches missed.">			if (sub != null &amp;&amp; !sub.isBlank()) {</span>
-<span class="fc" id="L41">				bySubcategory.merge(category + &quot;|&quot; + sub, t.getAmount(), Long::sum);</span>
+<span class="fc" id="L47">			String category = blankToOther(t.getCategoryCode());</span>
+<span class="fc" id="L48">			byCategory.merge(category, t.getAmount(), Long::sum);</span>
+<span class="fc" id="L49">			String sub = t.getSubcategoryCode();</span>
+<span class="pc bpc" id="L50" title="2 of 4 branches missed.">			if (sub != null &amp;&amp; !sub.isBlank()) {</span>
+<span class="fc" id="L51">				bySubcategory.merge(category + &quot;|&quot; + sub, t.getAmount(), Long::sum);</span>
 			}
-<span class="fc" id="L43">		}</span>
-<span class="fc" id="L44">		List&lt;StatsGroupRowResponse&gt; rows = byCategory.entrySet().stream()</span>
-<span class="fc" id="L45">				.sorted(Map.Entry.&lt;String, Long&gt;comparingByValue().reversed())</span>
-<span class="fc" id="L46">				.map(e -&gt; new StatsGroupRowResponse(e.getKey(), null, e.getValue()))</span>
-<span class="fc" id="L47">				.collect(Collectors.toList());</span>
-<span class="fc" id="L48">		bySubcategory.entrySet().stream()</span>
-<span class="fc" id="L49">				.sorted(Map.Entry.&lt;String, Long&gt;comparingByValue().reversed())</span>
-<span class="fc" id="L50">				.forEach(e -&gt; {</span>
-<span class="fc" id="L51">					String[] parts = e.getKey().split(&quot;\\|&quot;, 2);</span>
-<span class="fc" id="L52">					rows.add(new StatsGroupRowResponse(parts[0], parts[1], e.getValue()));</span>
-<span class="fc" id="L53">				});</span>
-<span class="fc" id="L54">		return rows;</span>
+		}
+<span class="fc" id="L54">		List&lt;StatsGroupRowResponse&gt; rows = byCategory.entrySet().stream()</span>
+<span class="fc" id="L55">				.sorted(Map.Entry.&lt;String, Long&gt;comparingByValue().reversed())</span>
+<span class="fc" id="L56">				.map(e -&gt; new StatsGroupRowResponse(e.getKey(), null, e.getValue()))</span>
+<span class="fc" id="L57">				.collect(Collectors.toList());</span>
+<span class="fc" id="L58">		bySubcategory.entrySet().stream()</span>
+<span class="fc" id="L59">				.sorted(Map.Entry.&lt;String, Long&gt;comparingByValue().reversed())</span>
+<span class="fc" id="L60">				.forEach(e -&gt; {</span>
+<span class="fc" id="L61">					String[] parts = e.getKey().split(&quot;\\|&quot;, 2);</span>
+<span class="fc" id="L62">					rows.add(new StatsGroupRowResponse(parts[0], parts[1], e.getValue()));</span>
+<span class="fc" id="L63">				});</span>
+<span class="fc" id="L64">		return rows;</span>
 	}
 
 	private static String blankToOther(String code) {
-<span class="fc bfc" id="L58" title="All 4 branches covered.">		return code == null || code.isBlank() ? &quot;other&quot; : code;</span>
+<span class="pc bpc" id="L68" title="2 of 4 branches missed.">		return code == null || code.isBlank() ? &quot;other&quot; : code;</span>
 	}
 
 	private static long sumByType(List&lt;TransactionEntity&gt; transactions, String type) {
-<span class="fc" id="L62">		return transactions.stream()</span>
-<span class="fc" id="L63">				.filter(t -&gt; type.equalsIgnoreCase(t.getType()))</span>
-<span class="fc" id="L64">				.mapToLong(TransactionEntity::getAmount)</span>
-<span class="fc" id="L65">				.sum();</span>
+<span class="fc" id="L72">		return transactions.stream()</span>
+<span class="fc" id="L73">				.filter(t -&gt; type.equalsIgnoreCase(t.getType()))</span>
+<span class="fc" id="L74">				.mapToLong(TransactionEntity::getAmount)</span>
+<span class="fc" id="L75">				.sum();</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

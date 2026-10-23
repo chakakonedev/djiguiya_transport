@@ -17,7 +17,10 @@ describe('StaffPage', () => {
 
   beforeEach(async () => {
     staffApi.list.mockReset();
+    staffApi.create.mockReset();
+    staffApi.update.mockReset();
     profitApi.listRules.mockReset();
+    profitApi.updateRule.mockReset();
     await TestBed.configureTestingModule({
       imports: [StaffPage],
       providers: [
@@ -136,6 +139,57 @@ describe('StaffPage', () => {
 
     expect(staffApi.create).toHaveBeenCalled();
     expect(profitApi.updateRule).toHaveBeenCalled();
+  });
+
+  /** Update must resend phone/notes/status so the backend does not clear them. */
+  it('preserves phone notes and status on update', async () => {
+    staffApi.list.mockReturnValue(
+      of([
+        {
+          id: 's1',
+          fullName: 'Amadou',
+          staffType: 'driver',
+          phone: '77000000',
+          status: 'inactive',
+          notes: 'keep me',
+          monthlySalary: 100
+        }
+      ])
+    );
+    profitApi.listRules.mockReturnValue(of([]));
+    staffApi.update.mockReturnValue(
+      of({
+        id: 's1',
+        fullName: 'Amadou Updated',
+        staffType: 'driver',
+        phone: '77000000',
+        status: 'inactive',
+        notes: 'keep me'
+      })
+    );
+
+    const fixture = TestBed.createComponent(StaffPage);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const page = fixture.componentInstance;
+    page.startEdit({
+      staff: page.staffList()[0],
+      partnerShareRule: null,
+      quarterlyBonusRule: null
+    });
+    page.form.patchValue({ fullName: 'Amadou Updated' });
+    page.submit();
+    await fixture.whenStable();
+
+    expect(staffApi.update).toHaveBeenCalledWith(
+      's1',
+      expect.objectContaining({
+        fullName: 'Amadou Updated',
+        phone: '77000000',
+        notes: 'keep me',
+        status: 'inactive'
+      })
+    );
   });
 
   /** Display helpers for share % and quarterly bonus amounts. */

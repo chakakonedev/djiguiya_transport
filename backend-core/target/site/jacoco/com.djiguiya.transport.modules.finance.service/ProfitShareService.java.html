@@ -23,6 +23,11 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Computes a read-only fiscal-year profit-share preview from ledger totals and rules active
+ * on the last day of the fiscal year. Reserve is taken from {@code company_growth_reserve_pct};
+ * partner lines use {@code partner_profit_share_pct} on the distributable remainder.
+ */
 @Service
 @RequiredArgsConstructor
 public class ProfitShareService {
@@ -31,71 +36,75 @@ public class ProfitShareService {
 	private final ProfitShareRuleRepository profitShareRuleRepository;
 	private final StaffRepository staffRepository;
 
+	/**
+	 * Aggregates revenue/expense for the fiscal window, deducts reserve, splits distributable
+	 * profit among enabled partner-percent rules (other rule kinds are ignored in preview lines).
+	 */
 	@Transactional(readOnly = true)
 	public ProfitSharePreviewResponse preview(int fiscalStartYear) {
-<span class="fc" id="L36">		String fromMonth = FiscalYearUtil.startMonthKey(fiscalStartYear);</span>
-<span class="fc" id="L37">		String toMonth = FiscalYearUtil.endMonthKey(fiscalStartYear);</span>
-<span class="fc" id="L38">		List&lt;TransactionEntity&gt; ledger = transactionRepository.findByMonthKeyRange(fromMonth, toMonth, null, null);</span>
-<span class="fc" id="L39">		long revenue = LedgerAggregator.totalRevenue(ledger);</span>
-<span class="fc" id="L40">		long expense = LedgerAggregator.totalExpense(ledger);</span>
-<span class="fc" id="L41">		long netProfit = revenue - expense;</span>
+<span class="fc" id="L45">		String fromMonth = FiscalYearUtil.startMonthKey(fiscalStartYear);</span>
+<span class="fc" id="L46">		String toMonth = FiscalYearUtil.endMonthKey(fiscalStartYear);</span>
+<span class="fc" id="L47">		List&lt;TransactionEntity&gt; ledger = transactionRepository.findByMonthKeyRange(fromMonth, toMonth, null, null);</span>
+<span class="fc" id="L48">		long revenue = LedgerAggregator.totalRevenue(ledger);</span>
+<span class="fc" id="L49">		long expense = LedgerAggregator.totalExpense(ledger);</span>
+<span class="fc" id="L50">		long netProfit = revenue - expense;</span>
 
-<span class="fc" id="L43">		List&lt;ProfitShareRuleEntity&gt; rules = profitShareRuleRepository.findActiveOnDate(</span>
-<span class="fc" id="L44">				FiscalYearUtil.endDate(fiscalStartYear));</span>
+<span class="fc" id="L52">		List&lt;ProfitShareRuleEntity&gt; rules = profitShareRuleRepository.findActiveOnDate(</span>
+<span class="fc" id="L53">				FiscalYearUtil.endDate(fiscalStartYear));</span>
 
-<span class="fc" id="L46">		BigDecimal reserveRate = rules.stream()</span>
-<span class="fc" id="L47">				.filter(r -&gt; ProfitShareRuleKinds.COMPANY_GROWTH_RESERVE_PCT.equals(r.getRuleKind()))</span>
-<span class="fc" id="L48">				.map(ProfitShareRuleEntity::getRatePercent)</span>
-<span class="fc" id="L49">				.findFirst()</span>
-<span class="fc" id="L50">				.orElse(BigDecimal.ZERO);</span>
+<span class="fc" id="L55">		BigDecimal reserveRate = rules.stream()</span>
+<span class="pc" id="L56">				.filter(r -&gt; ProfitShareRuleKinds.COMPANY_GROWTH_RESERVE_PCT.equals(r.getRuleKind()))</span>
+<span class="fc" id="L57">				.map(ProfitShareRuleEntity::getRatePercent)</span>
+<span class="fc" id="L58">				.findFirst()</span>
+<span class="fc" id="L59">				.orElse(BigDecimal.ZERO);</span>
 
-<span class="fc" id="L52">		long reserveAmount = percentOf(netProfit, reserveRate);</span>
-<span class="fc" id="L53">		long distributable = Math.max(0, netProfit - reserveAmount);</span>
+<span class="fc" id="L61">		long reserveAmount = percentOf(netProfit, reserveRate);</span>
+<span class="fc" id="L62">		long distributable = Math.max(0, netProfit - reserveAmount);</span>
 
-<span class="fc" id="L55">		Map&lt;String, StaffEntity&gt; staffById = staffRepository.findAllById(</span>
-<span class="fc" id="L56">						rules.stream()</span>
-<span class="fc" id="L57">								.map(ProfitShareRuleEntity::getBeneficiaryStaffId)</span>
-<span class="fc" id="L58">								.filter(Objects::nonNull)</span>
-<span class="fc" id="L59">								.distinct()</span>
-<span class="fc" id="L60">								.toList())</span>
-<span class="fc" id="L61">				.stream()</span>
-<span class="fc" id="L62">				.collect(Collectors.toMap(StaffEntity::getId, Function.identity()));</span>
+<span class="fc" id="L64">		Map&lt;String, StaffEntity&gt; staffById = staffRepository.findAllById(</span>
+<span class="fc" id="L65">						rules.stream()</span>
+<span class="fc" id="L66">								.map(ProfitShareRuleEntity::getBeneficiaryStaffId)</span>
+<span class="fc" id="L67">								.filter(Objects::nonNull)</span>
+<span class="fc" id="L68">								.distinct()</span>
+<span class="fc" id="L69">								.toList())</span>
+<span class="fc" id="L70">				.stream()</span>
+<span class="fc" id="L71">				.collect(Collectors.toMap(StaffEntity::getId, Function.identity()));</span>
 
-<span class="fc" id="L64">		List&lt;ProfitShareLine&gt; lines = new ArrayList&lt;&gt;();</span>
-<span class="fc bfc" id="L65" title="All 2 branches covered.">		for (ProfitShareRuleEntity rule : rules) {</span>
-<span class="fc bfc" id="L66" title="All 2 branches covered.">			if (!ProfitShareRuleKinds.PARTNER_PROFIT_SHARE_PCT.equals(rule.getRuleKind())) {</span>
-<span class="fc" id="L67">				continue;</span>
+<span class="fc" id="L73">		List&lt;ProfitShareLine&gt; lines = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">		for (ProfitShareRuleEntity rule : rules) {</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">			if (!ProfitShareRuleKinds.PARTNER_PROFIT_SHARE_PCT.equals(rule.getRuleKind())) {</span>
+<span class="nc" id="L76">				continue;</span>
 			}
-<span class="fc" id="L69">			long share = percentOf(distributable, rule.getRatePercent());</span>
-<span class="fc" id="L70">			StaffEntity staff = staffById.get(rule.getBeneficiaryStaffId());</span>
-<span class="fc" id="L71">			lines.add(new ProfitShareLine(</span>
-<span class="fc" id="L72">					rule.getRuleKind(),</span>
-<span class="fc" id="L73">					rule.getBeneficiaryStaffId(),</span>
-<span class="pc bpc" id="L74" title="1 of 2 branches missed.">					staff != null ? staff.getFullName() : null,</span>
-<span class="fc" id="L75">					rule.getRatePercent(),</span>
-					share));
-<span class="fc" id="L77">		}</span>
+<span class="nc" id="L78">			long share = percentOf(distributable, rule.getRatePercent());</span>
+<span class="nc" id="L79">			StaffEntity staff = staffById.get(rule.getBeneficiaryStaffId());</span>
+<span class="nc" id="L80">			lines.add(new ProfitShareLine(</span>
+<span class="nc" id="L81">					rule.getRuleKind(),</span>
+<span class="nc" id="L82">					rule.getBeneficiaryStaffId(),</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">					staff != null ? staff.getFullName() : null,</span>
+<span class="nc" id="L84">					rule.getRatePercent(),</span>
+<span class="nc" id="L85">					share));</span>
+		}
 
-<span class="fc" id="L79">		return new ProfitSharePreviewResponse(</span>
-				fiscalStartYear,
-				fromMonth,
-				toMonth,
-				revenue,
-				expense,
-				netProfit,
-				reserveAmount,
-				distributable,
-				lines);
+<span class="fc" id="L88">		return new ProfitSharePreviewResponse(</span>
+<span class="fc" id="L89">				fiscalStartYear,</span>
+<span class="fc" id="L90">				fromMonth,</span>
+<span class="fc" id="L91">				toMonth,</span>
+<span class="fc" id="L92">				revenue,</span>
+<span class="fc" id="L93">				expense,</span>
+<span class="fc" id="L94">				netProfit,</span>
+<span class="fc" id="L95">				reserveAmount,</span>
+<span class="fc" id="L96">				distributable,</span>
+<span class="fc" id="L97">				lines);</span>
 	}
 
 	private static long percentOf(long base, BigDecimal ratePercent) {
-<span class="pc bpc" id="L92" title="1 of 4 branches missed.">		if (ratePercent == null || base &lt;= 0) {</span>
-<span class="fc" id="L93">			return 0L;</span>
+<span class="pc bpc" id="L101" title="1 of 4 branches missed.">		if (ratePercent == null || base &lt;= 0) {</span>
+<span class="fc" id="L102">			return 0L;</span>
 		}
-<span class="fc" id="L95">		BigDecimal amount = BigDecimal.valueOf(base)</span>
-<span class="fc" id="L96">				.multiply(ratePercent)</span>
-<span class="fc" id="L97">				.divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP);</span>
-<span class="fc" id="L98">		return amount.longValue();</span>
+<span class="fc" id="L104">		BigDecimal amount = BigDecimal.valueOf(base)</span>
+<span class="fc" id="L105">				.multiply(ratePercent)</span>
+<span class="fc" id="L106">				.divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP);</span>
+<span class="fc" id="L107">		return amount.longValue();</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

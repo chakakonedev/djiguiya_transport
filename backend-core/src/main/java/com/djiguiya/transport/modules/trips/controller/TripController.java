@@ -4,8 +4,10 @@ import com.djiguiya.transport.modules.trips.dto.TripRequest;
 import com.djiguiya.transport.modules.trips.dto.TripResponse;
 import com.djiguiya.transport.modules.trips.service.TripService;
 import com.djiguiya.transport.shared.api.ApiResponse;
+import com.djiguiya.transport.shared.security.AppRoles;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +20,7 @@ import java.util.List;
 
 /**
  * REST API for vehicle trips: scheduling, driver assignment, and soft-deleted-aware listing.
+ * Mutations require {@link AppRoles#TRIP_WRITE}; reads are available to any authenticated user.
  */
 @RestController
 @RequestMapping("/api/v1/trips")
@@ -40,12 +43,14 @@ public class TripController {
 
 	/** Creates a trip; driver may be omitted to use the vehicle's primary driver on the departure date. */
 	@PostMapping
+	@PreAuthorize(AppRoles.TRIP_WRITE)
 	public ApiResponse<TripResponse> create(@Valid @RequestBody TripRequest request) {
 		return ApiResponse.ok("trip.created", tripService.create(request));
 	}
 
 	/** Updates trip dates, vehicle, driver, and replacement metadata. */
 	@PutMapping("/{id}")
+	@PreAuthorize(AppRoles.TRIP_WRITE)
 	public ApiResponse<TripResponse> update(@PathVariable String id, @Valid @RequestBody TripRequest request) {
 		return ApiResponse.ok("trip.updated", tripService.update(id, request));
 	}

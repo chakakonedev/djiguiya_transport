@@ -5,20 +5,25 @@ import jakarta.persistence.PreUpdate;
 
 import java.time.Instant;
 
-<span class="fc" id="L8">public class AuditingListener {</span>
+/**
+ * JPA callbacks that set {@link Timestamped} fields when callers leave them unset (seeders may set their own).
+ */
+<span class="fc" id="L11">public class AuditingListener {</span>
 
+	/** Sets both timestamps on first insert; preserves an explicit {@code createdAt} if already set. */
 	@PrePersist
 	public void onCreate(Timestamped entity) {
-<span class="fc" id="L12">		Instant now = Instant.now();</span>
-<span class="fc bfc" id="L13" title="All 2 branches covered.">		if (entity.getCreatedAt() == null) {</span>
-<span class="fc" id="L14">			entity.setCreatedAt(now);</span>
+<span class="fc" id="L16">		Instant now = Instant.now();</span>
+<span class="pc bpc" id="L17" title="1 of 2 branches missed.">		if (entity.getCreatedAt() == null) {</span>
+<span class="fc" id="L18">			entity.setCreatedAt(now);</span>
 		}
-<span class="fc" id="L16">		entity.setUpdatedAt(now);</span>
-<span class="fc" id="L17">	}</span>
+<span class="fc" id="L20">		entity.setUpdatedAt(now);</span>
+<span class="fc" id="L21">	}</span>
 
+	/** Refreshes {@code updatedAt} on every flush of a changed entity. */
 	@PreUpdate
 	public void onUpdate(Timestamped entity) {
-<span class="fc" id="L21">		entity.setUpdatedAt(Instant.now());</span>
-<span class="fc" id="L22">	}</span>
+<span class="fc" id="L26">		entity.setUpdatedAt(Instant.now());</span>
+<span class="fc" id="L27">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

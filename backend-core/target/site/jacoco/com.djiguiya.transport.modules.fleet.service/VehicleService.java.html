@@ -23,6 +23,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Fleet registry: vehicles, time-bounded primary driver assignments, and per-vehicle compliance documents.
+ */
 @Service
 @RequiredArgsConstructor
 public class VehicleService {
@@ -34,129 +37,133 @@ public class VehicleService {
 
 	@Transactional(readOnly = true)
 	public List&lt;VehicleResponse&gt; listAll() {
-<span class="fc" id="L37">		return vehicleRepository.findAll().stream()</span>
-<span class="fc" id="L38">				.map(v -&gt; VehicleResponse.from(v, resolvePrimaryDriverId(v.getId(), LocalDate.now()).orElse(null)))</span>
-<span class="fc" id="L39">				.toList();</span>
+<span class="fc" id="L40">		return vehicleRepository.findAll().stream()</span>
+<span class="fc" id="L41">				.map(v -&gt; VehicleResponse.from(v, resolvePrimaryDriverId(v.getId(), LocalDate.now()).orElse(null)))</span>
+<span class="fc" id="L42">				.toList();</span>
 	}
 
 	@Transactional(readOnly = true)
 	public VehicleResponse getById(String id) {
-<span class="fc" id="L44">		VehicleEntity vehicle = findVehicle(id);</span>
-<span class="fc" id="L45">		String driverId = resolvePrimaryDriverId(id, LocalDate.now()).orElse(null);</span>
-<span class="fc" id="L46">		return VehicleResponse.from(vehicle, driverId);</span>
+<span class="fc" id="L47">		VehicleEntity vehicle = findVehicle(id);</span>
+<span class="fc" id="L48">		String driverId = resolvePrimaryDriverId(id, LocalDate.now()).orElse(null);</span>
+<span class="fc" id="L49">		return VehicleResponse.from(vehicle, driverId);</span>
 	}
 
 	@Transactional
 	public VehicleResponse create(VehicleRequest request) {
-<span class="fc" id="L51">		VehicleEntity entity = new VehicleEntity();</span>
-<span class="fc" id="L52">		entity.setId(EntityIds.newId());</span>
-<span class="fc" id="L53">		apply(entity, request);</span>
-<span class="fc" id="L54">		return VehicleResponse.from(vehicleRepository.save(entity), null);</span>
+<span class="fc" id="L54">		VehicleEntity entity = new VehicleEntity();</span>
+<span class="fc" id="L55">		entity.setId(EntityIds.newId());</span>
+<span class="fc" id="L56">		apply(entity, request);</span>
+<span class="fc" id="L57">		return VehicleResponse.from(vehicleRepository.save(entity), null);</span>
 	}
 
 	@Transactional
 	public VehicleResponse update(String id, VehicleRequest request) {
-<span class="fc" id="L59">		VehicleEntity entity = findVehicle(id);</span>
-<span class="fc" id="L60">		apply(entity, request);</span>
-<span class="fc" id="L61">		String driverId = resolvePrimaryDriverId(id, LocalDate.now()).orElse(null);</span>
-<span class="fc" id="L62">		return VehicleResponse.from(vehicleRepository.save(entity), driverId);</span>
+<span class="fc" id="L62">		VehicleEntity entity = findVehicle(id);</span>
+<span class="fc" id="L63">		apply(entity, request);</span>
+<span class="fc" id="L64">		String driverId = resolvePrimaryDriverId(id, LocalDate.now()).orElse(null);</span>
+<span class="fc" id="L65">		return VehicleResponse.from(vehicleRepository.save(entity), driverId);</span>
 	}
 
+	/**
+	 * Starts a new primary-driver assignment and ends overlapping open rows so history stays non-overlapping.
+	 */
 	@Transactional
 	public VehicleResponse assignPrimaryDriver(String vehicleId, PrimaryDriverRequest request) {
-<span class="fc" id="L67">		VehicleEntity vehicle = findVehicle(vehicleId);</span>
-<span class="fc" id="L68">		staffService.findEntity(request.driverId());</span>
+<span class="fc" id="L73">		VehicleEntity vehicle = findVehicle(vehicleId);</span>
+<span class="fc" id="L74">		staffService.findEntity(request.driverId());</span>
 
-<span class="fc" id="L70">		LocalDate startDate = request.startDate();</span>
-<span class="fc" id="L71">		closeOpenAssignments(vehicleId, startDate);</span>
+<span class="fc" id="L76">		LocalDate startDate = request.startDate();</span>
+<span class="fc" id="L77">		closeOpenAssignments(vehicleId, startDate);</span>
 
-<span class="fc" id="L73">		PrimaryAssignmentEntity assignment = new PrimaryAssignmentEntity();</span>
-<span class="fc" id="L74">		assignment.setId(EntityIds.newId());</span>
-<span class="fc" id="L75">		assignment.setVehicleId(vehicleId);</span>
-<span class="fc" id="L76">		assignment.setDriverId(request.driverId());</span>
-<span class="fc" id="L77">		assignment.setStartDate(startDate);</span>
-<span class="fc" id="L78">		assignment.setEndDate(request.endDate());</span>
-<span class="fc" id="L79">		assignment.setReason(request.reason());</span>
-<span class="fc" id="L80">		primaryAssignmentRepository.save(assignment);</span>
-<span class="fc" id="L81">		primaryAssignmentRepository.flush();</span>
+<span class="fc" id="L79">		PrimaryAssignmentEntity assignment = new PrimaryAssignmentEntity();</span>
+<span class="fc" id="L80">		assignment.setId(EntityIds.newId());</span>
+<span class="fc" id="L81">		assignment.setVehicleId(vehicleId);</span>
+<span class="fc" id="L82">		assignment.setDriverId(request.driverId());</span>
+<span class="fc" id="L83">		assignment.setStartDate(startDate);</span>
+<span class="fc" id="L84">		assignment.setEndDate(request.endDate());</span>
+<span class="fc" id="L85">		assignment.setReason(request.reason());</span>
+<span class="fc" id="L86">		primaryAssignmentRepository.save(assignment);</span>
+<span class="fc" id="L87">		primaryAssignmentRepository.flush();</span>
 
-<span class="fc" id="L83">		String driverId = resolvePrimaryDriverId(vehicleId, LocalDate.now()).orElse(null);</span>
-<span class="fc" id="L84">		return VehicleResponse.from(vehicle, driverId);</span>
+<span class="fc" id="L89">		String driverId = resolvePrimaryDriverId(vehicleId, LocalDate.now()).orElse(null);</span>
+<span class="fc" id="L90">		return VehicleResponse.from(vehicle, driverId);</span>
 	}
 
 	private void closeOpenAssignments(String vehicleId, LocalDate newStartDate) {
-<span class="fc" id="L88">		List&lt;PrimaryAssignmentEntity&gt; open =</span>
-<span class="fc" id="L89">				primaryAssignmentRepository.findByVehicleIdAndEndDateIsNullOrderByStartDateAsc(vehicleId);</span>
-<span class="fc bfc" id="L90" title="All 2 branches covered.">		for (PrimaryAssignmentEntity active : open) {</span>
-<span class="fc" id="L91">			LocalDate previousEnd = newStartDate.minusDays(1);</span>
+<span class="fc" id="L94">		List&lt;PrimaryAssignmentEntity&gt; open =</span>
+<span class="fc" id="L95">				primaryAssignmentRepository.findByVehicleIdAndEndDateIsNullOrderByStartDateAsc(vehicleId);</span>
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">		for (PrimaryAssignmentEntity active : open) {</span>
+<span class="nc" id="L97">			LocalDate previousEnd = newStartDate.minusDays(1);</span>
 			// Same-day (or earlier) reassignment: collapse the previous row to a one-day span.
-<span class="fc bfc" id="L93" title="All 2 branches covered.">			active.setEndDate(previousEnd.isBefore(active.getStartDate())</span>
-<span class="fc" id="L94">					? active.getStartDate()</span>
-<span class="fc" id="L95">					: previousEnd);</span>
-<span class="fc" id="L96">			primaryAssignmentRepository.save(active);</span>
-<span class="fc" id="L97">		}</span>
-<span class="fc" id="L98">		primaryAssignmentRepository.flush();</span>
-<span class="fc" id="L99">	}</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">			active.setEndDate(previousEnd.isBefore(active.getStartDate())</span>
+<span class="nc" id="L100">					? active.getStartDate()</span>
+<span class="nc" id="L101">					: previousEnd);</span>
+<span class="nc" id="L102">			primaryAssignmentRepository.save(active);</span>
+		}
+<span class="fc" id="L104">		primaryAssignmentRepository.flush();</span>
+<span class="fc" id="L105">	}</span>
 
 	@Transactional(readOnly = true)
 	public List&lt;VehicleDocumentResponse&gt; listDocuments(String vehicleId) {
-<span class="fc" id="L103">		findVehicle(vehicleId);</span>
-<span class="fc" id="L104">		return vehicleDocumentRepository.findByVehicleIdOrderByDocTypeAsc(vehicleId).stream()</span>
-<span class="fc" id="L105">				.map(VehicleDocumentResponse::from)</span>
-<span class="fc" id="L106">				.toList();</span>
+<span class="fc" id="L109">		findVehicle(vehicleId);</span>
+<span class="fc" id="L110">		return vehicleDocumentRepository.findByVehicleIdOrderByDocTypeAsc(vehicleId).stream()</span>
+<span class="fc" id="L111">				.map(VehicleDocumentResponse::from)</span>
+<span class="fc" id="L112">				.toList();</span>
 	}
 
 	@Transactional
 	public List&lt;VehicleDocumentResponse&gt; replaceDocuments(String vehicleId, List&lt;VehicleDocumentRequest&gt; requests) {
-<span class="fc" id="L111">		findVehicle(vehicleId);</span>
-<span class="fc" id="L112">		return requests.stream().map(request -&gt; upsertDocumentEntity(vehicleId, request)).toList();</span>
+<span class="fc" id="L117">		findVehicle(vehicleId);</span>
+<span class="fc" id="L118">		return requests.stream().map(request -&gt; upsertDocumentEntity(vehicleId, request)).toList();</span>
 	}
 
 	@Transactional
 	public VehicleDocumentResponse upsertDocument(String vehicleId, VehicleDocumentRequest request) {
-<span class="nc" id="L117">		findVehicle(vehicleId);</span>
-<span class="nc" id="L118">		return upsertDocumentEntity(vehicleId, request);</span>
+<span class="nc" id="L123">		findVehicle(vehicleId);</span>
+<span class="nc" id="L124">		return upsertDocumentEntity(vehicleId, request);</span>
 	}
 
 	private VehicleDocumentResponse upsertDocumentEntity(String vehicleId, VehicleDocumentRequest request) {
-<span class="fc" id="L122">		VehicleDocumentEntity doc = vehicleDocumentRepository</span>
-<span class="fc" id="L123">				.findByVehicleIdAndDocType(vehicleId, request.docType())</span>
-<span class="fc" id="L124">				.orElseGet(() -&gt; {</span>
-<span class="fc" id="L125">					VehicleDocumentEntity created = new VehicleDocumentEntity();</span>
-<span class="fc" id="L126">					created.setId(EntityIds.newId());</span>
-<span class="fc" id="L127">					created.setVehicleId(vehicleId);</span>
-<span class="fc" id="L128">					return created;</span>
+<span class="fc" id="L128">		VehicleDocumentEntity doc = vehicleDocumentRepository</span>
+<span class="fc" id="L129">				.findByVehicleIdAndDocType(vehicleId, request.docType())</span>
+<span class="fc" id="L130">				.orElseGet(() -&gt; {</span>
+<span class="fc" id="L131">					VehicleDocumentEntity created = new VehicleDocumentEntity();</span>
+<span class="fc" id="L132">					created.setId(EntityIds.newId());</span>
+<span class="fc" id="L133">					created.setVehicleId(vehicleId);</span>
+<span class="fc" id="L134">					return created;</span>
 				});
-<span class="fc" id="L130">		doc.setDocType(request.docType());</span>
-<span class="fc" id="L131">		doc.setExpiresOn(request.expiresOn());</span>
-<span class="fc" id="L132">		doc.setLastRenewedOn(request.lastRenewedOn());</span>
-<span class="fc" id="L133">		doc.setRenewalPeriodMonths(</span>
-<span class="pc bpc" id="L134" title="1 of 2 branches missed.">				request.renewalPeriodMonths() != null ? request.renewalPeriodMonths() : 12);</span>
-<span class="fc" id="L135">		doc.setLastAmount(request.lastAmount());</span>
-<span class="fc" id="L136">		doc.setNotes(request.notes());</span>
-<span class="fc" id="L137">		return VehicleDocumentResponse.from(vehicleDocumentRepository.save(doc));</span>
+<span class="fc" id="L136">		doc.setDocType(request.docType());</span>
+<span class="fc" id="L137">		doc.setExpiresOn(request.expiresOn());</span>
+<span class="fc" id="L138">		doc.setLastRenewedOn(request.lastRenewedOn());</span>
+<span class="fc" id="L139">		doc.setRenewalPeriodMonths(</span>
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">				request.renewalPeriodMonths() != null ? request.renewalPeriodMonths() : 12);</span>
+<span class="fc" id="L141">		doc.setLastAmount(request.lastAmount());</span>
+<span class="fc" id="L142">		doc.setNotes(request.notes());</span>
+<span class="fc" id="L143">		return VehicleDocumentResponse.from(vehicleDocumentRepository.save(doc));</span>
 	}
 
+	/** Primary driver effective on {@code onDate}, if any assignment covers that day. */
 	public Optional&lt;String&gt; resolvePrimaryDriverId(String vehicleId, LocalDate onDate) {
-<span class="fc" id="L141">		return primaryAssignmentRepository.findActiveForVehicleOnDate(vehicleId, onDate)</span>
-<span class="fc" id="L142">				.map(PrimaryAssignmentEntity::getDriverId);</span>
+<span class="fc" id="L148">		return primaryAssignmentRepository.findActiveForVehicleOnDate(vehicleId, onDate)</span>
+<span class="fc" id="L149">				.map(PrimaryAssignmentEntity::getDriverId);</span>
 	}
 
 	public VehicleEntity findVehicle(String id) {
-<span class="fc" id="L146">		return vehicleRepository.findById(id)</span>
-<span class="fc" id="L147">				.orElseThrow(() -&gt; new BusinessException(&quot;vehicle.not_found&quot;, HttpStatus.NOT_FOUND));</span>
+<span class="fc" id="L153">		return vehicleRepository.findById(id)</span>
+<span class="pc" id="L154">				.orElseThrow(() -&gt; new BusinessException(&quot;vehicle.not_found&quot;, HttpStatus.NOT_FOUND));</span>
 	}
 
 	private void apply(VehicleEntity entity, VehicleRequest request) {
-<span class="fc" id="L151">		entity.setName(request.name().trim());</span>
-<span class="fc" id="L152">		entity.setPlate(request.plate());</span>
-<span class="fc" id="L153">		entity.setBrand(request.brand());</span>
-<span class="fc" id="L154">		entity.setModel(request.model());</span>
-<span class="fc" id="L155">		entity.setYearBuilt(request.yearBuilt());</span>
-<span class="fc" id="L156">		entity.setPurchasePrice(request.purchasePrice());</span>
-<span class="fc" id="L157">		entity.setPurchaseDate(request.purchaseDate());</span>
-<span class="fc bfc" id="L158" title="All 2 branches covered.">		entity.setStatus(request.status() != null ? request.status() : &quot;active&quot;);</span>
-<span class="fc" id="L159">		entity.setNotes(request.notes());</span>
-<span class="fc" id="L160">	}</span>
+<span class="fc" id="L158">		entity.setName(request.name().trim());</span>
+<span class="fc" id="L159">		entity.setPlate(request.plate());</span>
+<span class="fc" id="L160">		entity.setBrand(request.brand());</span>
+<span class="fc" id="L161">		entity.setModel(request.model());</span>
+<span class="fc" id="L162">		entity.setYearBuilt(request.yearBuilt());</span>
+<span class="fc" id="L163">		entity.setPurchasePrice(request.purchasePrice());</span>
+<span class="fc" id="L164">		entity.setPurchaseDate(request.purchaseDate());</span>
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">		entity.setStatus(request.status() != null ? request.status() : &quot;active&quot;);</span>
+<span class="fc" id="L166">		entity.setNotes(request.notes());</span>
+<span class="fc" id="L167">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

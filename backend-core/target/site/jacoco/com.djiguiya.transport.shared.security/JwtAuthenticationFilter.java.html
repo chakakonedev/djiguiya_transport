@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtAuthenticationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">djiguiya-transport-backend</a> &gt; <a href="index.source.html" class="el_package">com.djiguiya.transport.shared.security</a> &gt; <span class="el_source">JwtAuthenticationFilter.java</span></div><h1>JwtAuthenticationFilter.java</h1><pre class="source lang-java linenums">package com.djiguiya.transport.shared.security;
 
+import com.djiguiya.transport.modules.identity.entities.UserEntity;
+import com.djiguiya.transport.modules.identity.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -16,35 +18,47 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Parses {@code Authorization: Bearer} tokens and installs a Spring {@code Authentication}
+ * (user id + {@code ROLE_*} from the live DB record). Invalid or revoked tokens clear the
+ * context so protected routes return 401, not 500.
+ */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final JwtService jwtService;
+	private final UserRepository userRepository;
 
+	/** Non-blocking: always continues the chain; missing/bad JWT simply leaves the user unauthenticated. */
 	@Override
 	protected void doFilterInternal(
 			HttpServletRequest request,
 			HttpServletResponse response,
 			FilterChain filterChain
 	) throws ServletException, IOException {
-<span class="fc" id="L31">		String header = request.getHeader(HttpHeaders.AUTHORIZATION);</span>
-<span class="pc bpc" id="L32" title="1 of 4 branches missed.">		if (header != null &amp;&amp; header.startsWith(&quot;Bearer &quot;)) {</span>
-<span class="fc" id="L33">			String token = header.substring(7);</span>
+<span class="fc" id="L40">		String header = request.getHeader(HttpHeaders.AUTHORIZATION);</span>
+<span class="pc bpc" id="L41" title="1 of 4 branches missed.">		if (header != null &amp;&amp; header.startsWith(&quot;Bearer &quot;)) {</span>
+<span class="fc" id="L42">			String token = header.substring(7);</span>
 			try {
-<span class="fc" id="L35">				Claims claims = jwtService.parse(token);</span>
-<span class="fc" id="L36">				String role = String.valueOf(claims.get(&quot;role&quot;));</span>
-<span class="fc" id="L37">				var auth = new UsernamePasswordAuthenticationToken(</span>
-<span class="fc" id="L38">						claims.getSubject(),</span>
-						null,
-<span class="fc" id="L40">						List.of(new SimpleGrantedAuthority(&quot;ROLE_&quot; + role.toUpperCase()))</span>
-				);
-<span class="fc" id="L42">				SecurityContextHolder.getContext().setAuthentication(auth);</span>
-<span class="nc" id="L43">			} catch (Exception ignored) {</span>
-<span class="nc" id="L44">				SecurityContextHolder.clearContext();</span>
-<span class="fc" id="L45">			}</span>
+<span class="fc" id="L44">				Claims claims = jwtService.parse(token);</span>
+<span class="fc" id="L45">				String userId = claims.getSubject();</span>
+<span class="fc" id="L46">				UserEntity user = userRepository.findById(userId).orElse(null);</span>
+<span class="pc bpc" id="L47" title="4 of 8 branches missed.">				if (user != null &amp;&amp; user.isActive() &amp;&amp; user.getRoleCode() != null &amp;&amp; !user.getRoleCode().isBlank()) {</span>
+<span class="fc" id="L48">					var auth = new UsernamePasswordAuthenticationToken(</span>
+<span class="fc" id="L49">							userId,</span>
+<span class="fc" id="L50">							null,</span>
+<span class="fc" id="L51">							List.of(new SimpleGrantedAuthority(&quot;ROLE_&quot; + user.getRoleCode().toUpperCase()))</span>
+					);
+<span class="fc" id="L53">					SecurityContextHolder.getContext().setAuthentication(auth);</span>
+<span class="fc" id="L54">				} else {</span>
+<span class="nc" id="L55">					SecurityContextHolder.clearContext();</span>
+				}
+<span class="nc" id="L57">			} catch (Exception ignored) {</span>
+<span class="nc" id="L58">				SecurityContextHolder.clearContext();</span>
+			}
 		}
-<span class="fc" id="L47">		filterChain.doFilter(request, response);</span>
-<span class="fc" id="L48">	}</span>
+<span class="fc" id="L61">		filterChain.doFilter(request, response);</span>
+<span class="fc" id="L62">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

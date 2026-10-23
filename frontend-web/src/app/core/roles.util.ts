@@ -1,6 +1,6 @@
 /**
  * Role-based UI permissions derived from the logged-in user's roleCode.
- * Used to gate ledger edits and staff management without server round-trips.
+ * Used to gate ledger edits, staff, and fleet management without server round-trips.
  */
 
 /** Role codes from JWT / login response (lowercase). */
@@ -30,4 +30,9 @@ export function canEditLedger(roleCode: string | null | undefined): boolean {
 
 export function canManageStaff(roleCode: string | null | undefined): boolean {
   return isOwner(roleCode);
+}
+
+/** PDG and driver manager — can create/update vehicles, drivers, documents. */
+export function canManageFleet(roleCode: string | null | undefined): boolean {
+  return roleCode === RoleCodes.OWNER || roleCode === RoleCodes.DRIVER_MANAGER;
 }

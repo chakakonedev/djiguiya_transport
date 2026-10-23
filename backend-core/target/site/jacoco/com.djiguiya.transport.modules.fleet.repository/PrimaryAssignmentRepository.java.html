@@ -9,6 +9,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Date-range queries for {@link PrimaryAssignmentEntity}. When multiple rows match a day, the latest start wins.
+ */
 public interface PrimaryAssignmentRepository extends JpaRepository&lt;PrimaryAssignmentEntity, String&gt; {
 
 	List&lt;PrimaryAssignmentEntity&gt; findByVehicleIdAndEndDateIsNullOrderByStartDateAsc(String vehicleId);
@@ -25,7 +28,7 @@ public interface PrimaryAssignmentRepository extends JpaRepository&lt;PrimaryAss
 			@Param(&quot;onDate&quot;) LocalDate onDate);
 
 	default Optional&lt;PrimaryAssignmentEntity&gt; findActiveForVehicleOnDate(String vehicleId, LocalDate onDate) {
-<span class="fc" id="L28">		return findActiveAssignmentsForVehicleOnDate(vehicleId, onDate).stream().findFirst();</span>
+<span class="fc" id="L31">		return findActiveAssignmentsForVehicleOnDate(vehicleId, onDate).stream().findFirst();</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

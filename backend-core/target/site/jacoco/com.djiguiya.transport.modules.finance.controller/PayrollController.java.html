@@ -4,13 +4,19 @@ import com.djiguiya.transport.modules.finance.dto.PayrollPaymentRequest;
 import com.djiguiya.transport.modules.finance.dto.TransactionResponse;
 import com.djiguiya.transport.modules.finance.service.PayrollService;
 import com.djiguiya.transport.shared.api.ApiResponse;
+import com.djiguiya.transport.shared.security.AppRoles;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Posts payroll-related expenses as standard ledger transactions under category {@code payroll}.
+ * Mutations require the same ledger-write roles as {@link TransactionController}.
+ */
 @RestController
 @RequestMapping(&quot;/api/v1/payroll&quot;)
 @RequiredArgsConstructor
@@ -18,14 +24,18 @@ public class PayrollController {
 
 	private final PayrollService payrollService;
 
+	/** Records a salary payment for a staff member for the given payroll month. */
 	@PostMapping(&quot;/salary&quot;)
+	@PreAuthorize(AppRoles.LEDGER_WRITE)
 	public ApiResponse&lt;TransactionResponse&gt; salary(@Valid @RequestBody PayrollPaymentRequest request) {
-<span class="fc" id="L23">		return ApiResponse.ok(&quot;transaction.created&quot;, payrollService.postSalary(request));</span>
+<span class="fc" id="L31">		return ApiResponse.ok(&quot;transaction.created&quot;, payrollService.postSalary(request));</span>
 	}
 
+	/** Records a bonus payment using the same payroll expense shape as salary. */
 	@PostMapping(&quot;/bonus&quot;)
+	@PreAuthorize(AppRoles.LEDGER_WRITE)
 	public ApiResponse&lt;TransactionResponse&gt; bonus(@Valid @RequestBody PayrollPaymentRequest request) {
-<span class="fc" id="L28">		return ApiResponse.ok(&quot;transaction.created&quot;, payrollService.postBonus(request));</span>
+<span class="fc" id="L38">		return ApiResponse.ok(&quot;transaction.created&quot;, payrollService.postBonus(request));</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

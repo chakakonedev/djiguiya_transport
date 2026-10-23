@@ -13,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Business operations for staff profiles used as drivers and payroll subjects across fleet and trips.
+ */
 @Service
 @RequiredArgsConstructor
 public class StaffService {
@@ -21,43 +24,44 @@ public class StaffService {
 
 	@Transactional(readOnly = true)
 	public List&lt;StaffResponse&gt; listAll() {
-<span class="fc" id="L24">		return staffRepository.findAll().stream().map(StaffResponse::from).toList();</span>
+<span class="fc" id="L27">		return staffRepository.findAll().stream().map(StaffResponse::from).toList();</span>
 	}
 
 	@Transactional(readOnly = true)
 	public StaffResponse getById(String id) {
-<span class="fc" id="L29">		return StaffResponse.from(findEntity(id));</span>
+<span class="fc" id="L32">		return StaffResponse.from(findEntity(id));</span>
 	}
 
 	@Transactional
 	public StaffResponse create(StaffRequest request) {
-<span class="fc" id="L34">		StaffEntity entity = new StaffEntity();</span>
-<span class="fc" id="L35">		entity.setId(EntityIds.newId());</span>
-<span class="fc" id="L36">		apply(entity, request);</span>
-<span class="fc" id="L37">		return StaffResponse.from(staffRepository.save(entity));</span>
+<span class="fc" id="L37">		StaffEntity entity = new StaffEntity();</span>
+<span class="fc" id="L38">		entity.setId(EntityIds.newId());</span>
+<span class="fc" id="L39">		apply(entity, request);</span>
+<span class="fc" id="L40">		return StaffResponse.from(staffRepository.save(entity));</span>
 	}
 
 	@Transactional
 	public StaffResponse update(String id, StaffRequest request) {
-<span class="fc" id="L42">		StaffEntity entity = findEntity(id);</span>
-<span class="fc" id="L43">		apply(entity, request);</span>
-<span class="fc" id="L44">		return StaffResponse.from(staffRepository.save(entity));</span>
+<span class="fc" id="L45">		StaffEntity entity = findEntity(id);</span>
+<span class="fc" id="L46">		apply(entity, request);</span>
+<span class="fc" id="L47">		return StaffResponse.from(staffRepository.save(entity));</span>
 	}
 
+	/** Loads a staff row or throws {@code staff.not_found}; shared by trips and fleet validation. */
 	public StaffEntity findEntity(String id) {
-<span class="fc" id="L48">		return staffRepository.findById(id)</span>
-<span class="fc" id="L49">				.orElseThrow(() -&gt; new BusinessException(&quot;staff.not_found&quot;, HttpStatus.NOT_FOUND));</span>
+<span class="fc" id="L52">		return staffRepository.findById(id)</span>
+<span class="pc" id="L53">				.orElseThrow(() -&gt; new BusinessException(&quot;staff.not_found&quot;, HttpStatus.NOT_FOUND));</span>
 	}
 
 	private void apply(StaffEntity entity, StaffRequest request) {
-<span class="fc" id="L53">		entity.setFullName(request.fullName().trim());</span>
-<span class="fc" id="L54">		entity.setStaffType(request.staffType().trim());</span>
-<span class="fc" id="L55">		entity.setPhone(request.phone());</span>
-<span class="fc bfc" id="L56" title="All 2 branches covered.">		entity.setStatus(request.status() != null ? request.status() : &quot;active&quot;);</span>
-<span class="fc" id="L57">		entity.setMonthlySalary(request.monthlySalary());</span>
-<span class="fc" id="L58">		entity.setPayDay(request.payDay());</span>
-<span class="fc" id="L59">		entity.setUserId(request.userId());</span>
-<span class="fc" id="L60">		entity.setNotes(request.notes());</span>
-<span class="fc" id="L61">	}</span>
+<span class="fc" id="L57">		entity.setFullName(request.fullName().trim());</span>
+<span class="fc" id="L58">		entity.setStaffType(request.staffType().trim());</span>
+<span class="fc" id="L59">		entity.setPhone(request.phone());</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">		entity.setStatus(request.status() != null ? request.status() : &quot;active&quot;);</span>
+<span class="fc" id="L61">		entity.setMonthlySalary(request.monthlySalary());</span>
+<span class="fc" id="L62">		entity.setPayDay(request.payDay());</span>
+<span class="fc" id="L63">		entity.setUserId(request.userId());</span>
+<span class="fc" id="L64">		entity.setNotes(request.notes());</span>
+<span class="fc" id="L65">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

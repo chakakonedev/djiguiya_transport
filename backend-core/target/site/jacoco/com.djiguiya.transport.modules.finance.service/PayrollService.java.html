@@ -8,6 +8,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Wraps payroll flows as expense transactions: category {@code payroll}, subcategory {@code salary}
+ * or {@code bonus}, with {@code driverId} holding the staff id and optional {@code payrollMonth}.
+ */
 @Service
 @RequiredArgsConstructor
 public class PayrollService {
@@ -19,36 +23,38 @@ public class PayrollService {
 	private final TransactionService transactionService;
 	private final StaffService staffService;
 
+	/** Validates staff exists, then creates a salary expense ledger entry. */
 	@Transactional
 	public TransactionResponse postSalary(PayrollPaymentRequest request) {
-<span class="fc" id="L24">		return postPayroll(request, KIND_SALARY, defaultLabel(request, &quot;Salary payment&quot;));</span>
+<span class="fc" id="L29">		return postPayroll(request, KIND_SALARY, defaultLabel(request, &quot;Salary payment&quot;));</span>
 	}
 
+	/** Same as salary but subcategory and payroll kind are {@code bonus}. */
 	@Transactional
 	public TransactionResponse postBonus(PayrollPaymentRequest request) {
-<span class="fc" id="L29">		return postPayroll(request, KIND_BONUS, defaultLabel(request, &quot;Bonus payment&quot;));</span>
+<span class="fc" id="L35">		return postPayroll(request, KIND_BONUS, defaultLabel(request, &quot;Bonus payment&quot;));</span>
 	}
 
 	private TransactionResponse postPayroll(PayrollPaymentRequest request, String kind, String defaultLabel) {
-<span class="fc" id="L33">		staffService.findEntity(request.staffId());</span>
-<span class="fc" id="L34">		var txnRequest = new com.djiguiya.transport.modules.finance.dto.TransactionRequest(</span>
-				TransactionTypes.EXPENSE,
-<span class="fc" id="L36">				request.txnDate(),</span>
-<span class="fc" id="L37">				request.amount(),</span>
-				null,
-<span class="fc" id="L39">				request.staffId(),</span>
-				null,
-				CATEGORY_PAYROLL,
-				kind,
-<span class="fc bfc" id="L43" title="All 2 branches covered.">				request.label() != null ? request.label() : defaultLabel,</span>
-<span class="fc" id="L44">				request.payrollMonth(),</span>
-				kind,
-<span class="fc" id="L46">				request.notes());</span>
-<span class="fc" id="L47">		return transactionService.create(txnRequest);</span>
+<span class="fc" id="L39">		staffService.findEntity(request.staffId());</span>
+<span class="fc" id="L40">		var txnRequest = new com.djiguiya.transport.modules.finance.dto.TransactionRequest(</span>
+<span class="fc" id="L41">				TransactionTypes.EXPENSE,</span>
+<span class="fc" id="L42">				request.txnDate(),</span>
+<span class="fc" id="L43">				request.amount(),</span>
+<span class="fc" id="L44">				null,</span>
+<span class="fc" id="L45">				request.staffId(),</span>
+<span class="fc" id="L46">				null,</span>
+<span class="fc" id="L47">				CATEGORY_PAYROLL,</span>
+<span class="fc" id="L48">				kind,</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">				request.label() != null ? request.label() : defaultLabel,</span>
+<span class="fc" id="L50">				request.payrollMonth(),</span>
+<span class="fc" id="L51">				kind,</span>
+<span class="fc" id="L52">				request.notes());</span>
+<span class="fc" id="L53">		return transactionService.create(txnRequest);</span>
 	}
 
 	private String defaultLabel(PayrollPaymentRequest request, String fallback) {
-<span class="pc bpc" id="L51" title="1 of 4 branches missed.">		return request.label() != null &amp;&amp; !request.label().isBlank() ? request.label() : fallback;</span>
+<span class="pc bpc" id="L57" title="1 of 4 branches missed.">		return request.label() != null &amp;&amp; !request.label().isBlank() ? request.label() : fallback;</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

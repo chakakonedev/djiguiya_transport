@@ -28,6 +28,7 @@ export interface StaffCreateRequest {
   monthlySalary?: number | null;
   payDay?: number | null;
   phone?: string | null;
+  status?: string | null;
   notes?: string | null;
 }
 

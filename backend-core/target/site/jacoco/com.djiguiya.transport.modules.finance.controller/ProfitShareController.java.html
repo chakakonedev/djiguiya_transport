@@ -20,6 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * Endpoints for annual profit-share preview and configuration of distribution rules
+ * (reserve percentage, partner shares, quarterly salary bonuses).
+ */
 @RestController
 @RequestMapping(&quot;/api/v1/profit-share&quot;)
 @RequiredArgsConstructor
@@ -28,22 +32,28 @@ public class ProfitShareController {
 	private final ProfitShareService profitShareService;
 	private final ProfitShareRuleService profitShareRuleService;
 
+	/**
+	 * Simulates fiscal-year profit allocation: net profit, company reserve, distributable pool,
+	 * and per-partner shares from active rules at fiscal year end.
+	 */
 	@GetMapping(&quot;/preview&quot;)
 	public ApiResponse&lt;ProfitSharePreviewResponse&gt; preview(@RequestParam int year) {
-<span class="fc" id="L33">		return ApiResponse.ok(profitShareService.preview(year));</span>
+<span class="fc" id="L41">		return ApiResponse.ok(profitShareService.preview(year));</span>
 	}
 
+	/** Lists all profit-share rules with resolved beneficiary display names. */
 	@GetMapping(&quot;/rules&quot;)
 	public ApiResponse&lt;List&lt;ProfitShareRuleResponse&gt;&gt; listRules() {
-<span class="fc" id="L38">		return ApiResponse.ok(profitShareRuleService.listAll());</span>
+<span class="fc" id="L47">		return ApiResponse.ok(profitShareRuleService.listAll());</span>
 	}
 
+	/** Partially updates rate, salary-month equivalent, enabled flag, or notes (owner only). */
 	@PutMapping(&quot;/rules/{id}&quot;)
 	@PreAuthorize(AppRoles.OWNER_ONLY)
 	public ApiResponse&lt;ProfitShareRuleResponse&gt; updateRule(
 			@PathVariable String id,
 			@Valid @RequestBody ProfitShareRuleUpdateRequest request) {
-<span class="nc" id="L46">		return ApiResponse.ok(&quot;profit_share.rule_updated&quot;, profitShareRuleService.update(id, request));</span>
+<span class="nc" id="L56">		return ApiResponse.ok(&quot;profit_share.rule_updated&quot;, profitShareRuleService.update(id, request));</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

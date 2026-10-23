@@ -19,6 +19,18 @@ public final class AppRoles {
 	/** Owner / PDG only (staff sensitive fields & profit-share rules). */
 	public static final String OWNER_ONLY = "hasRole('" + OWNER + "')";
 
+	/** Roles allowed to create/update fleet vehicles, drivers, and documents. */
+	public static final String FLEET_WRITE =
+			"hasAnyRole('" + OWNER + "','" + CASHIER + "','" + ACCOUNTANT + "','"
+					+ CASHIER_ACCOUNTANT + "','" + DRIVER_MANAGER + "')";
+
+	/**
+	 * Roles allowed to create/update trips (ledger revenue flow + driver manager).
+	 */
+	public static final String TRIP_WRITE =
+			"hasAnyRole('" + OWNER + "','" + CASHIER + "','" + ACCOUNTANT + "','"
+					+ CASHIER_ACCOUNTANT + "','" + DRIVER_MANAGER + "')";
+
 	private AppRoles() {
 	}
 }

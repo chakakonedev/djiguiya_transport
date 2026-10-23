@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatXof } from './format.util';
+import { formatXof, localIsoDate } from './format.util';
 
 /**
  * formatXof: West African CFA display for numbers; em dash for missing or invalid values.
@@ -12,5 +12,12 @@ describe('formatXof', () => {
     expect(formatXof(Number.NaN)).toBe('—');
     expect(formatXof(1500)).toContain('1');
     expect(formatXof(1500)).toMatch(/XOF|F/);
+  });
+});
+
+describe('localIsoDate', () => {
+  /** Uses local Y/M/D so evening hours in UTC+ zones are not shifted to the previous day. */
+  it('formats the local calendar day as YYYY-MM-DD', () => {
+    expect(localIsoDate(new Date(2026, 9, 23, 23, 30))).toBe('2026-10-23');
   });
 });

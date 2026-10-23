@@ -1,20 +1,24 @@
-<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ApiResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">djiguiya-transport-backend</a> &gt; <a href="index.source.html" class="el_package">com.djiguiya.transport.shared.api</a> &gt; <span class="el_source">ApiResponse.java</span></div><h1>ApiResponse.java</h1><pre class="source lang-java linenums">package com.djiguiya.transport.shared.api;
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ApiResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">djiguiya-transport-backend</a> &gt; <a href="index.source.html" class="el_package">com.djiguiya.transport.shared.api</a> &gt; <span class="el_source">ApiResponse.java</span></div><h1>ApiResponse.java</h1><pre class="source lang-java linenums"><span class="fc" id="L1">package com.djiguiya.transport.shared.api;</span>
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+/**
+ * Envelope for successful API payloads; {@code messageKey} is optional i18n hint for the client.
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-<span class="fc" id="L6">public record ApiResponse&lt;T&gt;(boolean success, String messageKey, T data) {</span>
+public record ApiResponse&lt;T&gt;(boolean success, String messageKey, T data) {
 
 	public static &lt;T&gt; ApiResponse&lt;T&gt; ok(T data) {
-<span class="fc" id="L9">		return new ApiResponse&lt;&gt;(true, null, data);</span>
+<span class="fc" id="L12">		return new ApiResponse&lt;&gt;(true, null, data);</span>
 	}
 
 	public static &lt;T&gt; ApiResponse&lt;T&gt; ok(String messageKey, T data) {
-<span class="fc" id="L13">		return new ApiResponse&lt;&gt;(true, messageKey, data);</span>
+<span class="fc" id="L16">		return new ApiResponse&lt;&gt;(true, messageKey, data);</span>
 	}
 
+	/** Explicit failure envelope when controllers return errors without throwing. */
 	public static ApiResponse&lt;Void&gt; fail(String messageKey) {
-<span class="nc" id="L17">		return new ApiResponse&lt;&gt;(false, messageKey, null);</span>
+<span class="nc" id="L21">		return new ApiResponse&lt;&gt;(false, messageKey, null);</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

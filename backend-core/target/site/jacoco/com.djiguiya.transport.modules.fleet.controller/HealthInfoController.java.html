@@ -7,15 +7,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+/**
+ * Lightweight liveness endpoint for load balancers and deployment checks (no auth required).
+ */
 @RestController
 @RequestMapping(&quot;/api/v1&quot;)
-<span class="fc" id="L12">public class HealthInfoController {</span>
+<span class="fc" id="L15">public class HealthInfoController {</span>
 
+	/** Returns application name and a fixed ok status. */
 	@GetMapping(&quot;/ping&quot;)
 	public ApiResponse&lt;Map&lt;String, String&gt;&gt; ping() {
-<span class="fc" id="L16">		return ApiResponse.ok(Map.of(</span>
-				&quot;app&quot;, &quot;djiguiya-transport&quot;,
-				&quot;status&quot;, &quot;ok&quot;
+<span class="fc" id="L20">		return ApiResponse.ok(Map.of(</span>
+<span class="fc" id="L21">				&quot;app&quot;, &quot;djiguiya-transport&quot;,</span>
+<span class="fc" id="L22">				&quot;status&quot;, &quot;ok&quot;</span>
 		));
 	}
 }

@@ -9,11 +9,15 @@ import lombok.Setter;
 
 import java.time.Instant;
 
+/**
+ * Application login account. Linked optionally to {@link com.djiguiya.transport.modules.staff.entities.StaffEntity}
+ * via {@code userId} on staff records; role drives API authorization.
+ */
 @Entity
 @Table(name = &quot;users&quot;)
 @Getter
 @Setter
-<span class="fc" id="L16">public class UserEntity {</span>
+<span class="fc" id="L20">public class UserEntity {</span>
 
 	@Id
 	@Column(length = 36)
@@ -28,15 +32,16 @@ import java.time.Instant;
 	@Column(name = &quot;full_name&quot;, nullable = false, length = 180)
 	private String fullName;
 
+	/** Role identifier consumed by {@code @PreAuthorize} expressions. */
 	@Column(name = &quot;role_code&quot;, nullable = false, length = 40)
 	private String roleCode;
 
-<span class="fc" id="L34">	@Column(nullable = false)</span>
-	private boolean active = true;
+	@Column(nullable = false)
+<span class="fc" id="L40">	private boolean active = true;</span>
 
 	/** False until the user sets a personal password (keeps bootstrap default). */
-<span class="fc" id="L38">	@Column(name = &quot;password_changed&quot;, nullable = false)</span>
-	private boolean passwordChanged = false;
+	@Column(name = &quot;password_changed&quot;, nullable = false)
+<span class="fc" id="L44">	private boolean passwordChanged = false;</span>
 
 	@Column(name = &quot;created_at&quot;, nullable = false)
 	private Instant createdAt;

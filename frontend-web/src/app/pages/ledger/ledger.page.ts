@@ -24,7 +24,7 @@ import {
   OTHER_SUBGROUP,
   SUBGROUPS_BY_GROUP
 } from '../../core/expense-catalog';
-import { formatXof } from '../../core/format.util';
+import { formatXof, localIsoDate } from '../../core/format.util';
 import { canEditLedger } from '../../core/roles.util';
 
 type LedgerTab = 'revenue' | 'expense';
@@ -419,6 +419,6 @@ export class LedgerPage implements OnInit {
   }
 
   private today(): string {
-    return new Date().toISOString().slice(0, 10);
+    return localIsoDate();
   }
 }

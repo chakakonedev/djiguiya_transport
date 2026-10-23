@@ -2,13 +2,16 @@
 
 import java.util.UUID;
 
+/**
+ * String UUID primary keys for new domain rows (aligned with API and JPA id type).
+ */
 public final class EntityIds {
 
 	private EntityIds() {
 	}
 
 	public static String newId() {
-<span class="fc" id="L11">		return UUID.randomUUID().toString();</span>
+<span class="fc" id="L14">		return UUID.randomUUID().toString();</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

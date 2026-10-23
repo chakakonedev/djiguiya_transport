@@ -4,33 +4,35 @@
     <p class="muted">{{ 'fleet.subtitle' | translate }}</p>
   </header>
 
-  <!-- New vehicle registration -->
-  <article class="card">
-    <h2>{{ 'fleet.createTitle' | translate }}</h2>
-    <form class="form-grid" [formGroup]="createForm" (ngSubmit)="submitCreate()">
-      <label>
-        {{ 'fleet.fields.name' | translate }}
-        <input formControlName="name" />
-      </label>
-      <label>
-        {{ 'fleet.fields.plate' | translate }}
-        <input formControlName="plate" />
-      </label>
-      <label>
-        {{ 'fleet.fields.purchasePrice' | translate }}
-        <input type="number" formControlName="purchasePrice" />
-      </label>
-      <label>
-        {{ 'fleet.fields.purchaseDate' | translate }}
-        <input type="date" formControlName="purchaseDate" />
-      </label>
-      <div class="form-actions">
-        <button type="submit" class="btn-primary" [disabled]="saving() || createForm.invalid">
-          {{ 'common.save' | translate }}
-        </button>
-      </div>
-    </form>
-  </article>
+  @if (canManage()) {
+    <!-- New vehicle registration -->
+    <article class="card">
+      <h2>{{ 'fleet.createTitle' | translate }}</h2>
+      <form class="form-grid" [formGroup]="createForm" (ngSubmit)="submitCreate()">
+        <label>
+          {{ 'fleet.fields.name' | translate }}
+          <input formControlName="name" />
+        </label>
+        <label>
+          {{ 'fleet.fields.plate' | translate }}
+          <input formControlName="plate" />
+        </label>
+        <label>
+          {{ 'fleet.fields.purchasePrice' | translate }}
+          <input type="number" formControlName="purchasePrice" />
+        </label>
+        <label>
+          {{ 'fleet.fields.purchaseDate' | translate }}
+          <input type="date" formControlName="purchaseDate" />
+        </label>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" [disabled]="saving() || createForm.invalid">
+            {{ 'common.save' | translate }}
+          </button>
+        </div>
+      </form>
+    </article>
+  }
 
   @if (actionError()) {
     <p class="error">{{ 'common.loadError' | translate }}</p>
@@ -56,76 +58,78 @@
                 <p class="muted">{{ 'fleet.primaryDriver' | translate }}: {{ driverName }}</p>
               }
             </div>
-            <button type="button" class="btn-ghost" (click)="toggleExpand(vehicle)">
-              {{
-                expandedId() === vehicle.id
-                  ? ('common.collapse' | translate)
-                  : ('common.expand' | translate)
-              }}
-            </button>
+            @if (canManage()) {
+              <button type="button" class="btn-ghost" (click)="toggleExpand(vehicle)">
+                {{
+                  expandedId() === vehicle.id
+                    ? ('common.collapse' | translate)
+                    : ('common.expand' | translate)
+                }}
+              </button>
+            }
           </div>
 
-          @if (expandedId() === vehicle.id) {
+          @if (canManage() && expandedId() === vehicle.id) {
             <div class="panel">
-              <h4>{{ 'fleet.assignDriver' | translate }}</h4>
-              @if (driverForm(vehicle.id); as df) {
-                <form class="form-grid compact" [formGroup]="df" (ngSubmit)="savePrimaryDriver(vehicle.id)">
-                  <label>
-                    {{ 'fleet.fields.driver' | translate }}
-                    <select formControlName="driverId">
-                      <option value="">{{ 'common.select' | translate }}</option>
-                      @for (d of drivers(); track d.id) {
-                        <option [value]="d.id">{{ d.fullName }}</option>
-                      }
-                    </select>
-                  </label>
-                  <label>
-                    {{ 'fleet.fields.startDate' | translate }}
-                    <input type="date" formControlName="startDate" />
-                  </label>
-                  <div class="form-actions">
-                    <button type="submit" class="btn-primary" [disabled]="saving() || df.invalid">
-                      {{ 'fleet.saveDriver' | translate }}
-                    </button>
-                  </div>
-                </form>
-              }
+                <h4>{{ 'fleet.assignDriver' | translate }}</h4>
+                @if (driverForm(vehicle.id); as df) {
+                  <form class="form-grid compact" [formGroup]="df" (ngSubmit)="savePrimaryDriver(vehicle.id)">
+                    <label>
+                      {{ 'fleet.fields.driver' | translate }}
+                      <select formControlName="driverId">
+                        <option value="">{{ 'common.select' | translate }}</option>
+                        @for (d of drivers(); track d.id) {
+                          <option [value]="d.id">{{ d.fullName }}</option>
+                        }
+                      </select>
+                    </label>
+                    <label>
+                      {{ 'fleet.fields.startDate' | translate }}
+                      <input type="date" formControlName="startDate" />
+                    </label>
+                    <div class="form-actions">
+                      <button type="submit" class="btn-primary" [disabled]="saving() || df.invalid">
+                        {{ 'fleet.saveDriver' | translate }}
+                      </button>
+                    </div>
+                  </form>
+                }
 
-              <h4>{{ 'fleet.documentsTitle' | translate }}</h4>
-              @if (docForm(vehicle.id); as docs) {
-                <form [formGroup]="docs" (ngSubmit)="saveDocuments(vehicle.id)">
-                  @for (docType of docTypes; track docType) {
-                    <fieldset class="doc-block" [formGroupName]="docType">
-                      <legend>{{ 'catalog.docTypes.' + docType | translate }}</legend>
-                      <div class="form-grid compact">
-                        <label>
-                          {{ 'fleet.fields.expiresOn' | translate }}
-                          <input type="date" formControlName="expiresOn" />
-                        </label>
-                        <label>
-                          {{ 'fleet.fields.lastRenewedOn' | translate }}
-                          <input type="date" formControlName="lastRenewedOn" />
-                        </label>
-                        <label>
-                          {{ 'fleet.fields.renewalMonths' | translate }}
-                          <input type="number" formControlName="renewalPeriodMonths" />
-                        </label>
-                        <label>
-                          {{ 'fleet.fields.lastAmount' | translate }}
-                          <input type="number" formControlName="lastAmount" />
-                        </label>
-                      </div>
-                    </fieldset>
-                  }
-                  <div class="form-actions">
-                    <button type="submit" class="btn-primary" [disabled]="saving()">
-                      {{ 'fleet.saveDocuments' | translate }}
-                    </button>
-                  </div>
-                </form>
-              } @else {
-                <p class="muted">{{ 'common.loading' | translate }}</p>
-              }
+                <h4>{{ 'fleet.documentsTitle' | translate }}</h4>
+                @if (docForm(vehicle.id); as docs) {
+                  <form [formGroup]="docs" (ngSubmit)="saveDocuments(vehicle.id)">
+                    @for (docType of docTypes; track docType) {
+                      <fieldset class="doc-block" [formGroupName]="docType">
+                        <legend>{{ 'catalog.docTypes.' + docType | translate }}</legend>
+                        <div class="form-grid compact">
+                          <label>
+                            {{ 'fleet.fields.expiresOn' | translate }}
+                            <input type="date" formControlName="expiresOn" />
+                          </label>
+                          <label>
+                            {{ 'fleet.fields.lastRenewedOn' | translate }}
+                            <input type="date" formControlName="lastRenewedOn" />
+                          </label>
+                          <label>
+                            {{ 'fleet.fields.renewalMonths' | translate }}
+                            <input type="number" formControlName="renewalPeriodMonths" />
+                          </label>
+                          <label>
+                            {{ 'fleet.fields.lastAmount' | translate }}
+                            <input type="number" formControlName="lastAmount" />
+                          </label>
+                        </div>
+                      </fieldset>
+                    }
+                    <div class="form-actions">
+                      <button type="submit" class="btn-primary" [disabled]="saving()">
+                        {{ 'fleet.saveDocuments' | translate }}
+                      </button>
+                    </div>
+                  </form>
+                } @else {
+                  <p class="muted">{{ 'common.loading' | translate }}</p>
+                }
             </div>
           }
         </article>

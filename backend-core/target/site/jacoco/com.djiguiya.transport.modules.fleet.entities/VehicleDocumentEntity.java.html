@@ -12,11 +12,14 @@ import lombok.Setter;
 import java.time.Instant;
 import java.time.LocalDate;
 
+/**
+ * Tracks renewal/expiry for a typed document belonging to a vehicle ({@code vehicleId} + {@code docType} unique in practice).
+ */
 @Entity
 @Table(name = &quot;vehicle_documents&quot;)
 @Getter
 @Setter
-<span class="fc" id="L19">public class VehicleDocumentEntity {</span>
+<span class="fc" id="L22">public class VehicleDocumentEntity {</span>
 
 	@Id
 	@Column(length = 36)
@@ -34,8 +37,8 @@ import java.time.LocalDate;
 	@Column(name = &quot;last_renewed_on&quot;)
 	private LocalDate lastRenewedOn;
 
-<span class="fc" id="L37">	@Column(name = &quot;renewal_period_months&quot;, nullable = false)</span>
-	private int renewalPeriodMonths = 12;
+	@Column(name = &quot;renewal_period_months&quot;, nullable = false)
+<span class="fc" id="L41">	private int renewalPeriodMonths = 12;</span>
 
 	@Column(name = &quot;last_amount&quot;)
 	private Long lastAmount;
@@ -49,7 +52,7 @@ import java.time.LocalDate;
 	@PrePersist
 	@PreUpdate
 	void touchUpdatedAt() {
-<span class="fc" id="L52">		updatedAt = Instant.now();</span>
-<span class="fc" id="L53">	}</span>
+<span class="fc" id="L55">		updatedAt = Instant.now();</span>
+<span class="fc" id="L56">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

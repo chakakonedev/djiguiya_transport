@@ -19,6 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * CRUD API for ledger transactions (revenue and expense rows). Mutations require ledger write role.
+ */
 @RestController
 @RequestMapping(&quot;/api/v1/transactions&quot;)
 @RequiredArgsConstructor
@@ -26,35 +29,40 @@ public class TransactionController {
 
 	private final TransactionService transactionService;
 
+	/** Lists all non-deleted transactions, newest transaction date first. */
 	@GetMapping
 	public ApiResponse&lt;List&lt;TransactionResponse&gt;&gt; list() {
-<span class="fc" id="L31">		return ApiResponse.ok(transactionService.listAll());</span>
+<span class="fc" id="L35">		return ApiResponse.ok(transactionService.listAll());</span>
 	}
 
+	/** Returns a single active (non-deleted) transaction by id. */
 	@GetMapping(&quot;/{id}&quot;)
 	public ApiResponse&lt;TransactionResponse&gt; get(@PathVariable String id) {
-<span class="fc" id="L36">		return ApiResponse.ok(transactionService.getById(id));</span>
+<span class="fc" id="L41">		return ApiResponse.ok(transactionService.getById(id));</span>
 	}
 
+	/** Creates a ledger row after revenue/expense business validation. */
 	@PostMapping
 	@PreAuthorize(AppRoles.LEDGER_WRITE)
 	public ApiResponse&lt;TransactionResponse&gt; create(@Valid @RequestBody TransactionRequest request) {
-<span class="fc" id="L42">		return ApiResponse.ok(&quot;transaction.created&quot;, transactionService.create(request));</span>
+<span class="fc" id="L48">		return ApiResponse.ok(&quot;transaction.created&quot;, transactionService.create(request));</span>
 	}
 
+	/** Replaces mutable fields on an existing transaction. */
 	@PutMapping(&quot;/{id}&quot;)
 	@PreAuthorize(AppRoles.LEDGER_WRITE)
 	public ApiResponse&lt;TransactionResponse&gt; update(
 			@PathVariable String id,
 			@Valid @RequestBody TransactionRequest request) {
-<span class="fc" id="L50">		return ApiResponse.ok(&quot;transaction.updated&quot;, transactionService.update(id, request));</span>
+<span class="fc" id="L57">		return ApiResponse.ok(&quot;transaction.updated&quot;, transactionService.update(id, request));</span>
 	}
 
+	/** Soft-deletes a transaction by setting {@code deletedAt}. */
 	@DeleteMapping(&quot;/{id}&quot;)
 	@PreAuthorize(AppRoles.LEDGER_WRITE)
 	public ApiResponse&lt;Void&gt; delete(@PathVariable String id) {
-<span class="fc" id="L56">		transactionService.delete(id);</span>
-<span class="fc" id="L57">		return ApiResponse.ok(&quot;transaction.deleted&quot;, null);</span>
+<span class="fc" id="L64">		transactionService.delete(id);</span>
+<span class="fc" id="L65">		return ApiResponse.ok(&quot;transaction.deleted&quot;, null);</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -7,8 +7,10 @@ import com.djiguiya.transport.modules.fleet.dto.VehicleRequest;
 import com.djiguiya.transport.modules.fleet.dto.VehicleResponse;
 import com.djiguiya.transport.modules.fleet.service.VehicleService;
 import com.djiguiya.transport.shared.api.ApiResponse;
+import com.djiguiya.transport.shared.security.AppRoles;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +23,7 @@ import java.util.List;
 
 /**
  * REST API for fleet vehicles, primary driver assignments, and compliance documents.
+ * Mutations require {@link AppRoles#FLEET_WRITE}; reads are available to any authenticated user.
  */
 @RestController
 @RequestMapping("/api/v1/vehicles")
@@ -41,17 +44,20 @@ public class VehicleController {
 	}
 
 	@PostMapping
+	@PreAuthorize(AppRoles.FLEET_WRITE)
 	public ApiResponse<VehicleResponse> create(@Valid @RequestBody VehicleRequest request) {
 		return ApiResponse.ok("vehicle.created", vehicleService.create(request));
 	}
 
 	@PutMapping("/{id}")
+	@PreAuthorize(AppRoles.FLEET_WRITE)
 	public ApiResponse<VehicleResponse> update(@PathVariable String id, @Valid @RequestBody VehicleRequest request) {
 		return ApiResponse.ok("vehicle.updated", vehicleService.update(id, request));
 	}
 
 	/** Records a new primary driver period and closes any open assignment for the vehicle. */
 	@PostMapping("/{id}/primary-driver")
+	@PreAuthorize(AppRoles.FLEET_WRITE)
 	public ApiResponse<VehicleResponse> assignPrimaryDriver(
 			@PathVariable String id,
 			@Valid @RequestBody PrimaryDriverRequest request) {
@@ -65,6 +71,7 @@ public class VehicleController {
 
 	/** Replaces or upserts the full document set sent in the request body. */
 	@PutMapping("/{id}/documents")
+	@PreAuthorize(AppRoles.FLEET_WRITE)
 	public ApiResponse<List<VehicleDocumentResponse>> replaceDocuments(
 			@PathVariable String id,
 			@Valid @RequestBody List<VehicleDocumentRequest> requests) {

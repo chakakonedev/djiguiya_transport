@@ -15,49 +15,71 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+/**
+ * Central API error translator: turns exceptions into a uniform {@link ErrorResponse}
+ * with localized messages. Controllers/services throw; this class shapes HTTP bodies.
+ * &lt;p&gt;
+ * Handler order matters conceptually: specific types first
+ * ({@link BusinessException}, {@link ResponseStatusException}, validation),
+ * then a catch-all {@link Exception} for unexpected failures.
+ */
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
 	private final MessageSource messageSource;
 
+	/** Maps a known business rule failure to its status + translated message. */
 	@ExceptionHandler(BusinessException.class)
 	public ResponseEntity&lt;ErrorResponse&gt; handleBusiness(BusinessException ex) {
-<span class="fc" id="L26">		return build(ex.getMessageKey(), ex.getStatus());</span>
+<span class="fc" id="L35">		return build(ex.getMessageKey(), ex.getStatus());</span>
 	}
 
+	/**
+	 * Spring {@link ResponseStatusException}: uses {@code reason} as message key when present,
+	 * otherwise falls back to {@code common.not_found}.
+	 */
 	@ExceptionHandler(ResponseStatusException.class)
 	public ResponseEntity&lt;ErrorResponse&gt; handleStatus(ResponseStatusException ex) {
-<span class="fc bfc" id="L31" title="All 2 branches covered.">		String key = ex.getReason() != null ? ex.getReason() : &quot;common.not_found&quot;;</span>
-<span class="fc" id="L32">		HttpStatus status = HttpStatus.valueOf(ex.getStatusCode().value());</span>
-<span class="fc" id="L33">		return build(key, status);</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">		String key = ex.getReason() != null ? ex.getReason() : &quot;common.not_found&quot;;</span>
+<span class="nc" id="L45">		HttpStatus status = HttpStatus.valueOf(ex.getStatusCode().value());</span>
+<span class="nc" id="L46">		return build(key, status);</span>
 	}
 
+	/**
+	 * Bean validation failures ({@code @Valid}): 400 with field names appended
+	 * so the client knows which inputs failed.
+	 */
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity&lt;ErrorResponse&gt; handleValidation(MethodArgumentNotValidException ex) {
-<span class="fc" id="L38">		String details = ex.getBindingResult().getFieldErrors().stream()</span>
-<span class="fc" id="L39">				.map(FieldError::getField)</span>
-<span class="fc" id="L40">				.collect(Collectors.joining(&quot;, &quot;));</span>
-<span class="fc" id="L41">		Locale locale = LocaleContextHolder.getLocale();</span>
-<span class="fc" id="L42">		String message = messageSource.getMessage(&quot;common.validation_failed&quot;, null, locale)</span>
-<span class="pc bpc" id="L43" title="1 of 2 branches missed.">				+ (details.isEmpty() ? &quot;&quot; : &quot;: &quot; + details);</span>
-<span class="fc" id="L44">		ErrorResponse body = ErrorResponse.of(&quot;common.validation_failed&quot;, message, HttpStatus.BAD_REQUEST.value());</span>
-<span class="fc" id="L45">		return ResponseEntity.badRequest().body(body);</span>
+<span class="fc" id="L55">		String details = ex.getBindingResult().getFieldErrors().stream()</span>
+<span class="fc" id="L56">				.map(FieldError::getField)</span>
+<span class="fc" id="L57">				.collect(Collectors.joining(&quot;, &quot;));</span>
+<span class="fc" id="L58">		Locale locale = LocaleContextHolder.getLocale();</span>
+<span class="fc" id="L59">		String message = messageSource.getMessage(&quot;common.validation_failed&quot;, null, locale)</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">				+ (details.isEmpty() ? &quot;&quot; : &quot;: &quot; + details);</span>
+<span class="fc" id="L61">		ErrorResponse body = ErrorResponse.of(&quot;common.validation_failed&quot;, message, HttpStatus.BAD_REQUEST.value());</span>
+<span class="fc" id="L62">		return ResponseEntity.badRequest().body(body);</span>
 	}
 
+	/**
+	 * Last-resort handler: 500 with a stable key; message is the exception text
+	 * or a generic fallback when null (avoids leaking null to the client).
+	 */
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity&lt;ErrorResponse&gt; handleGeneric(Exception ex) {
-<span class="fc" id="L50">		ErrorResponse body = ErrorResponse.of(</span>
-				&quot;common.internal_error&quot;,
-<span class="fc bfc" id="L52" title="All 2 branches covered.">				ex.getMessage() != null ? ex.getMessage() : &quot;Unexpected error&quot;,</span>
-<span class="fc" id="L53">				HttpStatus.INTERNAL_SERVER_ERROR.value());</span>
-<span class="fc" id="L54">		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);</span>
+<span class="nc" id="L71">		ErrorResponse body = ErrorResponse.of(</span>
+<span class="nc" id="L72">				&quot;common.internal_error&quot;,</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">				ex.getMessage() != null ? ex.getMessage() : &quot;Unexpected error&quot;,</span>
+<span class="nc" id="L74">				HttpStatus.INTERNAL_SERVER_ERROR.value());</span>
+<span class="nc" id="L75">		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);</span>
 	}
 
+	/** Resolves {@code messageKey} via MessageSource for the current request locale. */
 	private ResponseEntity&lt;ErrorResponse&gt; build(String messageKey, HttpStatus status) {
-<span class="fc" id="L58">		Locale locale = LocaleContextHolder.getLocale();</span>
-<span class="fc" id="L59">		String message = messageSource.getMessage(messageKey, null, messageKey, locale);</span>
-<span class="fc" id="L60">		return ResponseEntity.status(status).body(ErrorResponse.of(messageKey, message, status.value()));</span>
+<span class="fc" id="L80">		Locale locale = LocaleContextHolder.getLocale();</span>
+<span class="fc" id="L81">		String message = messageSource.getMessage(messageKey, null, messageKey, locale);</span>
+<span class="fc" id="L82">		return ResponseEntity.status(status).body(ErrorResponse.of(messageKey, message, status.value()));</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

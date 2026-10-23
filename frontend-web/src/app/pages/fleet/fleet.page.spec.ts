@@ -1,7 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { provideTranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FleetPage } from './fleet.page';
+import { AuthService } from '../../core/auth.service';
 import { VehicleService } from '../../core/vehicle.service';
 import { StaffService } from '../../core/staff.service';
 
@@ -20,10 +22,13 @@ describe('FleetPage', () => {
   const staffApi = {
     list: vi.fn()
   };
+  const auth = { user: vi.fn(() => ({ roleCode: 'owner' })) };
 
   beforeEach(async () => {
     Object.values(vehiclesApi).forEach((fn) => fn.mockReset());
     staffApi.list.mockReset();
+    auth.user.mockReset();
+    auth.user.mockReturnValue({ roleCode: 'owner' });
     vehiclesApi.list.mockReturnValue(of([{ id: 'v1', name: 'bus1', status: 'active' }]));
     vehiclesApi.getDocuments.mockReturnValue(of([]));
     staffApi.list.mockReturnValue(
@@ -35,7 +40,8 @@ describe('FleetPage', () => {
       providers: [
         provideTranslateService(),
         { provide: VehicleService, useValue: vehiclesApi },
-        { provide: StaffService, useValue: staffApi }
+        { provide: StaffService, useValue: staffApi },
+        { provide: AuthService, useValue: auth }
       ]
     }).compileComponents();
   });

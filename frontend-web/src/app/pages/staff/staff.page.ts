@@ -131,13 +131,20 @@ export class StaffPage implements OnInit {
     this.saving.set(true);
     this.error.set(false);
     const raw = this.form.getRawValue();
+    const editingId = this.editingId();
+    // Backend apply() overwrites phone/notes/status from the request; preserve them on edit.
+    const existing = editingId
+      ? this.staffList().find((s) => s.id === editingId)
+      : undefined;
     const body = {
       fullName: raw.fullName.trim(),
       staffType: raw.staffType,
       monthlySalary: raw.monthlySalary,
-      payDay: raw.payDay
+      payDay: raw.payDay,
+      phone: existing?.phone ?? null,
+      notes: existing?.notes ?? null,
+      status: existing?.status ?? 'active'
     };
-    const editingId = this.editingId();
     const saveStaff$ = editingId
       ? this.staffApi.update(editingId, body)
       : this.staffApi.create(body);

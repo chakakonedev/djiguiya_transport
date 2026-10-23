@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { canEditLedger, canManageStaff, isOwner, RoleCodes } from './roles.util';
+import { canEditLedger, canManageFleet, canManageStaff, isOwner, RoleCodes } from './roles.util';
 
 /**
- * Role helpers: owner detection and coarse permissions for ledger edits and staff management.
+ * Role helpers: owner detection and coarse permissions for ledger, staff, and fleet.
  */
 describe('roles.util', () => {
   /** isOwner is true only for OWNER; false for other roles and null. */
@@ -25,5 +25,13 @@ describe('roles.util', () => {
   it('canManageStaff only owner', () => {
     expect(canManageStaff(RoleCodes.OWNER)).toBe(true);
     expect(canManageStaff(RoleCodes.CASHIER)).toBe(false);
+  });
+
+  /** Fleet mutations for owner and driver manager only. */
+  it('canManageFleet for owner and driver manager', () => {
+    expect(canManageFleet(RoleCodes.OWNER)).toBe(true);
+    expect(canManageFleet(RoleCodes.DRIVER_MANAGER)).toBe(true);
+    expect(canManageFleet(RoleCodes.CASHIER)).toBe(false);
+    expect(canManageFleet(RoleCodes.ACCOUNTANT)).toBe(false);
   });
 });

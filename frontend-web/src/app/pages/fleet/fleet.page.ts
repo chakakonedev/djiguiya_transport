@@ -1,23 +1,17 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
+import { AuthService } from '../../core/auth.service';
 import { VehicleService } from '../../core/vehicle.service';
 import { StaffService } from '../../core/staff.service';
 import { StaffMember, Vehicle, VehicleDocument } from '../../core/api.types';
 import { VEHICLE_DOC_TYPES } from '../../core/expense-catalog';
-import { formatXof } from '../../core/format.util';
-
-/** Local calendar date as YYYY-MM-DD for date inputs (avoids UTC shift from toISOString). */
-function localIsoDate(date = new Date()): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
+import { formatXof, localIsoDate } from '../../core/format.util';
+import { canManageFleet } from '../../core/roles.util';
 
 /**
  * Fleet management: register vehicles, assign primary drivers, track renewal documents.
- * State: `vehicles`, `drivers`, `expandedId`; forms: `createForm`, per-vehicle `driverForms` / `docForms`.
+ * State: `vehicles`, `drivers`, `expandedId`, `canManage`; forms: `createForm`, per-vehicle forms.
  */
 @Component({
   selector: 'app-fleet-page',
@@ -29,6 +23,7 @@ function localIsoDate(date = new Date()): string {
 export class FleetPage implements OnInit {
   private readonly vehiclesApi = inject(VehicleService);
   private readonly staffApi = inject(StaffService);
+  private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
 
   readonly vehicles = signal<Vehicle[]>([]);
@@ -40,6 +35,7 @@ export class FleetPage implements OnInit {
   readonly expandedId = signal<string | null>(null);
   readonly docTypes = VEHICLE_DOC_TYPES;
   readonly formatXof = formatXof;
+  readonly canManage = computed(() => canManageFleet(this.auth.user()?.roleCode));
 
   readonly createForm = this.fb.nonNullable.group({
     name: ['', Validators.required],
@@ -76,7 +72,7 @@ export class FleetPage implements OnInit {
   }
 
   submitCreate(): void {
-    if (this.createForm.invalid) return;
+    if (!this.canManage() || this.createForm.invalid) return;
     this.saving.set(true);
     this.actionError.set(false);
     const raw = this.createForm.getRawValue();
@@ -131,6 +127,7 @@ export class FleetPage implements OnInit {
   }
 
   savePrimaryDriver(vehicleId: string): void {
+    if (!this.canManage()) return;
     const form = this.driverForm(vehicleId);
     if (!form || form.invalid) return;
     this.saving.set(true);
@@ -180,6 +177,7 @@ export class FleetPage implements OnInit {
   }
 
   saveDocuments(vehicleId: string): void {
+    if (!this.canManage()) return;
     const form = this.docForm(vehicleId);
     if (!form) return;
     const payload: VehicleDocument[] = [];

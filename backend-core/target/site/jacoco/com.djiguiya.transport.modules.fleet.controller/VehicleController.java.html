@@ -7,8 +7,10 @@ import com.djiguiya.transport.modules.fleet.dto.VehicleRequest;
 import com.djiguiya.transport.modules.fleet.dto.VehicleResponse;
 import com.djiguiya.transport.modules.fleet.service.VehicleService;
 import com.djiguiya.transport.shared.api.ApiResponse;
+import com.djiguiya.transport.shared.security.AppRoles;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * REST API for fleet vehicles, primary driver assignments, and compliance documents.
+ * Mutations require {@link AppRoles#FLEET_WRITE}; reads are available to any authenticated user.
+ */
 @RestController
 @RequestMapping(&quot;/api/v1/vehicles&quot;)
 @RequiredArgsConstructor
@@ -26,43 +32,50 @@ public class VehicleController {
 
 	private final VehicleService vehicleService;
 
+	/** Lists all vehicles with current primary driver id when one is assigned today. */
 	@GetMapping
 	public ApiResponse&lt;List&lt;VehicleResponse&gt;&gt; list() {
-<span class="fc" id="L31">		return ApiResponse.ok(vehicleService.listAll());</span>
+<span class="fc" id="L38">		return ApiResponse.ok(vehicleService.listAll());</span>
 	}
 
 	@GetMapping(&quot;/{id}&quot;)
 	public ApiResponse&lt;VehicleResponse&gt; get(@PathVariable String id) {
-<span class="fc" id="L36">		return ApiResponse.ok(vehicleService.getById(id));</span>
+<span class="fc" id="L43">		return ApiResponse.ok(vehicleService.getById(id));</span>
 	}
 
 	@PostMapping
+	@PreAuthorize(AppRoles.FLEET_WRITE)
 	public ApiResponse&lt;VehicleResponse&gt; create(@Valid @RequestBody VehicleRequest request) {
-<span class="fc" id="L41">		return ApiResponse.ok(&quot;vehicle.created&quot;, vehicleService.create(request));</span>
+<span class="fc" id="L49">		return ApiResponse.ok(&quot;vehicle.created&quot;, vehicleService.create(request));</span>
 	}
 
 	@PutMapping(&quot;/{id}&quot;)
+	@PreAuthorize(AppRoles.FLEET_WRITE)
 	public ApiResponse&lt;VehicleResponse&gt; update(@PathVariable String id, @Valid @RequestBody VehicleRequest request) {
-<span class="fc" id="L46">		return ApiResponse.ok(&quot;vehicle.updated&quot;, vehicleService.update(id, request));</span>
+<span class="fc" id="L55">		return ApiResponse.ok(&quot;vehicle.updated&quot;, vehicleService.update(id, request));</span>
 	}
 
+	/** Records a new primary driver period and closes any open assignment for the vehicle. */
 	@PostMapping(&quot;/{id}/primary-driver&quot;)
+	@PreAuthorize(AppRoles.FLEET_WRITE)
 	public ApiResponse&lt;VehicleResponse&gt; assignPrimaryDriver(
 			@PathVariable String id,
 			@Valid @RequestBody PrimaryDriverRequest request) {
-<span class="fc" id="L53">		return ApiResponse.ok(&quot;vehicle.primary_driver_set&quot;, vehicleService.assignPrimaryDriver(id, request));</span>
+<span class="fc" id="L64">		return ApiResponse.ok(&quot;vehicle.primary_driver_set&quot;, vehicleService.assignPrimaryDriver(id, request));</span>
 	}
 
 	@GetMapping(&quot;/{id}/documents&quot;)
 	public ApiResponse&lt;List&lt;VehicleDocumentResponse&gt;&gt; listDocuments(@PathVariable String id) {
-<span class="fc" id="L58">		return ApiResponse.ok(vehicleService.listDocuments(id));</span>
+<span class="fc" id="L69">		return ApiResponse.ok(vehicleService.listDocuments(id));</span>
 	}
 
+	/** Replaces or upserts the full document set sent in the request body. */
 	@PutMapping(&quot;/{id}/documents&quot;)
+	@PreAuthorize(AppRoles.FLEET_WRITE)
 	public ApiResponse&lt;List&lt;VehicleDocumentResponse&gt;&gt; replaceDocuments(
 			@PathVariable String id,
 			@Valid @RequestBody List&lt;VehicleDocumentRequest&gt; requests) {
-<span class="fc" id="L65">		return ApiResponse.ok(&quot;documents.updated&quot;, vehicleService.replaceDocuments(id, requests));</span>
+<span class="fc" id="L78">		return ApiResponse.ok(&quot;documents.updated&quot;, vehicleService.replaceDocuments(id, requests));</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

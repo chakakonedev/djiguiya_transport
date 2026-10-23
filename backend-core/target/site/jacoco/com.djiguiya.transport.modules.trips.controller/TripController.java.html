@@ -4,8 +4,10 @@ import com.djiguiya.transport.modules.trips.dto.TripRequest;
 import com.djiguiya.transport.modules.trips.dto.TripResponse;
 import com.djiguiya.transport.modules.trips.service.TripService;
 import com.djiguiya.transport.shared.api.ApiResponse;
+import com.djiguiya.transport.shared.security.AppRoles;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * REST API for vehicle trips: scheduling, driver assignment, and soft-deleted-aware listing.
+ * Mutations require {@link AppRoles#TRIP_WRITE}; reads are available to any authenticated user.
+ */
 @RestController
 @RequestMapping(&quot;/api/v1/trips&quot;)
 @RequiredArgsConstructor
@@ -23,24 +29,30 @@ public class TripController {
 
 	private final TripService tripService;
 
+	/** Lists non-deleted trips, newest departure first. */
 	@GetMapping
 	public ApiResponse&lt;List&lt;TripResponse&gt;&gt; list() {
-<span class="fc" id="L28">		return ApiResponse.ok(tripService.listAll());</span>
+<span class="fc" id="L35">		return ApiResponse.ok(tripService.listAll());</span>
 	}
 
+	/** Returns one trip with resolved vehicle and driver display names. */
 	@GetMapping(&quot;/{id}&quot;)
 	public ApiResponse&lt;TripResponse&gt; get(@PathVariable String id) {
-<span class="fc" id="L33">		return ApiResponse.ok(tripService.getById(id));</span>
+<span class="fc" id="L41">		return ApiResponse.ok(tripService.getById(id));</span>
 	}
 
+	/** Creates a trip; driver may be omitted to use the vehicle's primary driver on the departure date. */
 	@PostMapping
+	@PreAuthorize(AppRoles.TRIP_WRITE)
 	public ApiResponse&lt;TripResponse&gt; create(@Valid @RequestBody TripRequest request) {
-<span class="fc" id="L38">		return ApiResponse.ok(&quot;trip.created&quot;, tripService.create(request));</span>
+<span class="fc" id="L48">		return ApiResponse.ok(&quot;trip.created&quot;, tripService.create(request));</span>
 	}
 
+	/** Updates trip dates, vehicle, driver, and replacement metadata. */
 	@PutMapping(&quot;/{id}&quot;)
+	@PreAuthorize(AppRoles.TRIP_WRITE)
 	public ApiResponse&lt;TripResponse&gt; update(@PathVariable String id, @Valid @RequestBody TripRequest request) {
-<span class="fc" id="L43">		return ApiResponse.ok(&quot;trip.updated&quot;, tripService.update(id, request));</span>
+<span class="fc" id="L55">		return ApiResponse.ok(&quot;trip.updated&quot;, tripService.update(id, request));</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

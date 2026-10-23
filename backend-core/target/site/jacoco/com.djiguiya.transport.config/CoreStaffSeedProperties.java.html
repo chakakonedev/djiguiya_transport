@@ -2,56 +2,62 @@
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+/**
+ * Typed {@code djiguiya.*} settings for bootstrap passwords and optional startup seeders.
+ */
 @ConfigurationProperties(prefix = &quot;djiguiya&quot;)
-<span class="fc" id="L6">public class CoreStaffSeedProperties {</span>
+<span class="fc" id="L9">public class CoreStaffSeedProperties {</span>
 
-<span class="fc" id="L8">	private final Security security = new Security();</span>
-<span class="fc" id="L9">	private final Seed seed = new Seed();</span>
+<span class="fc" id="L11">	private final Security security = new Security();</span>
+<span class="fc" id="L12">	private final Seed seed = new Seed();</span>
 
 	public Security getSecurity() {
-<span class="fc" id="L12">		return security;</span>
+<span class="fc" id="L15">		return security;</span>
 	}
 
 	public Seed getSeed() {
-<span class="fc" id="L16">		return seed;</span>
+<span class="fc" id="L19">		return seed;</span>
 	}
 
-<span class="fc" id="L19">	public static class Security {</span>
+	/** Bootstrap credentials used only until users change password in the app. */
+<span class="fc" id="L23">	public static class Security {</span>
 		/**
 		 * Bootstrap password for seed accounts that have not changed theirs yet.
 		 * Override with env {@code DJIGUIYA_DEFAULT_PASSWORD}.
 		 */
-<span class="fc" id="L24">		private String defaultPassword = &quot;Djiguiya@2026&quot;;</span>
+<span class="fc" id="L28">		private String defaultPassword = &quot;Djiguiya@2026&quot;;</span>
 
 		public String getDefaultPassword() {
-<span class="fc" id="L27">			return defaultPassword;</span>
+<span class="nc" id="L31">			return defaultPassword;</span>
 		}
 
 		public void setDefaultPassword(String defaultPassword) {
-<span class="fc" id="L31">			this.defaultPassword = defaultPassword;</span>
-<span class="fc" id="L32">		}</span>
+<span class="fc" id="L35">			this.defaultPassword = defaultPassword;</span>
+<span class="fc" id="L36">		}</span>
 	}
 
-<span class="fc" id="L35">	public static class Seed {</span>
-<span class="fc" id="L36">		private boolean coreStaffEnabled = true;</span>
+	/** Feature flags for {@link CoreStaffSeeder} and {@link Year1DataSeeder}. */
+<span class="fc" id="L40">	public static class Seed {</span>
+		/** Upsert owner/management users, staff, and profit-share rules from code definitions. */
+<span class="fc" id="L42">		private boolean coreStaffEnabled = true;</span>
 		/** Import year-1 trips/expenses extracted from dashboard.html + CSVs. */
-<span class="fc" id="L38">		private boolean year1Enabled = true;</span>
+<span class="fc" id="L44">		private boolean year1Enabled = true;</span>
 
 		public boolean isCoreStaffEnabled() {
-<span class="fc" id="L41">			return coreStaffEnabled;</span>
+<span class="fc" id="L47">			return coreStaffEnabled;</span>
 		}
 
 		public void setCoreStaffEnabled(boolean coreStaffEnabled) {
-<span class="fc" id="L45">			this.coreStaffEnabled = coreStaffEnabled;</span>
-<span class="fc" id="L46">		}</span>
+<span class="fc" id="L51">			this.coreStaffEnabled = coreStaffEnabled;</span>
+<span class="fc" id="L52">		}</span>
 
 		public boolean isYear1Enabled() {
-<span class="fc" id="L49">			return year1Enabled;</span>
+<span class="fc" id="L55">			return year1Enabled;</span>
 		}
 
 		public void setYear1Enabled(boolean year1Enabled) {
-<span class="fc" id="L53">			this.year1Enabled = year1Enabled;</span>
-<span class="fc" id="L54">		}</span>
+<span class="fc" id="L59">			this.year1Enabled = year1Enabled;</span>
+<span class="fc" id="L60">		}</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

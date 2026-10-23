@@ -16,26 +16,30 @@ public final class FiscalYearUtil {
 
 	/** Calendar year in which the fiscal year starts (e.g. 2025 for Aug 2025–Jul 2026). */
 	public static int startYearContaining(LocalDate date) {
-<span class="fc bfc" id="L19" title="All 2 branches covered.">		if (date.getMonthValue() &gt;= START_MONTH) {</span>
-<span class="fc" id="L20">			return date.getYear();</span>
+<span class="nc bnc" id="L19" title="All 2 branches missed.">		if (date.getMonthValue() &gt;= START_MONTH) {</span>
+<span class="nc" id="L20">			return date.getYear();</span>
 		}
-<span class="fc" id="L22">		return date.getYear() - 1;</span>
+<span class="nc" id="L22">		return date.getYear() - 1;</span>
 	}
 
+	/** First ledger month key in the fiscal year (August of {@code fiscalStartYear}). */
 	public static String startMonthKey(int fiscalStartYear) {
-<span class="fc" id="L26">		return MonthKeyUtil.forMonthYear(START_MONTH, fiscalStartYear);</span>
+<span class="fc" id="L27">		return MonthKeyUtil.forMonthYear(START_MONTH, fiscalStartYear);</span>
 	}
 
+	/** Last ledger month key in the fiscal year (July of {@code fiscalStartYear + 1}). */
 	public static String endMonthKey(int fiscalStartYear) {
-<span class="fc" id="L30">		return MonthKeyUtil.forMonthYear(7, fiscalStartYear + 1);</span>
+<span class="fc" id="L32">		return MonthKeyUtil.forMonthYear(7, fiscalStartYear + 1);</span>
 	}
 
+	/** Inclusive start date of the fiscal year (1 August). */
 	public static LocalDate startDate(int fiscalStartYear) {
-<span class="fc" id="L34">		return LocalDate.of(fiscalStartYear, START_MONTH, 1);</span>
+<span class="nc" id="L37">		return LocalDate.of(fiscalStartYear, START_MONTH, 1);</span>
 	}
 
+	/** Inclusive end date of the fiscal year (last day of July). */
 	public static LocalDate endDate(int fiscalStartYear) {
-<span class="fc" id="L38">		return YearMonth.of(fiscalStartYear + 1, 7).atEndOfMonth();</span>
+<span class="fc" id="L42">		return YearMonth.of(fiscalStartYear + 1, 7).atEndOfMonth();</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

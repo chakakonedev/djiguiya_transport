@@ -18,6 +18,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 
+/**
+ * Manages the transport ledger: revenue tied to trips, categorized expenses, soft delete,
+ * and automatic {@code monthKey} derivation from transaction date.
+ */
 @Service
 @RequiredArgsConstructor
 public class TransactionService {
@@ -25,123 +29,129 @@ public class TransactionService {
 	private final TransactionRepository transactionRepository;
 	private final TripService tripService;
 
+	/** All active transactions ordered by {@code txnDate} descending. */
 	@Transactional(readOnly = true)
 	public List&lt;TransactionResponse&gt; listAll() {
-<span class="fc" id="L30">		return transactionRepository.findByDeletedAtIsNullOrderByTxnDateDesc().stream()</span>
-<span class="fc" id="L31">				.map(TransactionResponse::from)</span>
-<span class="fc" id="L32">				.toList();</span>
+<span class="fc" id="L35">		return transactionRepository.findByDeletedAtIsNullOrderByTxnDateDesc().stream()</span>
+<span class="fc" id="L36">				.map(TransactionResponse::from)</span>
+<span class="fc" id="L37">				.toList();</span>
 	}
 
+	/** Loads one non-deleted transaction or throws {@code transaction.not_found}. */
 	@Transactional(readOnly = true)
 	public TransactionResponse getById(String id) {
-<span class="fc" id="L37">		return TransactionResponse.from(findEntity(id));</span>
+<span class="fc" id="L43">		return TransactionResponse.from(findEntity(id));</span>
 	}
 
+	/** Validates, enriches revenue rows from trip metadata, persists with optional creator id. */
 	@Transactional
 	public TransactionResponse create(TransactionRequest request) {
-<span class="fc" id="L42">		validateBusinessRules(request);</span>
-<span class="fc" id="L43">		TransactionEntity entity = new TransactionEntity();</span>
-<span class="fc" id="L44">		entity.setId(EntityIds.newId());</span>
-<span class="fc" id="L45">		apply(entity, enrichFromTrip(request));</span>
-<span class="fc" id="L46">		SecurityUtils.currentUserId().ifPresent(entity::setCreatedBy);</span>
-<span class="fc" id="L47">		return TransactionResponse.from(transactionRepository.save(entity));</span>
+<span class="fc" id="L49">		validateBusinessRules(request);</span>
+<span class="fc" id="L50">		TransactionEntity entity = new TransactionEntity();</span>
+<span class="fc" id="L51">		entity.setId(EntityIds.newId());</span>
+<span class="fc" id="L52">		apply(entity, enrichFromTrip(request));</span>
+<span class="fc" id="L53">		SecurityUtils.currentUserId().ifPresent(entity::setCreatedBy);</span>
+<span class="fc" id="L54">		return TransactionResponse.from(transactionRepository.save(entity));</span>
 	}
 
+	/** Updates an existing row with the same validation and trip enrichment as create. */
 	@Transactional
 	public TransactionResponse update(String id, TransactionRequest request) {
-<span class="fc" id="L52">		validateBusinessRules(request);</span>
-<span class="fc" id="L53">		TransactionEntity entity = findEntity(id);</span>
-<span class="fc" id="L54">		apply(entity, enrichFromTrip(request));</span>
-<span class="fc" id="L55">		return TransactionResponse.from(transactionRepository.save(entity));</span>
+<span class="fc" id="L60">		validateBusinessRules(request);</span>
+<span class="fc" id="L61">		TransactionEntity entity = findEntity(id);</span>
+<span class="fc" id="L62">		apply(entity, enrichFromTrip(request));</span>
+<span class="fc" id="L63">		return TransactionResponse.from(transactionRepository.save(entity));</span>
 	}
 
+	/** Soft-delete; row remains excluded from list and stats queries. */
 	@Transactional
 	public void delete(String id) {
-<span class="fc" id="L60">		TransactionEntity entity = findEntity(id);</span>
-<span class="fc" id="L61">		entity.setDeletedAt(Instant.now());</span>
-<span class="fc" id="L62">		transactionRepository.save(entity);</span>
-<span class="fc" id="L63">	}</span>
+<span class="fc" id="L69">		TransactionEntity entity = findEntity(id);</span>
+<span class="fc" id="L70">		entity.setDeletedAt(Instant.now());</span>
+<span class="fc" id="L71">		transactionRepository.save(entity);</span>
+<span class="fc" id="L72">	}</span>
 
+	/** Internal lookup for other modules (payroll, trips) needing the entity. */
 	public TransactionEntity findEntity(String id) {
-<span class="fc" id="L66">		return transactionRepository.findByIdAndDeletedAtIsNull(id)</span>
-<span class="fc" id="L67">				.orElseThrow(() -&gt; new BusinessException(&quot;transaction.not_found&quot;, HttpStatus.NOT_FOUND));</span>
+<span class="fc" id="L76">		return transactionRepository.findByIdAndDeletedAtIsNull(id)</span>
+<span class="pc" id="L77">				.orElseThrow(() -&gt; new BusinessException(&quot;transaction.not_found&quot;, HttpStatus.NOT_FOUND));</span>
 	}
 
 	private void validateBusinessRules(TransactionRequest request) {
-<span class="fc bfc" id="L71" title="All 2 branches covered.">		if (TransactionTypes.REVENUE.equalsIgnoreCase(request.type())) {</span>
-<span class="pc bpc" id="L72" title="1 of 4 branches missed.">			if (request.tripId() == null || request.tripId().isBlank()) {</span>
-<span class="fc" id="L73">				throw new BusinessException(&quot;transaction.revenue_requires_trip&quot;, HttpStatus.BAD_REQUEST);</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">		if (TransactionTypes.REVENUE.equalsIgnoreCase(request.type())) {</span>
+<span class="pc bpc" id="L82" title="1 of 4 branches missed.">			if (request.tripId() == null || request.tripId().isBlank()) {</span>
+<span class="fc" id="L83">				throw new BusinessException(&quot;transaction.revenue_requires_trip&quot;, HttpStatus.BAD_REQUEST);</span>
 			}
-<span class="fc" id="L75">			var trip = tripService.findEntity(request.tripId());</span>
-<span class="pc bpc" id="L76" title="1 of 2 branches missed.">			if (request.txnDate().isBefore(trip.getDepartureDate())</span>
-<span class="fc bfc" id="L77" title="All 2 branches covered.">					|| request.txnDate().isBefore(trip.getReturnDate())) {</span>
-<span class="fc" id="L78">				throw new BusinessException(&quot;transaction.payment_before_trip&quot;, HttpStatus.BAD_REQUEST);</span>
+<span class="fc" id="L85">			var trip = tripService.findEntity(request.tripId());</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">			if (request.txnDate().isBefore(trip.getDepartureDate())</span>
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">					|| request.txnDate().isBefore(trip.getReturnDate())) {</span>
+<span class="nc" id="L88">				throw new BusinessException(&quot;transaction.payment_before_trip&quot;, HttpStatus.BAD_REQUEST);</span>
 			}
 		}
-<span class="fc bfc" id="L81" title="All 2 branches covered.">		if (TransactionTypes.EXPENSE.equalsIgnoreCase(request.type())) {</span>
-<span class="pc bpc" id="L82" title="1 of 4 branches missed.">			if (request.categoryCode() == null || request.categoryCode().isBlank()) {</span>
-<span class="fc" id="L83">				throw new BusinessException(&quot;common.validation_failed&quot;, HttpStatus.BAD_REQUEST);</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">		if (TransactionTypes.EXPENSE.equalsIgnoreCase(request.type())) {</span>
+<span class="pc bpc" id="L92" title="2 of 4 branches missed.">			if (request.categoryCode() == null || request.categoryCode().isBlank()) {</span>
+<span class="nc" id="L93">				throw new BusinessException(&quot;common.validation_failed&quot;, HttpStatus.BAD_REQUEST);</span>
 			}
-<span class="fc bfc" id="L85" title="All 2 branches covered.">			if (&quot;other&quot;.equalsIgnoreCase(request.subcategoryCode())) {</span>
-<span class="pc bpc" id="L86" title="1 of 4 branches missed.">				if (blankToNull(request.label()) == null || blankToNull(request.notes()) == null) {</span>
-<span class="fc" id="L87">					throw new BusinessException(&quot;transaction.other_requires_details&quot;, HttpStatus.BAD_REQUEST);</span>
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">			if (&quot;other&quot;.equalsIgnoreCase(request.subcategoryCode())) {</span>
+<span class="nc bnc" id="L96" title="All 4 branches missed.">				if (blankToNull(request.label()) == null || blankToNull(request.notes()) == null) {</span>
+<span class="nc" id="L97">					throw new BusinessException(&quot;transaction.other_requires_details&quot;, HttpStatus.BAD_REQUEST);</span>
 				}
 			}
 		}
-<span class="fc" id="L91">	}</span>
+<span class="fc" id="L101">	}</span>
 
 	/** Copy vehicle/driver from the linked trip when omitted on a revenue entry. */
 	private TransactionRequest enrichFromTrip(TransactionRequest request) {
-<span class="fc bfc" id="L95" title="All 2 branches covered.">		if (!TransactionTypes.REVENUE.equalsIgnoreCase(request.type())</span>
-<span class="pc bpc" id="L96" title="1 of 2 branches missed.">				|| request.tripId() == null</span>
-<span class="pc bpc" id="L97" title="1 of 2 branches missed.">				|| request.tripId().isBlank()) {</span>
-<span class="fc" id="L98">			return request;</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">		if (!TransactionTypes.REVENUE.equalsIgnoreCase(request.type())</span>
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">				|| request.tripId() == null</span>
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">				|| request.tripId().isBlank()) {</span>
+<span class="fc" id="L108">			return request;</span>
 		}
-<span class="fc" id="L100">		var trip = tripService.findEntity(request.tripId());</span>
-<span class="fc bfc" id="L101" title="All 2 branches covered.">		String vehicleId = blankToNull(request.vehicleId()) != null ? request.vehicleId() : trip.getVehicleId();</span>
-<span class="fc bfc" id="L102" title="All 2 branches covered.">		String driverId = blankToNull(request.driverId()) != null ? request.driverId() : trip.getDriverId();</span>
-<span class="fc" id="L103">		return new TransactionRequest(</span>
-<span class="fc" id="L104">				request.type(),</span>
-<span class="fc" id="L105">				request.txnDate(),</span>
-<span class="fc" id="L106">				request.amount(),</span>
-				vehicleId,
-				driverId,
-<span class="fc" id="L109">				request.tripId(),</span>
-<span class="fc" id="L110">				request.categoryCode(),</span>
-<span class="fc" id="L111">				request.subcategoryCode(),</span>
-<span class="fc" id="L112">				request.label(),</span>
-<span class="fc" id="L113">				request.payrollMonth(),</span>
-<span class="fc" id="L114">				request.payrollKind(),</span>
-<span class="fc" id="L115">				request.notes());</span>
+<span class="fc" id="L110">		var trip = tripService.findEntity(request.tripId());</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">		String vehicleId = blankToNull(request.vehicleId()) != null ? request.vehicleId() : trip.getVehicleId();</span>
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">		String driverId = blankToNull(request.driverId()) != null ? request.driverId() : trip.getDriverId();</span>
+<span class="fc" id="L113">		return new TransactionRequest(</span>
+<span class="fc" id="L114">				request.type(),</span>
+<span class="fc" id="L115">				request.txnDate(),</span>
+<span class="fc" id="L116">				request.amount(),</span>
+<span class="fc" id="L117">				vehicleId,</span>
+<span class="fc" id="L118">				driverId,</span>
+<span class="fc" id="L119">				request.tripId(),</span>
+<span class="fc" id="L120">				request.categoryCode(),</span>
+<span class="fc" id="L121">				request.subcategoryCode(),</span>
+<span class="fc" id="L122">				request.label(),</span>
+<span class="fc" id="L123">				request.payrollMonth(),</span>
+<span class="fc" id="L124">				request.payrollKind(),</span>
+<span class="fc" id="L125">				request.notes());</span>
 	}
 
 	private static String blankToNull(String value) {
-<span class="pc bpc" id="L119" title="1 of 4 branches missed.">		return value == null || value.isBlank() ? null : value;</span>
+<span class="pc bpc" id="L129" title="2 of 4 branches missed.">		return value == null || value.isBlank() ? null : value;</span>
 	}
 
 	private static String resolveLabel(TransactionRequest request) {
-<span class="pc bpc" id="L123" title="1 of 4 branches missed.">		if (request.label() != null &amp;&amp; !request.label().isBlank()) {</span>
-<span class="fc" id="L124">			return request.label().trim();</span>
+<span class="pc bpc" id="L133" title="2 of 4 branches missed.">		if (request.label() != null &amp;&amp; !request.label().isBlank()) {</span>
+<span class="fc" id="L134">			return request.label().trim();</span>
 		}
-<span class="pc bpc" id="L126" title="1 of 2 branches missed.">		return TransactionTypes.REVENUE.equalsIgnoreCase(request.type())</span>
-<span class="fc" id="L127">				? &quot;Versement voyage&quot;</span>
-<span class="nc" id="L128">				: &quot;Dépense&quot;;</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">		return TransactionTypes.REVENUE.equalsIgnoreCase(request.type())</span>
+<span class="nc" id="L137">				? &quot;Versement voyage&quot;</span>
+<span class="nc" id="L138">				: &quot;Dépense&quot;;</span>
 	}
 
 	private void apply(TransactionEntity entity, TransactionRequest request) {
-<span class="fc" id="L132">		entity.setType(request.type().toLowerCase());</span>
-<span class="fc" id="L133">		entity.setTxnDate(request.txnDate());</span>
-<span class="fc" id="L134">		entity.setMonthKey(MonthKeyUtil.fromDate(request.txnDate()));</span>
-<span class="fc" id="L135">		entity.setAmount(request.amount());</span>
-<span class="fc" id="L136">		entity.setVehicleId(request.vehicleId());</span>
-<span class="fc" id="L137">		entity.setDriverId(request.driverId());</span>
-<span class="fc" id="L138">		entity.setTripId(request.tripId());</span>
-<span class="fc" id="L139">		entity.setCategoryCode(request.categoryCode());</span>
-<span class="fc" id="L140">		entity.setSubcategoryCode(request.subcategoryCode());</span>
-<span class="fc" id="L141">		entity.setLabel(resolveLabel(request));</span>
-<span class="fc" id="L142">		entity.setPayrollMonth(request.payrollMonth());</span>
-<span class="fc" id="L143">		entity.setPayrollKind(request.payrollKind());</span>
-<span class="fc" id="L144">		entity.setNotes(request.notes());</span>
-<span class="fc" id="L145">	}</span>
+<span class="fc" id="L142">		entity.setType(request.type().toLowerCase());</span>
+<span class="fc" id="L143">		entity.setTxnDate(request.txnDate());</span>
+<span class="fc" id="L144">		entity.setMonthKey(MonthKeyUtil.fromDate(request.txnDate()));</span>
+<span class="fc" id="L145">		entity.setAmount(request.amount());</span>
+<span class="fc" id="L146">		entity.setVehicleId(request.vehicleId());</span>
+<span class="fc" id="L147">		entity.setDriverId(request.driverId());</span>
+<span class="fc" id="L148">		entity.setTripId(request.tripId());</span>
+<span class="fc" id="L149">		entity.setCategoryCode(request.categoryCode());</span>
+<span class="fc" id="L150">		entity.setSubcategoryCode(request.subcategoryCode());</span>
+<span class="fc" id="L151">		entity.setLabel(resolveLabel(request));</span>
+<span class="fc" id="L152">		entity.setPayrollMonth(request.payrollMonth());</span>
+<span class="fc" id="L153">		entity.setPayrollKind(request.payrollKind());</span>
+<span class="fc" id="L154">		entity.setNotes(request.notes());</span>
+<span class="fc" id="L155">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

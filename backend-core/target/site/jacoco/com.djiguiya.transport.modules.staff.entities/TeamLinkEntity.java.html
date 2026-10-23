@@ -9,11 +9,14 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
+/**
+ * Historical link between a manager staff id and a driver staff id, with optional effective date range.
+ */
 @Entity
 @Table(name = &quot;team_links&quot;)
 @Getter
 @Setter
-<span class="nc" id="L16">public class TeamLinkEntity {</span>
+<span class="nc" id="L19">public class TeamLinkEntity {</span>
 
 	@Id
 	@Column(length = 36)
@@ -28,6 +31,7 @@ import java.time.LocalDate;
 	@Column(name = &quot;start_date&quot;)
 	private LocalDate startDate;
 
+	/** When set, the assignment no longer applies after this date. */
 	@Column(name = &quot;end_date&quot;)
 	private LocalDate endDate;
 }

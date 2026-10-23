@@ -22,12 +22,13 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 /**
  * HTTP security: stateless JWT authentication, CORS for the SPA, and BCrypt password hashing.
- * Only login, health, and API docs are anonymous; all other routes require a valid Bearer token.
+ * Login, health, and (when enabled) API docs are anonymous; all other routes require a Bearer token.
  */
 @Configuration
 @EnableWebSecurity
@@ -40,29 +41,44 @@ public class SecurityConfig {
 	@Value("${djiguiya.security.cors-allowed-origins}")
 	private String corsAllowedOrigins;
 
-	private static final String[] PUBLIC_ENDPOINTS = {
+	@Value("${djiguiya.security.openapi-enabled:true}")
+	private boolean openapiEnabled;
+
+	private static final String[] ALWAYS_PUBLIC = {
 			"/api/v1/auth/login",
 			"/api/v1/ping",
+			"/actuator/health"
+	};
+
+	private static final String[] OPENAPI_PUBLIC = {
 			"/swagger-ui/**",
 			"/swagger-ui.html",
 			"/api-docs/**",
-			"/v3/api-docs/**",
-			"/actuator/health"
+			"/v3/api-docs/**"
 	};
 
 	/** Stateless chain: JWT filter before username/password; CSRF off (token-based API). */
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		String[] publicEndpoints = publicEndpoints();
 		http
 				.csrf(AbstractHttpConfigurer::disable)
 				.cors(Customizer.withDefaults())
 				.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+						.requestMatchers(publicEndpoints).permitAll()
 						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 						.anyRequest().authenticated())
 				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 		return http.build();
+	}
+
+	private String[] publicEndpoints() {
+		List<String> endpoints = new ArrayList<>(Arrays.asList(ALWAYS_PUBLIC));
+		if (openapiEnabled) {
+			endpoints.addAll(Arrays.asList(OPENAPI_PUBLIC));
+		}
+		return endpoints.toArray(String[]::new);
 	}
 
 	/** CORS for {@code /api/**}; allowed origins from {@code djiguiya.security.cors-allowed-origins}. */

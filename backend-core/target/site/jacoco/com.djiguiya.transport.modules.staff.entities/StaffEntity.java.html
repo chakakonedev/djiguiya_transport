@@ -12,12 +12,16 @@ import lombok.Setter;
 
 import java.time.Instant;
 
+/**
+ * Person employed or contracted by the transport operation (driver, manager, etc.).
+ * Referenced by trips ({@code driverId}) and primary vehicle assignments; optional {@code userId} ties to login.
+ */
 @Entity
 @Table(name = &quot;staff&quot;)
 @EntityListeners(AuditingListener.class)
 @Getter
 @Setter
-<span class="fc" id="L20">public class StaffEntity implements Timestamped {</span>
+<span class="fc" id="L24">public class StaffEntity implements Timestamped {</span>
 
 	@Id
 	@Column(length = 36)
@@ -32,8 +36,8 @@ import java.time.Instant;
 	@Column(length = 40)
 	private String phone;
 
-<span class="fc" id="L35">	@Column(nullable = false, length = 20)</span>
-	private String status = &quot;active&quot;;
+	@Column(nullable = false, length = 20)
+<span class="fc" id="L40">	private String status = &quot;active&quot;;</span>
 
 	@Column(name = &quot;monthly_salary&quot;)
 	private Long monthlySalary;

@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * REST endpoints for ledger analytics: filtered summaries, fiscal-year monthly series,
+ * month-over-month comparison, and year-over-year net profit.
+ */
 @RestController
 @RequestMapping(&quot;/api/v1/stats&quot;)
 @RequiredArgsConstructor
@@ -19,6 +23,10 @@ public class StatsController {
 
 	private final StatsService statsService;
 
+	/**
+	 * Aggregates revenue, expense, net profit, trip count, and expense breakdown for optional
+	 * filters (single calendar month, entire fiscal year, vehicle, driver, category).
+	 */
 	@GetMapping(&quot;/summary&quot;)
 	public ApiResponse&lt;StatsSummaryResponse&gt; summary(
 			@RequestParam(required = false) String vehicleId,
@@ -26,32 +34,43 @@ public class StatsController {
 			@RequestParam(required = false) Integer month,
 			@RequestParam(required = false) Integer year,
 			@RequestParam(required = false) String category) {
-<span class="fc" id="L29">		return ApiResponse.ok(statsService.summary(vehicleId, driverId, month, year, category));</span>
+<span class="fc" id="L37">		return ApiResponse.ok(statsService.summary(vehicleId, driverId, month, year, category));</span>
 	}
 
-	/** Fiscal-year monthly series (1 Aug → 31 Jul), ordered Aug…Jul. */
+	/**
+	 * Returns twelve monthly data points for the fiscal year starting in {@code year}
+	 * (August through July), optionally scoped to a vehicle or driver.
+	 */
 	@GetMapping(&quot;/monthly&quot;)
 	public ApiResponse&lt;StatsMonthlySeriesResponse&gt; monthly(
 			@RequestParam int year,
 			@RequestParam(required = false) String vehicleId,
 			@RequestParam(required = false) String driverId) {
-<span class="fc" id="L38">		return ApiResponse.ok(statsService.monthlySeries(year, vehicleId, driverId));</span>
+<span class="fc" id="L49">		return ApiResponse.ok(statsService.monthlySeries(year, vehicleId, driverId));</span>
 	}
 
+	/**
+	 * Compares net profit for the given calendar month index in the current year
+	 * against the immediately preceding calendar month.
+	 */
 	@GetMapping(&quot;/compare-month&quot;)
 	public ApiResponse&lt;StatsCompareMonthResponse&gt; compareMonth(
 			@RequestParam int monthIndex,
 			@RequestParam(required = false) String vehicleId,
 			@RequestParam(required = false) String driverId) {
-<span class="fc" id="L46">		return ApiResponse.ok(statsService.compareMonth(monthIndex, vehicleId, driverId));</span>
+<span class="fc" id="L61">		return ApiResponse.ok(statsService.compareMonth(monthIndex, vehicleId, driverId));</span>
 	}
 
+	/**
+	 * Compares total net profit for fiscal year {@code year} against the prior fiscal year,
+	 * including absolute delta and percentage change when the baseline is non-zero.
+	 */
 	@GetMapping(&quot;/yoy&quot;)
 	public ApiResponse&lt;StatsYoyResponse&gt; yoy(
 			@RequestParam int year,
 			@RequestParam(required = false) String vehicleId,
 			@RequestParam(required = false) String driverId) {
-<span class="fc" id="L54">		return ApiResponse.ok(statsService.yearOverYear(year, vehicleId, driverId));</span>
+<span class="fc" id="L73">		return ApiResponse.ok(statsService.yearOverYear(year, vehicleId, driverId));</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

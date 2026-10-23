@@ -16,6 +16,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 
+/**
+ * Authenticates users against stored credentials and manages password updates for active accounts.
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -24,41 +27,51 @@ public class AuthService {
 	private final PasswordEncoder passwordEncoder;
 	private final JwtService jwtService;
 
+	/**
+	 * Validates email/password for an active user and issues a signed access token.
+	 *
+	 * @throws ResponseStatusException 401 when credentials are invalid or the account is inactive
+	 */
 	public LoginResponse login(LoginRequest request) {
-<span class="fc" id="L28">		UserEntity user = userRepository.findByEmailIgnoreCase(request.email().trim())</span>
-<span class="fc" id="L29">				.filter(UserEntity::isActive)</span>
-<span class="pc" id="L30">				.orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.UNAUTHORIZED, &quot;auth.invalid_credentials&quot;));</span>
+<span class="fc" id="L36">		UserEntity user = userRepository.findByEmailIgnoreCase(request.email().trim())</span>
+<span class="fc" id="L37">				.filter(UserEntity::isActive)</span>
+<span class="pc" id="L38">				.orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.UNAUTHORIZED, &quot;auth.invalid_credentials&quot;));</span>
 
-<span class="fc bfc" id="L32" title="All 2 branches covered.">		if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {</span>
-<span class="fc" id="L33">			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, &quot;auth.invalid_credentials&quot;);</span>
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">		if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {</span>
+<span class="nc" id="L41">			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, &quot;auth.invalid_credentials&quot;);</span>
 		}
 
-<span class="fc" id="L36">		String token = jwtService.generateAccessToken(user.getId(), user.getEmail(), user.getRoleCode());</span>
-<span class="fc" id="L37">		return new LoginResponse(token, user.getId(), user.getEmail(), user.getFullName(), user.getRoleCode());</span>
+<span class="fc" id="L44">		String token = jwtService.generateAccessToken(user.getId(), user.getEmail(), user.getRoleCode());</span>
+<span class="fc" id="L45">		return new LoginResponse(token, user.getId(), user.getEmail(), user.getFullName(), user.getRoleCode());</span>
 	}
 
+	/**
+	 * Changes the password for the currently authenticated user and marks {@code passwordChanged}.
+	 *
+	 * @throws ResponseStatusException 400 when current password is wrong or new password equals the old one
+	 */
 	@Transactional
 	public void changePassword(ChangePasswordRequest request) {
-<span class="fc" id="L42">		String userId = SecurityUtils.currentUserId()</span>
-<span class="fc" id="L43">				.orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.UNAUTHORIZED, &quot;auth.invalid_credentials&quot;));</span>
+<span class="nc" id="L55">		String userId = SecurityUtils.currentUserId()</span>
+<span class="nc" id="L56">				.orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.UNAUTHORIZED, &quot;auth.invalid_credentials&quot;));</span>
 
-<span class="fc" id="L45">		UserEntity user = userRepository.findById(userId)</span>
-<span class="fc" id="L46">				.filter(UserEntity::isActive)</span>
-<span class="pc" id="L47">				.orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.UNAUTHORIZED, &quot;auth.invalid_credentials&quot;));</span>
+<span class="nc" id="L58">		UserEntity user = userRepository.findById(userId)</span>
+<span class="nc" id="L59">				.filter(UserEntity::isActive)</span>
+<span class="nc" id="L60">				.orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.UNAUTHORIZED, &quot;auth.invalid_credentials&quot;));</span>
 
-<span class="fc bfc" id="L49" title="All 2 branches covered.">		if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {</span>
-<span class="fc" id="L50">			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;auth.current_password_invalid&quot;);</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">		if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {</span>
+<span class="nc" id="L63">			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;auth.current_password_invalid&quot;);</span>
 		}
 
-<span class="fc" id="L53">		String newPassword = request.newPassword().trim();</span>
-<span class="fc bfc" id="L54" title="All 2 branches covered.">		if (passwordEncoder.matches(newPassword, user.getPasswordHash())) {</span>
-<span class="fc" id="L55">			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;auth.new_password_same&quot;);</span>
+<span class="nc" id="L66">		String newPassword = request.newPassword().trim();</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">		if (passwordEncoder.matches(newPassword, user.getPasswordHash())) {</span>
+<span class="nc" id="L68">			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;auth.new_password_same&quot;);</span>
 		}
 
-<span class="fc" id="L58">		user.setPasswordHash(passwordEncoder.encode(newPassword));</span>
-<span class="fc" id="L59">		user.setPasswordChanged(true);</span>
-<span class="fc" id="L60">		user.setUpdatedAt(Instant.now());</span>
-<span class="fc" id="L61">		userRepository.save(user);</span>
-<span class="fc" id="L62">	}</span>
+<span class="nc" id="L71">		user.setPasswordHash(passwordEncoder.encode(newPassword));</span>
+<span class="nc" id="L72">		user.setPasswordChanged(true);</span>
+<span class="nc" id="L73">		user.setUpdatedAt(Instant.now());</span>
+<span class="nc" id="L74">		userRepository.save(user);</span>
+<span class="nc" id="L75">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
