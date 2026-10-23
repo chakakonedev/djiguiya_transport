@@ -15,17 +15,30 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+/**
+ * Central API error translator: turns exceptions into a uniform {@link ErrorResponse}
+ * with localized messages. Controllers/services throw; this class shapes HTTP bodies.
+ * <p>
+ * Handler order matters conceptually: specific types first
+ * ({@link BusinessException}, {@link ResponseStatusException}, validation),
+ * then a catch-all {@link Exception} for unexpected failures.
+ */
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
 	private final MessageSource messageSource;
 
+	/** Maps a known business rule failure to its status + translated message. */
 	@ExceptionHandler(BusinessException.class)
 	public ResponseEntity<ErrorResponse> handleBusiness(BusinessException ex) {
 		return build(ex.getMessageKey(), ex.getStatus());
 	}
 
+	/**
+	 * Spring {@link ResponseStatusException}: uses {@code reason} as message key when present,
+	 * otherwise falls back to {@code common.not_found}.
+	 */
 	@ExceptionHandler(ResponseStatusException.class)
 	public ResponseEntity<ErrorResponse> handleStatus(ResponseStatusException ex) {
 		String key = ex.getReason() != null ? ex.getReason() : "common.not_found";
@@ -33,6 +46,10 @@ public class GlobalExceptionHandler {
 		return build(key, status);
 	}
 
+	/**
+	 * Bean validation failures ({@code @Valid}): 400 with field names appended
+	 * so the client knows which inputs failed.
+	 */
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
 		String details = ex.getBindingResult().getFieldErrors().stream()
@@ -45,6 +62,10 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.badRequest().body(body);
 	}
 
+	/**
+	 * Last-resort handler: 500 with a stable key; message is the exception text
+	 * or a generic fallback when null (avoids leaking null to the client).
+	 */
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
 		ErrorResponse body = ErrorResponse.of(
@@ -54,6 +75,7 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
 	}
 
+	/** Resolves {@code messageKey} via MessageSource for the current request locale. */
 	private ResponseEntity<ErrorResponse> build(String messageKey, HttpStatus status) {
 		Locale locale = LocaleContextHolder.getLocale();
 		String message = messageSource.getMessage(messageKey, null, messageKey, locale);

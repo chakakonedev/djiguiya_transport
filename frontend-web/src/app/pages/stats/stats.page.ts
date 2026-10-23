@@ -30,6 +30,10 @@ const GROUP_COLORS: Record<string, string> = {
   other: '#64748b'
 };
 
+/**
+ * Analytics: fiscal-year filters, monthly histogram, expense breakdown by group/subgroup.
+ * State: `summary`, `monthly`, `filters` form; computed chart scaling via `maxGroupAmount` / `maxMonthlyValue`.
+ */
 @Component({
   selector: 'app-stats-page',
   standalone: true,

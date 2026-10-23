@@ -11,6 +11,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
 
+/**
+ * HMAC-signed access tokens carrying user id (subject), email, and role for stateless API auth.
+ */
 @Service
 public class JwtService {
 
@@ -25,6 +28,7 @@ public class JwtService {
 		this.accessExpirationMs = accessExpirationMs;
 	}
 
+	/** Issued after successful login; expiry from {@code djiguiya.jwt.access-token-expiration-ms}. */
 	public String generateAccessToken(String userId, String email, String roleCode) {
 		Date now = new Date();
 		return Jwts.builder()
@@ -36,6 +40,7 @@ public class JwtService {
 				.compact();
 	}
 
+	/** Verifies signature and expiry; used by {@link JwtAuthenticationFilter}. */
 	public Claims parse(String token) {
 		return Jwts.parser()
 				.verifyWith(key)

@@ -22,6 +22,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * End-to-end API integration test: authenticated flow from staff/vehicle through trip revenue to stats.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -52,6 +55,7 @@ class ApiFlowIntegrationTest {
 		accessToken = root.path("data").path("accessToken").asText();
 	}
 
+	/** Exercises create/assign/post revenue and confirms monthly summary reflects revenue. */
 	@Test
 	void fullFlow_vehicleStaffTripRevenueAndStats() throws Exception {
 		String staffJson = """

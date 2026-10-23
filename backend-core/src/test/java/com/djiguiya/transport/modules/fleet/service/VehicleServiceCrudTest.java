@@ -22,6 +22,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+/**
+ * Unit tests for {@link VehicleService} create/list/get/update and lookup errors; Mockito only.
+ */
 @ExtendWith(MockitoExtension.class)
 class VehicleServiceCrudTest {
 
@@ -36,6 +39,7 @@ class VehicleServiceCrudTest {
 	@InjectMocks
 	private VehicleService vehicleService;
 
+	/** Exercises happy-path create, list, get-by-id, and update for vehicles. */
 	@Test
 	void create_list_get_update() {
 		when(vehicleRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -63,6 +67,7 @@ class VehicleServiceCrudTest {
 		assertEquals("inactive", updated.status());
 	}
 
+	/** Throws when findVehicle is called for a missing id. */
 	@Test
 	void findVehicle_notFound() {
 		when(vehicleRepository.findById("missing")).thenReturn(Optional.empty());

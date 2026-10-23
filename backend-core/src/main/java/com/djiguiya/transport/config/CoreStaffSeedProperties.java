@@ -2,6 +2,9 @@ package com.djiguiya.transport.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+/**
+ * Typed {@code djiguiya.*} settings for bootstrap passwords and optional startup seeders.
+ */
 @ConfigurationProperties(prefix = "djiguiya")
 public class CoreStaffSeedProperties {
 
@@ -16,6 +19,7 @@ public class CoreStaffSeedProperties {
 		return seed;
 	}
 
+	/** Bootstrap credentials used only until users change password in the app. */
 	public static class Security {
 		/**
 		 * Bootstrap password for seed accounts that have not changed theirs yet.
@@ -32,7 +36,9 @@ public class CoreStaffSeedProperties {
 		}
 	}
 
+	/** Feature flags for {@link CoreStaffSeeder} and {@link Year1DataSeeder}. */
 	public static class Seed {
+		/** Upsert owner/management users, staff, and profit-share rules from code definitions. */
 		private boolean coreStaffEnabled = true;
 		/** Import year-1 trips/expenses extracted from dashboard.html + CSVs. */
 		private boolean year1Enabled = true;

@@ -4,6 +4,7 @@ import com.djiguiya.transport.modules.fleet.entities.VehicleDocumentEntity;
 
 import java.time.LocalDate;
 
+/** Compliance document state for a vehicle (insurance, registration, etc.). */
 public record VehicleDocumentResponse(
 		String id,
 		String vehicleId,

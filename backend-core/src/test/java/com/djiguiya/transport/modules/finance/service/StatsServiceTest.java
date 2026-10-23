@@ -18,6 +18,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 
+/**
+ * Unit tests for {@link StatsService} summaries, monthly series, compare, and YoY; mocked transactions.
+ */
 @ExtendWith(MockitoExtension.class)
 class StatsServiceTest {
 
@@ -26,6 +29,7 @@ class StatsServiceTest {
 	@InjectMocks
 	private StatsService statsService;
 
+	/** Aggregates revenue, expense, net, counts, and category groups for a filtered month. */
 	@Test
 	void summary_computesTotals() {
 		TransactionEntity revenue = txn(TransactionTypes.REVENUE, 1000L, "trip-1", null, "2026-03");
@@ -44,6 +48,7 @@ class StatsServiceTest {
 		assertEquals(400L, summary.groups().getFirst().amount());
 	}
 
+	/** Omits monthKey when no calendar month filter is supplied. */
 	@Test
 	void summary_withoutMonthUsesAllFiltered() {
 		when(transactionRepository.findFiltered(null, null, null, "bus", null))
@@ -54,6 +59,7 @@ class StatsServiceTest {
 		assertEquals(100L, summary.totalExpense());
 	}
 
+	/** Restricts fiscal-year summary to transactions matching the category filter. */
 	@Test
 	void summary_fiscalYearFiltersCategory() {
 		TransactionEntity match = txn(TransactionTypes.EXPENSE, 50L, null, "bus", "2025-09");
@@ -66,6 +72,7 @@ class StatsServiceTest {
 		assertEquals(1, summary.transactionCount());
 	}
 
+	/** Returns twelve month buckets from August through July for the fiscal start year. */
 	@Test
 	void monthlySeries_coversFiscalYearAugToJul() {
 		when(transactionRepository.findByMonthKeyRange("2025-08", "2026-07", null, null))
@@ -78,6 +85,7 @@ class StatsServiceTest {
 		assertEquals("2026-07", series.months().get(11).monthKey());
 	}
 
+	/** Computes net-profit delta between current and previous month indices. */
 	@Test
 	void compareMonth_computesDelta() {
 		when(transactionRepository.findFiltered(any(), isNull(), isNull(), isNull(), isNull()))
@@ -90,6 +98,7 @@ class StatsServiceTest {
 		assertEquals(150L, compare.deltaNetProfit());
 	}
 
+	/** Leaves percent change null when prior fiscal year net profit is zero. */
 	@Test
 	void yearOverYear_handlesZeroPrevious() {
 		when(transactionRepository.findByMonthKeyRange(eq("2025-08"), eq("2026-07"), isNull(), isNull()))
@@ -103,6 +112,7 @@ class StatsServiceTest {
 		assertNull(yoy.percentChange());
 	}
 
+	/** Computes percent change between consecutive fiscal years when prior net is non-zero. */
 	@Test
 	void yearOverYear_computesPercent() {
 		when(transactionRepository.findByMonthKeyRange(eq("2025-08"), eq("2026-07"), isNull(), isNull()))

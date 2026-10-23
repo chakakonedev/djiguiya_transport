@@ -6,6 +6,9 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
+/**
+ * Input for creating or updating a trip. Omit {@code driverId} to default to the vehicle primary driver.
+ */
 public record TripRequest(
 		@NotBlank @Size(max = 36) String vehicleId,
 		@NotNull LocalDate departureDate,

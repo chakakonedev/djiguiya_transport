@@ -1,3 +1,8 @@
+/**
+ * Shared DTO shapes matching the backend JSON envelope and domain entities.
+ * Used by HTTP services and page components for typed requests/responses.
+ */
+
 export interface ApiResponse<T> {
   success: boolean;
   messageKey: string | null;

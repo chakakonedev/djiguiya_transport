@@ -5,6 +5,7 @@
   </header>
 
   <article class="card">
+    <!-- Fiscal year selector triggers GET /profit-share/preview -->
     <form class="form-grid compact" [formGroup]="form" (ngSubmit)="load()">
       <label>
         {{ 'profitShare.fields.year' | translate }}
@@ -28,6 +29,7 @@
       {{ 'profitShare.period' | translate: { start: p.periodStart, end: p.periodEnd } }}
     </p>
     <div class="kpi-grid">
+      <!-- Reserve and distributable pool -->
       <article class="card kpi">
         <span class="kpi-label">{{ 'profitShare.kpi.netProfit' | translate }}</span>
         <strong>{{ formatXof(p.annualNetProfit) }}</strong>
@@ -42,6 +44,7 @@
       </article>
     </div>
 
+    <!-- Per-beneficiary allocation lines from preview -->
     <div class="table-wrap card">
       <table class="data-table">
         <thead>

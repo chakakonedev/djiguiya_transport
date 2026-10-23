@@ -28,6 +28,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * Unit tests for {@link VehicleService} primary-driver assignment and document replacement; mocked repos.
+ */
 @ExtendWith(MockitoExtension.class)
 class VehicleServiceTest {
 
@@ -42,6 +45,7 @@ class VehicleServiceTest {
 	@InjectMocks
 	private VehicleService vehicleService;
 
+	/** Saves a new open-ended assignment with the requested start date. */
 	@Test
 	void assignPrimaryDriver_persistsRequiredStartDate() {
 		VehicleEntity vehicle = vehicle("v1");
@@ -64,6 +68,7 @@ class VehicleServiceTest {
 		assertNull(captor.getValue().getEndDate());
 	}
 
+	/** Ends the prior assignment the day before the new start and stores reason on create. */
 	@Test
 	void assignPrimaryDriver_usesProvidedStartDateAndClosesPrevious() {
 		VehicleEntity vehicle = vehicle("v1");
@@ -97,6 +102,7 @@ class VehicleServiceTest {
 		assertEquals("rotation", created.getReason());
 	}
 
+	/** Closes the previous assignment on the same day when reassigning with today's start. */
 	@Test
 	void assignPrimaryDriver_sameDayReassignmentClosesPrevious() {
 		VehicleEntity vehicle = vehicle("v1");
@@ -121,6 +127,7 @@ class VehicleServiceTest {
 		assertEquals(today, previous.getEndDate());
 	}
 
+	/** Inserts new vehicle document rows and returns mapped DTOs. */
 	@Test
 	void replaceDocuments_upsertsEachEntry() {
 		VehicleEntity vehicle = vehicle("v1");

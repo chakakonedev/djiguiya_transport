@@ -24,6 +24,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * Unit tests for {@link AuthService#changePassword}: security context and password rules with mocks.
+ */
 @ExtendWith(MockitoExtension.class)
 class AuthServiceChangePasswordTest {
 
@@ -41,6 +44,7 @@ class AuthServiceChangePasswordTest {
 		SecurityContextHolder.clearContext();
 	}
 
+	/** Persists a new hash and marks password changed when current password is correct. */
 	@Test
 	void changePassword_success() {
 		authenticate("u1");
@@ -57,6 +61,7 @@ class AuthServiceChangePasswordTest {
 		verify(userRepository).save(user);
 	}
 
+	/** Fails when the supplied current password does not match. */
 	@Test
 	void changePassword_rejectsWrongCurrent() {
 		authenticate("u1");
@@ -67,6 +72,7 @@ class AuthServiceChangePasswordTest {
 				() -> authService.changePassword(new ChangePasswordRequest("bad", "new-pass")));
 	}
 
+	/** Fails when the new password equals the current password. */
 	@Test
 	void changePassword_rejectsSamePassword() {
 		authenticate("u1");
@@ -77,6 +83,7 @@ class AuthServiceChangePasswordTest {
 				() -> authService.changePassword(new ChangePasswordRequest("same", "same")));
 	}
 
+	/** Fails when no authenticated user is present in the security context. */
 	@Test
 	void changePassword_requiresAuthentication() {
 		SecurityContextHolder.clearContext();

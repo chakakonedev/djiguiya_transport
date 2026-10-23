@@ -23,6 +23,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Fleet registry: vehicles, time-bounded primary driver assignments, and per-vehicle compliance documents.
+ */
 @Service
 @RequiredArgsConstructor
 public class VehicleService {
@@ -62,6 +65,9 @@ public class VehicleService {
 		return VehicleResponse.from(vehicleRepository.save(entity), driverId);
 	}
 
+	/**
+	 * Starts a new primary-driver assignment and ends overlapping open rows so history stays non-overlapping.
+	 */
 	@Transactional
 	public VehicleResponse assignPrimaryDriver(String vehicleId, PrimaryDriverRequest request) {
 		VehicleEntity vehicle = findVehicle(vehicleId);
@@ -137,6 +143,7 @@ public class VehicleService {
 		return VehicleDocumentResponse.from(vehicleDocumentRepository.save(doc));
 	}
 
+	/** Primary driver effective on {@code onDate}, if any assignment covers that day. */
 	public Optional<String> resolvePrimaryDriverId(String vehicleId, LocalDate onDate) {
 		return primaryAssignmentRepository.findActiveForVehicleOnDate(vehicleId, onDate)
 				.map(PrimaryAssignmentEntity::getDriverId);

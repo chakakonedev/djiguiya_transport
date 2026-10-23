@@ -8,6 +8,10 @@ import {
   VEHICLE_DOC_TYPES
 } from './expense-catalog';
 
+/**
+ * Smoke check that the shared expense/staff/doc catalogs stay complete —
+ * used by ledger forms, stats colors, and fleet document types.
+ */
 describe('expense-catalog', () => {
   it('defines groups and other subgroup', () => {
     expect(EXPENSE_GROUPS).toContain('bus');

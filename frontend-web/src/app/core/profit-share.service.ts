@@ -9,6 +9,10 @@ import {
   ProfitShareRuleUpdateRequest
 } from './api.types';
 
+/**
+ * Annual profit distribution preview and configurable share rules.
+ * Endpoints: GET /profit-share/preview?year=, GET /profit-share/rules, PUT /profit-share/rules/:id.
+ */
 @Injectable({ providedIn: 'root' })
 export class ProfitShareService {
   private readonly base = `${API_BASE_URL}/profit-share`;

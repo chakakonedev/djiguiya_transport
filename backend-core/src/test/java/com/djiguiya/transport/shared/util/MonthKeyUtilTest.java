@@ -7,8 +7,12 @@ import java.time.YearMonth;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * Unit tests for {@link MonthKeyUtil}: yyyy-MM key formatting and parsing (no Spring).
+ */
 class MonthKeyUtilTest {
 
+	/** Verifies fromDate, forMonthYear, and parse round-trip a calendar month. */
 	@Test
 	void fromDate_andForMonthYear_andParse() {
 		assertEquals("2026-03", MonthKeyUtil.fromDate(LocalDate.of(2026, 3, 15)));

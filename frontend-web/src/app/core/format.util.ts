@@ -1,3 +1,4 @@
+/** Formats amounts in West African CFA francs for display; returns em dash when missing. */
 export function formatXof(amount: number | null | undefined): string {
   if (amount == null || Number.isNaN(amount)) {
     return '—';

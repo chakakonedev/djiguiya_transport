@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
+/** Input for posting salary or bonus as a payroll-category expense. */
 public record PayrollPaymentRequest(
 		@NotBlank @Size(max = 36) String staffId,
 		@NotNull @Positive Long amount,

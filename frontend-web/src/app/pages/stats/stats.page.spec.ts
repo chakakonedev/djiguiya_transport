@@ -6,6 +6,10 @@ import { StatsService } from '../../core/stats.service';
 import { VehicleService } from '../../core/vehicle.service';
 import { StaffService } from '../../core/staff.service';
 
+/**
+ * StatsPage: summary + monthly series, category/subgroup presentation helpers,
+ * and month filter refresh behavior.
+ */
 describe('StatsPage', () => {
   const statsApi = {
     summary: vi.fn(),
@@ -30,6 +34,7 @@ describe('StatsPage', () => {
     }).compileComponents();
   });
 
+  /** Loads KPIs, splits category vs subgroup rows, and builds chart helpers. */
   it('loads summary and monthly series', async () => {
     statsApi.summary.mockReturnValue(
       of({
@@ -63,6 +68,7 @@ describe('StatsPage', () => {
     expect(page.loading()).toBe(false);
   });
 
+  /** Monthly API failure sets the page error flag. */
   it('sets error when monthly fails', async () => {
     statsApi.summary.mockReturnValue(of({ totalRevenue: 0, groups: [] }));
     statsApi.monthly.mockReturnValue(throwError(() => new Error('fail')));
@@ -72,6 +78,7 @@ describe('StatsPage', () => {
     expect(fixture.componentInstance.error()).toBe(true);
   });
 
+  /** Changing month reloads summary; label helpers cover group/subgroup/unknown. */
   it('selectMonth refreshes and helpers work', async () => {
     statsApi.summary.mockReturnValue(
       of({ totalRevenue: 0, totalExpense: 0, netProfit: 0, groups: [] })

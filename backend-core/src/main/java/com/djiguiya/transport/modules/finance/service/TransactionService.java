@@ -18,6 +18,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 
+/**
+ * Manages the transport ledger: revenue tied to trips, categorized expenses, soft delete,
+ * and automatic {@code monthKey} derivation from transaction date.
+ */
 @Service
 @RequiredArgsConstructor
 public class TransactionService {
@@ -25,6 +29,7 @@ public class TransactionService {
 	private final TransactionRepository transactionRepository;
 	private final TripService tripService;
 
+	/** All active transactions ordered by {@code txnDate} descending. */
 	@Transactional(readOnly = true)
 	public List<TransactionResponse> listAll() {
 		return transactionRepository.findByDeletedAtIsNullOrderByTxnDateDesc().stream()
@@ -32,11 +37,13 @@ public class TransactionService {
 				.toList();
 	}
 
+	/** Loads one non-deleted transaction or throws {@code transaction.not_found}. */
 	@Transactional(readOnly = true)
 	public TransactionResponse getById(String id) {
 		return TransactionResponse.from(findEntity(id));
 	}
 
+	/** Validates, enriches revenue rows from trip metadata, persists with optional creator id. */
 	@Transactional
 	public TransactionResponse create(TransactionRequest request) {
 		validateBusinessRules(request);
@@ -47,6 +54,7 @@ public class TransactionService {
 		return TransactionResponse.from(transactionRepository.save(entity));
 	}
 
+	/** Updates an existing row with the same validation and trip enrichment as create. */
 	@Transactional
 	public TransactionResponse update(String id, TransactionRequest request) {
 		validateBusinessRules(request);
@@ -55,6 +63,7 @@ public class TransactionService {
 		return TransactionResponse.from(transactionRepository.save(entity));
 	}
 
+	/** Soft-delete; row remains excluded from list and stats queries. */
 	@Transactional
 	public void delete(String id) {
 		TransactionEntity entity = findEntity(id);
@@ -62,6 +71,7 @@ public class TransactionService {
 		transactionRepository.save(entity);
 	}
 
+	/** Internal lookup for other modules (payroll, trips) needing the entity. */
 	public TransactionEntity findEntity(String id) {
 		return transactionRepository.findByIdAndDeletedAtIsNull(id)
 				.orElseThrow(() -> new BusinessException("transaction.not_found", HttpStatus.NOT_FOUND));

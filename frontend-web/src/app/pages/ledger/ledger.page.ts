@@ -50,6 +50,11 @@ export function revenueTripDatesValidator(): ValidatorFn {
   };
 }
 
+/**
+ * Ledger: tabbed revenue (trip + payment) and expense entry, role-gated edit/delete.
+ * State: `tab`, `transactions`, `editingId`, `editingTripId`, `canWrite`;
+ * forms: `revenueForm` (cross-field trip date validator), `expenseForm` (catalog-driven).
+ */
 @Component({
   selector: 'app-ledger-page',
   standalone: true,

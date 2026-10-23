@@ -4,6 +4,7 @@
     <p class="muted">{{ 'stats.subtitle' | translate }}</p>
   </header>
 
+  <!-- Fiscal year, vehicle/driver filters, and month chips -->
   <article class="card">
     <form class="form-grid" [formGroup]="filters" (ngSubmit)="refreshAll()">
       <label>
@@ -72,6 +73,7 @@
     <p class="error">{{ 'common.loadError' | translate }}</p>
   } @else {
     <div class="kpi-grid">
+      <!-- Filtered period totals -->
       <article class="card kpi">
         <span class="kpi-label">{{ 'home.kpi.revenue' | translate }}</span>
         <strong class="tone-rev">{{ formatXof(summary()?.totalRevenue) }}</strong>
@@ -90,6 +92,7 @@
       </article>
     </div>
 
+    <!-- CSS histogram: revenue, expense, net per fiscal month -->
     <article class="card">
       <h2>{{ 'stats.monthlyTitle' | translate }}</h2>
       <p class="muted section-hint">{{ 'stats.monthlyHint' | translate }}</p>
@@ -129,6 +132,7 @@
     </article>
 
     <div class="split-grid">
+      <!-- Category bars and subgroup detail table -->
       <article class="card">
         <h2>{{ 'stats.groupsTitle' | translate }}</h2>
         @for (row of orderedCategoryGroups(); track row.categoryCode) {

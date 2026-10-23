@@ -4,6 +4,9 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ProfitShareService } from './profit-share.service';
 import { API_BASE_URL } from './api.config';
 
+/**
+ * ProfitShareService: preview by fiscal year, list rules, and PATCH individual rules.
+ */
 describe('ProfitShareService', () => {
   let service: ProfitShareService;
   let http: HttpTestingController;
@@ -18,6 +21,7 @@ describe('ProfitShareService', () => {
 
   afterEach(() => http.verify());
 
+  /** preview, listRules, and updateRule call the correct profit-share endpoints. */
   it('preview listRules updateRule', () => {
     service.preview(2025).subscribe();
     http.expectOne(`${API_BASE_URL}/profit-share/preview?year=2025`).flush({

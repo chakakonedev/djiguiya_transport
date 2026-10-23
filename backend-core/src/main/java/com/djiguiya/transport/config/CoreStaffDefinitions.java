@@ -11,6 +11,7 @@ import java.util.List;
  */
 public final class CoreStaffDefinitions {
 
+	/** Profit-share rules seeded from this date align with the Aug–Jul fiscal year. */
 	public static final LocalDate EFFECTIVE_FROM = LocalDate.of(2025, 8, 1);
 
 	public static final List<Person> PEOPLE = List.of(

@@ -25,6 +25,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * HTTP security: stateless JWT authentication, CORS for the SPA, and BCrypt password hashing.
+ * Only login, health, and API docs are anonymous; all other routes require a valid Bearer token.
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -46,6 +50,7 @@ public class SecurityConfig {
 			"/actuator/health"
 	};
 
+	/** Stateless chain: JWT filter before username/password; CSRF off (token-based API). */
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
@@ -60,6 +65,7 @@ public class SecurityConfig {
 		return http.build();
 	}
 
+	/** CORS for {@code /api/**}; allowed origins from {@code djiguiya.security.cors-allowed-origins}. */
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration config = new CorsConfiguration();
@@ -75,11 +81,13 @@ public class SecurityConfig {
 		return source;
 	}
 
+	/** Shared encoder for login, password change, and seed/bootstrap accounts. */
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
 
+	/** Exposed for {@code AuthService} credential checks against the security stack. */
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
 		return config.getAuthenticationManager();

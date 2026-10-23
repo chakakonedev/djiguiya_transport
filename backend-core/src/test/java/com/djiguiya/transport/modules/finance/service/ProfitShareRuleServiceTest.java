@@ -20,6 +20,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+/**
+ * Unit tests for {@link ProfitShareRuleService} list/update and beneficiary name resolution; mocks only.
+ */
 @ExtendWith(MockitoExtension.class)
 class ProfitShareRuleServiceTest {
 
@@ -30,6 +33,7 @@ class ProfitShareRuleServiceTest {
 	@InjectMocks
 	private ProfitShareRuleService profitShareRuleService;
 
+	/** Updates rate percent and enriches response with staff full name. */
 	@Test
 	void update_changesRateAndResolvesBeneficiaryName() {
 		ProfitShareRuleEntity rule = new ProfitShareRuleEntity();
@@ -55,6 +59,7 @@ class ProfitShareRuleServiceTest {
 		assertEquals("Diakaridia Koné", updated.beneficiaryName());
 	}
 
+	/** Batch-loads staff names when listing all rules. */
 	@Test
 	void listAll_includesNames() {
 		ProfitShareRuleEntity rule = new ProfitShareRuleEntity();
@@ -77,6 +82,7 @@ class ProfitShareRuleServiceTest {
 		assertEquals(new BigDecimal("1.0000"), list.getFirst().salaryMonthsEquivalent());
 	}
 
+	/** Normalizes blank notes to null and applies enabled flag on update. */
 	@Test
 	void update_clearsBlankNotesAndDisables() {
 		ProfitShareRuleEntity rule = new ProfitShareRuleEntity();
@@ -98,6 +104,7 @@ class ProfitShareRuleServiceTest {
 		assertEquals(null, updated.beneficiaryName());
 	}
 
+	/** Throws when updating a rule id that does not exist. */
 	@Test
 	void update_notFound() {
 		when(profitShareRuleRepository.findById("missing")).thenReturn(Optional.empty());
@@ -108,6 +115,7 @@ class ProfitShareRuleServiceTest {
 						new ProfitShareRuleUpdateRequest(null, null, null, null)));
 	}
 
+	/** Leaves beneficiaryName null when linked staff record is missing. */
 	@Test
 	void listAll_nullBeneficiaryNameWhenStaffMissing() {
 		ProfitShareRuleEntity rule = new ProfitShareRuleEntity();

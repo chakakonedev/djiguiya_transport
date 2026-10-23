@@ -9,6 +9,10 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
+/**
+ * Time-bounded assignment of a staff driver as the primary operator of a vehicle.
+ * Open assignments use {@code endDate == null}; trips may fall back to the row active on departure date.
+ */
 @Entity
 @Table(name = "primary_assignments")
 @Getter

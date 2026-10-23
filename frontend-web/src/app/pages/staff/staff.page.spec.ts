@@ -6,6 +6,10 @@ import { StaffService } from '../../core/staff.service';
 import { ProfitShareService } from '../../core/profit-share.service';
 import { AuthService } from '../../core/auth.service';
 
+/**
+ * StaffPage: staff roster + profit-share rules joined into display rows;
+ * owners can create/edit staff and sync share / quarterly-bonus rules.
+ */
 describe('StaffPage', () => {
   const staffApi = { list: vi.fn(), create: vi.fn(), update: vi.fn() };
   const profitApi = { listRules: vi.fn(), updateRule: vi.fn() };
@@ -25,6 +29,7 @@ describe('StaffPage', () => {
     }).compileComponents();
   });
 
+  /** Join staff with partner share rules; owner has manage rights. */
   it('loads staff and rules', async () => {
     staffApi.list.mockReturnValue(
       of([{ id: 's1', fullName: 'Amadou', staffType: 'driver', monthlySalary: 100 }])
@@ -51,6 +56,7 @@ describe('StaffPage', () => {
     expect(page.loading()).toBe(false);
   });
 
+  /** Staff list failure sets the page error flag. */
   it('sets error on reload failure', async () => {
     staffApi.list.mockReturnValue(throwError(() => new Error('fail')));
     profitApi.listRules.mockReturnValue(of([]));
@@ -60,6 +66,7 @@ describe('StaffPage', () => {
     expect(fixture.componentInstance.error()).toBe(true);
   });
 
+  /** startCreate clears editing id and defaults staff type to driver. */
   it('startCreate resets form for owner', async () => {
     staffApi.list.mockReturnValue(of([]));
     profitApi.listRules.mockReturnValue(of([]));
@@ -72,6 +79,7 @@ describe('StaffPage', () => {
     expect(page.form.controls.staffType.value).toBe('driver');
   });
 
+  /** Create staff then push partner-share / quarterly-bonus rule updates. */
   it('submits create and syncs share rules', async () => {
     staffApi.list.mockReturnValue(of([]));
     profitApi.listRules.mockReturnValue(
@@ -130,6 +138,7 @@ describe('StaffPage', () => {
     expect(profitApi.updateRule).toHaveBeenCalled();
   });
 
+  /** Display helpers for share % and quarterly bonus amounts. */
   it('formats share and quarterly bonus', async () => {
     staffApi.list.mockReturnValue(of([]));
     profitApi.listRules.mockReturnValue(of([]));

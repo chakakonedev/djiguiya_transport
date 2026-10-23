@@ -20,6 +20,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * Unit tests for {@link StaffService} CRUD mapping and defaults; mocked {@link StaffRepository}.
+ */
 @ExtendWith(MockitoExtension.class)
 class StaffServiceTest {
 
@@ -28,6 +31,7 @@ class StaffServiceTest {
 	@InjectMocks
 	private StaffService staffService;
 
+	/** Maps persisted staff entities to response DTOs in list order. */
 	@Test
 	void listAll_mapsEntities() {
 		StaffEntity entity = staff("s1", "Amadou");
@@ -38,12 +42,14 @@ class StaffServiceTest {
 		assertEquals("Amadou", list.getFirst().fullName());
 	}
 
+	/** Throws when the requested staff id does not exist. */
 	@Test
 	void getById_notFound() {
 		when(staffRepository.findById("missing")).thenReturn(Optional.empty());
 		assertThrows(BusinessException.class, () -> staffService.getById("missing"));
 	}
 
+	/** Trims names and defaults blank status to active on create. */
 	@Test
 	void create_defaultsStatusToActive() {
 		when(staffRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -61,6 +67,7 @@ class StaffServiceTest {
 		assertEquals("driver", captor.getValue().getStaffType());
 	}
 
+	/** Applies all mutable fields from the request on update. */
 	@Test
 	void update_appliesFields() {
 		StaffEntity entity = staff("s1", "Old");

@@ -13,6 +13,10 @@ import lombok.Setter;
 import java.time.Instant;
 import java.time.LocalDate;
 
+/**
+ * A scheduled use of a vehicle over a date range. Links to fleet ({@code vehicleId}) and staff ({@code driverId});
+ * {@code monthKey} aligns trips with monthly reporting; soft delete via {@code deletedAt}.
+ */
 @Entity
 @Table(name = "trips")
 @EntityListeners(AuditingListener.class)
@@ -33,12 +37,14 @@ public class TripEntity implements Timestamped {
 	@Column(name = "return_date", nullable = false)
 	private LocalDate returnDate;
 
+	/** Year-month string (e.g. 2026-04) derived from departure for aggregation. */
 	@Column(name = "month_key", nullable = false, length = 7)
 	private String monthKey;
 
 	@Column(name = "driver_id", nullable = false, length = 36)
 	private String driverId;
 
+	/** True when a substitute driver covers the trip instead of the usual primary driver. */
 	@Column(name = "is_replacement", nullable = false)
 	private boolean replacement;
 

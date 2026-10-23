@@ -9,6 +9,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Date-range queries for {@link PrimaryAssignmentEntity}. When multiple rows match a day, the latest start wins.
+ */
 public interface PrimaryAssignmentRepository extends JpaRepository<PrimaryAssignmentEntity, String> {
 
 	List<PrimaryAssignmentEntity> findByVehicleIdAndEndDateIsNullOrderByStartDateAsc(String vehicleId);

@@ -12,6 +12,10 @@ import lombok.Setter;
 
 import java.time.Instant;
 
+/**
+ * Person employed or contracted by the transport operation (driver, manager, etc.).
+ * Referenced by trips ({@code driverId}) and primary vehicle assignments; optional {@code userId} ties to login.
+ */
 @Entity
 @Table(name = "staff")
 @EntityListeners(AuditingListener.class)

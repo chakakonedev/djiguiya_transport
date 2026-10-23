@@ -4,6 +4,7 @@
     <p class="muted">{{ 'fleet.subtitle' | translate }}</p>
   </header>
 
+  <!-- New vehicle registration -->
   <article class="card">
     <h2>{{ 'fleet.createTitle' | translate }}</h2>
     <form class="form-grid" [formGroup]="createForm" (ngSubmit)="submitCreate()">
@@ -40,6 +41,7 @@
   } @else if (loadError()) {
     <p class="error">{{ 'common.loadError' | translate }}</p>
   } @else {
+    <!-- Vehicle list with expandable driver and document panels -->
     <div class="stack">
       @for (vehicle of vehicles(); track vehicle.id) {
         <article class="card">

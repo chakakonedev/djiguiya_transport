@@ -4,6 +4,10 @@ import { map } from 'rxjs/operators';
 import { API_BASE_URL } from './api.config';
 import { ApiResponse, Trip, TripCreateRequest } from './api.types';
 
+/**
+ * Trip records linked to vehicles and drivers (revenue entries create trips via the ledger).
+ * Base path: GET|POST /trips, GET|PUT /trips/:id; list supports vehicleId and monthKey filters.
+ */
 @Injectable({ providedIn: 'root' })
 export class TripService {
   private readonly base = `${API_BASE_URL}/trips`;

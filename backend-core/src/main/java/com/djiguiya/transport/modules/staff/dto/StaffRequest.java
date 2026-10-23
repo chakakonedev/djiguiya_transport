@@ -3,6 +3,9 @@ package com.djiguiya.transport.modules.staff.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+/**
+ * Create/update payload for staff. {@code staffType} distinguishes role (e.g. driver, manager).
+ */
 public record StaffRequest(
 		@NotBlank @Size(max = 180) String fullName,
 		@NotBlank @Size(max = 40) String staffType,

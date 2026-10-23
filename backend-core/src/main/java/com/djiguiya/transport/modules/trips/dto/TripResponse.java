@@ -4,6 +4,9 @@ import com.djiguiya.transport.modules.trips.entities.TripEntity;
 
 import java.time.LocalDate;
 
+/**
+ * Trip view for API clients, including denormalized vehicle and driver names for display.
+ */
 public record TripResponse(
 		String id,
 		String vehicleId,

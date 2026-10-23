@@ -23,6 +23,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+/**
+ * Unit tests for {@link ProfitShareService#preview}: fiscal-year ledger and rule application; mocked repos.
+ */
 @ExtendWith(MockitoExtension.class)
 class ProfitShareServiceTest {
 
@@ -35,6 +38,7 @@ class ProfitShareServiceTest {
 	@InjectMocks
 	private ProfitShareService profitShareService;
 
+	/** Computes reserve, distributable pool, and partner lines for a full fiscal year. */
 	@Test
 	void preview_usesFiscalYearRangeAndAppliesReserveRule() {
 		TransactionEntity revenue = new TransactionEntity();

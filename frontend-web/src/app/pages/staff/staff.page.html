@@ -5,6 +5,7 @@
   </header>
 
   @if (canManage()) {
+    <!-- Owner-only create / edit form -->
     <article class="card">
       <h2>
         {{
@@ -62,6 +63,7 @@
   } @else if (error()) {
     <p class="error">{{ 'common.loadError' | translate }}</p>
   } @else {
+    <!-- Staff roster with profit-share columns -->
     <div class="table-wrap card">
       <table class="data-table">
         <thead>

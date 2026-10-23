@@ -4,6 +4,9 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { StatsService } from './stats.service';
 import { API_BASE_URL } from './api.config';
 
+/**
+ * StatsService: summary with filter query params, monthly breakdown, and year-over-year.
+ */
 describe('StatsService', () => {
   let service: StatsService;
   let http: HttpTestingController;
@@ -18,6 +21,7 @@ describe('StatsService', () => {
 
   afterEach(() => http.verify());
 
+  /** summary forwards vehicleId, month, year, and category as HTTP query params. */
   it('summary sends filters', () => {
     service.summary({ vehicleId: 'v1', month: 3, year: 2026, category: 'bus' }).subscribe();
     const req = http.expectOne(
@@ -28,6 +32,7 @@ describe('StatsService', () => {
     req.flush({ success: true, messageKey: null, data: { totalRevenue: 1 } });
   });
 
+  /** monthly and yoy build URLs with year and optional driverId filter. */
   it('monthly and yoy', () => {
     service.monthly(2025, { driverId: 'd1' }).subscribe();
     const monthly = http.expectOne(`${API_BASE_URL}/stats/monthly?driverId=d1&year=2025`);

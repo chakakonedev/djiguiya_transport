@@ -4,6 +4,11 @@ import { map } from 'rxjs/operators';
 import { API_BASE_URL } from './api.config';
 import { ApiResponse, LedgerTransaction, TransactionCreateRequest } from './api.types';
 
+/**
+ * Ledger transactions (revenue and expense lines).
+ * Base path: GET|POST /transactions, PUT /transactions/:id, DELETE /transactions/:id;
+ * list supports type and monthKey query filters.
+ */
 @Injectable({ providedIn: 'root' })
 export class TransactionService {
   private readonly base = `${API_BASE_URL}/transactions`;

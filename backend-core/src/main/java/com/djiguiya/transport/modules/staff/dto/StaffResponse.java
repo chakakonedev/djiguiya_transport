@@ -2,6 +2,9 @@ package com.djiguiya.transport.modules.staff.dto;
 
 import com.djiguiya.transport.modules.staff.entities.StaffEntity;
 
+/**
+ * Staff profile exposed to clients. {@code userId} links to a login account when present.
+ */
 public record StaffResponse(
 		String id,
 		String fullName,

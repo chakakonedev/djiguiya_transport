@@ -14,12 +14,17 @@ import { canManageStaff } from '../../core/roles.util';
 const PARTNER_SHARE = 'partner_profit_share_pct';
 const QUARTERLY_BONUS = 'quarterly_salary_bonus';
 
+/** Table row combining staff profile with linked profit-share rules for display. */
 export interface StaffRowView {
   staff: StaffMember;
   partnerShareRule: ProfitShareRule | null;
   quarterlyBonusRule: ProfitShareRule | null;
 }
 
+/**
+ * Staff directory; owners can create/edit staff and sync partner share / quarterly bonus rules.
+ * State: `staffList`, `rules`, `editingId`, `canManage`; form: unified create/edit `form`.
+ */
 @Component({
   selector: 'app-staff-page',
   standalone: true,
@@ -171,6 +176,7 @@ export class StaffPage implements OnInit {
     return `${n} × salaire`;
   }
 
+  /** Updates existing profit-share rules when owner edits partner % or quarterly bonus on the form. */
   private syncShareRules(
     staffId: string,
     partnerPercent: number | null,

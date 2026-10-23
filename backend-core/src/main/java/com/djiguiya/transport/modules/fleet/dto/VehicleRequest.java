@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
+/** Create/update payload for a fleet vehicle. */
 public record VehicleRequest(
 		@NotBlank @Size(max = 120) String name,
 		@Size(max = 60) String plate,

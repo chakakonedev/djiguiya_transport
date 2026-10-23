@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Posts payroll-related expenses as standard ledger transactions under category {@code payroll}.
+ */
 @RestController
 @RequestMapping("/api/v1/payroll")
 @RequiredArgsConstructor
@@ -18,11 +21,13 @@ public class PayrollController {
 
 	private final PayrollService payrollService;
 
+	/** Records a salary payment for a staff member for the given payroll month. */
 	@PostMapping("/salary")
 	public ApiResponse<TransactionResponse> salary(@Valid @RequestBody PayrollPaymentRequest request) {
 		return ApiResponse.ok("transaction.created", payrollService.postSalary(request));
 	}
 
+	/** Records a bonus payment using the same payroll expense shape as salary. */
 	@PostMapping("/bonus")
 	public ApiResponse<TransactionResponse> bonus(@Valid @RequestBody PayrollPaymentRequest request) {
 		return ApiResponse.ok("transaction.created", payrollService.postBonus(request));

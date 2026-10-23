@@ -12,6 +12,9 @@ import lombok.Setter;
 import java.time.Instant;
 import java.time.LocalDate;
 
+/**
+ * Tracks renewal/expiry for a typed document belonging to a vehicle ({@code vehicleId} + {@code docType} unique in practice).
+ */
 @Entity
 @Table(name = "vehicle_documents")
 @Getter

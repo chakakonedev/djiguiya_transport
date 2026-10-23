@@ -4,6 +4,10 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { VehicleService } from './vehicle.service';
 import { API_BASE_URL } from './api.config';
 
+/**
+ * VehicleService HTTP contract: unwraps API envelopes and hits the expected
+ * REST paths for fleet CRUD, primary driver assignment, and documents.
+ */
 describe('VehicleService', () => {
   let service: VehicleService;
   let http: HttpTestingController;
@@ -18,6 +22,7 @@ describe('VehicleService', () => {
 
   afterEach(() => http.verify());
 
+  /** GET /vehicles → returns the inner `data` array, not the wrapper. */
   it('lists vehicles from API wrapper', () => {
     let result: unknown;
     service.list().subscribe((data) => (result = data));
@@ -33,6 +38,7 @@ describe('VehicleService', () => {
     expect(result).toEqual([{ id: 'v1', name: 'Bus 1', plate: 'ML-01', status: 'active' }]);
   });
 
+  /** POST /vehicles with create payload. */
   it('creates a vehicle', () => {
     service.create({ name: 'Bus 2', plate: null, purchasePrice: 1, purchaseDate: null }).subscribe();
 
@@ -42,6 +48,7 @@ describe('VehicleService', () => {
     req.flush({ success: true, messageKey: null, data: { id: 'v2', name: 'Bus 2' } });
   });
 
+  /** POST /vehicles/:id/primary-driver includes startDate for assignment history. */
   it('assigns primary driver with startDate', () => {
     service.setPrimaryDriver('v1', { driverId: 'd1', startDate: '2026-10-21' }).subscribe();
 
@@ -55,6 +62,7 @@ describe('VehicleService', () => {
     });
   });
 
+  /** PUT /vehicles/:id/documents sends the full document array as body. */
   it('saves documents as an array', () => {
     const docs = [
       {
@@ -73,6 +81,7 @@ describe('VehicleService', () => {
     req.flush({ success: true, messageKey: 'documents.updated', data: docs });
   });
 
+  /** PATCH update + GET documents smoke coverage for remaining endpoints. */
   it('updates vehicle and loads documents', () => {
     service.update('v1', { name: 'Renamed' }).subscribe();
     http.expectOne(`${API_BASE_URL}/vehicles/v1`).flush({

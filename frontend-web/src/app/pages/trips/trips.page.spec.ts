@@ -6,6 +6,10 @@ import { TripService } from '../../core/trip.service';
 import { VehicleService } from '../../core/vehicle.service';
 import { StaffService } from '../../core/staff.service';
 
+/**
+ * TripsPage: loads trips plus vehicle/driver catalogs so the UI can resolve
+ * IDs into human-readable labels without extra round-trips per row.
+ */
 describe('TripsPage', () => {
   const tripsApi = { list: vi.fn() };
   const vehiclesApi = { list: vi.fn(() => of([{ id: 'v1', name: 'Bus 1' }])) };
@@ -24,6 +28,7 @@ describe('TripsPage', () => {
     }).compileComponents();
   });
 
+  /** Happy path: trip list + label helpers (vehicle name, driver name). */
   it('loads trips and resolves labels', async () => {
     tripsApi.list.mockReturnValue(
       of([{ id: 't1', vehicleId: 'v1', driverId: 'd1', departureDate: '2026-03-01', returnDate: '2026-03-02' }])
@@ -39,6 +44,7 @@ describe('TripsPage', () => {
     expect(page.loading()).toBe(false);
   });
 
+  /** API failure surfaces as an error flag for the template. */
   it('sets error on failure', async () => {
     tripsApi.list.mockReturnValue(throwError(() => new Error('fail')));
     const fixture = TestBed.createComponent(TripsPage);
@@ -47,6 +53,10 @@ describe('TripsPage', () => {
     expect(fixture.componentInstance.error()).toBe(true);
   });
 
+  /**
+   * Label priority: embedded driverName > staff lookup > em dash;
+   * unknown vehicle IDs fall back to the raw id string.
+   */
   it('driverLabel prefers trip.driverName and falls back', async () => {
     tripsApi.list.mockReturnValue(of([]));
     const fixture = TestBed.createComponent(TripsPage);

@@ -13,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Business operations for staff profiles used as drivers and payroll subjects across fleet and trips.
+ */
 @Service
 @RequiredArgsConstructor
 public class StaffService {
@@ -44,6 +47,7 @@ public class StaffService {
 		return StaffResponse.from(staffRepository.save(entity));
 	}
 
+	/** Loads a staff row or throws {@code staff.not_found}; shared by trips and fleet validation. */
 	public StaffEntity findEntity(String id) {
 		return staffRepository.findById(id)
 				.orElseThrow(() -> new BusinessException("staff.not_found", HttpStatus.NOT_FOUND));

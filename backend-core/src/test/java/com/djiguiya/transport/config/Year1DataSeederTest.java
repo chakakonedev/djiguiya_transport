@@ -28,6 +28,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * Unit tests for {@link Year1DataSeeder}: classpath seed resource, feature flag, and import/sync paths with mocks.
+ */
 @ExtendWith(MockitoExtension.class)
 class Year1DataSeederTest {
 
@@ -55,11 +58,13 @@ class Year1DataSeederTest {
 				transactionRepository);
 	}
 
+	/** Ensures the year-one JSON seed file is on the test classpath. */
 	@Test
 	void seedResourceIsPresent() {
 		assertTrue(new ClassPathResource("seed/year1_seed.json").exists());
 	}
 
+	/** Does not touch repositories when year-one seeding is disabled. */
 	@Test
 	void skipsWhenDisabled() throws Exception {
 		properties.getSeed().setYear1Enabled(false);
@@ -70,6 +75,7 @@ class Year1DataSeederTest {
 		verify(tripRepository, never()).save(any());
 	}
 
+	/** Updates plate and purchase fields only when the seed vehicle id already exists. */
 	@Test
 	void syncsVehicleIdentityWhenAlreadyPresent() throws Exception {
 		properties.getSeed().setYear1Enabled(true);
@@ -92,6 +98,7 @@ class Year1DataSeederTest {
 		verify(transactionRepository, never()).save(any());
 	}
 
+	/** Imports full year-one dataset when enabled and the anchor vehicle is absent. */
 	@Test
 	void importsSeedWhenEnabledAndVehicleMissing() throws Exception {
 		properties.getSeed().setYear1Enabled(true);

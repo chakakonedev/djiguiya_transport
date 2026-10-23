@@ -13,6 +13,11 @@ import lombok.Setter;
 import java.time.Instant;
 import java.time.LocalDate;
 
+/**
+ * Single ledger line: trip-linked revenue or categorized expense. {@code monthKey} denormalizes
+ * the calendar month of {@code txnDate} for fiscal-year queries. Payroll expenses reuse
+ * {@code driverId} for staff id and set {@code payrollMonth} / {@code payrollKind}.
+ */
 @Entity
 @Table(name = "transactions")
 @EntityListeners(AuditingListener.class)

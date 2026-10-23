@@ -18,6 +18,9 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * CRUD-style access to persisted profit-share rules, enriching responses with staff display names.
+ */
 @Service
 @RequiredArgsConstructor
 public class ProfitShareRuleService {
@@ -25,6 +28,7 @@ public class ProfitShareRuleService {
 	private final ProfitShareRuleRepository profitShareRuleRepository;
 	private final StaffRepository staffRepository;
 
+	/** Returns every rule row with beneficiary name resolved when staff still exists. */
 	@Transactional(readOnly = true)
 	public List<ProfitShareRuleResponse> listAll() {
 		List<ProfitShareRuleEntity> rules = profitShareRuleRepository.findAll();
@@ -45,6 +49,9 @@ public class ProfitShareRuleService {
 				.toList();
 	}
 
+	/**
+	 * Applies only non-null fields from the request; blank notes are stored as null.
+	 */
 	@Transactional
 	public ProfitShareRuleResponse update(String id, ProfitShareRuleUpdateRequest request) {
 		ProfitShareRuleEntity rule = profitShareRuleRepository.findById(id)

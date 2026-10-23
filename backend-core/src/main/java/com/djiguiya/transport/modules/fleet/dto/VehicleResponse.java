@@ -4,6 +4,9 @@ import com.djiguiya.transport.modules.fleet.entities.VehicleEntity;
 
 import java.time.LocalDate;
 
+/**
+ * Vehicle summary for API clients. {@code primaryDriverId} is resolved for "today" on list/detail calls.
+ */
 public record VehicleResponse(
 		String id,
 		String name,

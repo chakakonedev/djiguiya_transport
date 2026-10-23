@@ -9,6 +9,10 @@ import lombok.Setter;
 
 import java.time.Instant;
 
+/**
+ * Application login account. Linked optionally to {@link com.djiguiya.transport.modules.staff.entities.StaffEntity}
+ * via {@code userId} on staff records; role drives API authorization.
+ */
 @Entity
 @Table(name = "users")
 @Getter
@@ -28,6 +32,7 @@ public class UserEntity {
 	@Column(name = "full_name", nullable = false, length = 180)
 	private String fullName;
 
+	/** Role identifier consumed by {@code @PreAuthorize} expressions. */
 	@Column(name = "role_code", nullable = false, length = 40)
 	private String roleCode;
 

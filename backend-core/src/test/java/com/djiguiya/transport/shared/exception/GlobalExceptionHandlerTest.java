@@ -22,14 +22,20 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+/**
+ * Unit tests for {@link GlobalExceptionHandler}: verifies status codes, message keys,
+ * and localization wiring without starting a full Spring MVC context.
+ */
 @ExtendWith(MockitoExtension.class)
 class GlobalExceptionHandlerTest {
 
 	@Mock
 	private MessageSource messageSource;
+
 	@InjectMocks
 	private GlobalExceptionHandler handler;
 
+	/** BusinessException → HTTP status + messageKey preserved in the body. */
 	@Test
 	void handleBusiness() {
 		when(messageSource.getMessage(eq("staff.not_found"), any(), eq("staff.not_found"), any(Locale.class)))
@@ -39,6 +45,7 @@ class GlobalExceptionHandlerTest {
 		assertEquals("staff.not_found", response.getBody().messageKey());
 	}
 
+	/** ResponseStatusException with a reason: reason is treated as the i18n key. */
 	@Test
 	void handleStatus_withReason() {
 		when(messageSource.getMessage(eq("auth.invalid_credentials"), any(), eq("auth.invalid_credentials"), any(Locale.class)))
@@ -49,6 +56,7 @@ class GlobalExceptionHandlerTest {
 		assertEquals("auth.invalid_credentials", response.getBody().messageKey());
 	}
 
+	/** No reason → default key {@code common.not_found}. */
 	@Test
 	void handleStatus_withoutReason() {
 		when(messageSource.getMessage(eq("common.not_found"), any(), eq("common.not_found"), any(Locale.class)))
@@ -57,6 +65,7 @@ class GlobalExceptionHandlerTest {
 		assertEquals("common.not_found", response.getBody().messageKey());
 	}
 
+	/** Validation errors: 400 + field names listed in the human-readable message. */
 	@Test
 	void handleValidation_listsFields() throws Exception {
 		when(messageSource.getMessage(eq("common.validation_failed"), any(), any(Locale.class)))
@@ -72,6 +81,7 @@ class GlobalExceptionHandlerTest {
 		assertEquals(true, response.getBody().message().contains("fullName"));
 	}
 
+	/** Unexpected exception: 500 with stable key and exception message exposed. */
 	@Test
 	void handleGeneric_usesExceptionMessage() {
 		var response = handler.handleGeneric(new RuntimeException("boom"));
@@ -80,6 +90,7 @@ class GlobalExceptionHandlerTest {
 		assertEquals("boom", response.getBody().message());
 	}
 
+	/** Null exception message → client-safe fallback string. */
 	@Test
 	void handleGeneric_nullMessageFallback() {
 		var response = handler.handleGeneric(new RuntimeException());

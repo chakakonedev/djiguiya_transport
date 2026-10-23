@@ -9,24 +9,34 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Pure functions over in-memory transaction lists: revenue/expense sums, net profit,
+ * and expense breakdown for stats dashboards (no persistence).
+ */
 public final class LedgerAggregator {
 
 	private LedgerAggregator() {
 	}
 
+	/** Sums amounts where {@code type} is {@link TransactionTypes#REVENUE}. */
 	public static long totalRevenue(List<TransactionEntity> transactions) {
 		return sumByType(transactions, TransactionTypes.REVENUE);
 	}
 
+	/** Sums amounts where {@code type} is {@link TransactionTypes#EXPENSE}. */
 	public static long totalExpense(List<TransactionEntity> transactions) {
 		return sumByType(transactions, TransactionTypes.EXPENSE);
 	}
 
+	/** {@code totalRevenue - totalExpense} for the given rows. */
 	public static long netProfit(List<TransactionEntity> transactions) {
 		return totalRevenue(transactions) - totalExpense(transactions);
 	}
 
-	/** Expense totals grouped by category (then subcategory). */
+	/**
+	 * Groups expenses by {@code categoryCode} (blank → {@code other}), sorted by amount descending,
+	 * then appends subcategory rows ({@code category|subcategory}) for non-blank subcategories.
+	 */
 	public static List<StatsGroupRowResponse> expenseByGroup(List<TransactionEntity> transactions) {
 		Map<String, Long> byCategory = new LinkedHashMap<>();
 		Map<String, Long> bySubcategory = new LinkedHashMap<>();

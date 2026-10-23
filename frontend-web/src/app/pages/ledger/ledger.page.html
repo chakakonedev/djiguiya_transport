@@ -4,6 +4,7 @@
     <p class="muted">{{ 'ledger.subtitle' | translate }}</p>
   </header>
 
+  <!-- Revenue vs expense entry mode -->
   <div class="tabs">
     <button
       type="button"
@@ -22,6 +23,7 @@
   </div>
 
   @if (canWrite()) {
+    <!-- Active tab form: create or edit a ledger line -->
     <article class="card">
       @if (tab() === 'revenue') {
         <h2>
@@ -172,6 +174,7 @@
   } @else if (error()) {
     <p class="error">{{ 'common.loadError' | translate }}</p>
   } @else {
+    <!-- Chronological transaction list -->
     <div class="table-wrap card">
       <table class="data-table">
         <thead>

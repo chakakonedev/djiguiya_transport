@@ -4,6 +4,9 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TransactionService } from './transaction.service';
 import { API_BASE_URL } from './api.config';
 
+/**
+ * TransactionService HTTP contract: filtered list, create, update, and DELETE remove.
+ */
 describe('TransactionService', () => {
   let service: TransactionService;
   let http: HttpTestingController;
@@ -18,6 +21,7 @@ describe('TransactionService', () => {
 
   afterEach(() => http.verify());
 
+  /** CRUD operations target /transactions with query params and unwrap responses. */
   it('list create update remove', () => {
     service.list({ type: 'expense', monthKey: '2026-03' }).subscribe();
     const list = http.expectOne(

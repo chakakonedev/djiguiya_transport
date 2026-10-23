@@ -5,6 +5,10 @@ import { VehicleService } from '../../core/vehicle.service';
 import { StaffService } from '../../core/staff.service';
 import { StaffMember, Trip, Vehicle } from '../../core/api.types';
 
+/**
+ * Read-only trip listing with resolved vehicle and driver labels.
+ * State: `trips`, `vehicles`, `drivers`, `loading`, `error`.
+ */
 @Component({
   selector: 'app-trips-page',
   standalone: true,

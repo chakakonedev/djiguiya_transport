@@ -7,6 +7,7 @@ import { StaffMember, Vehicle, VehicleDocument } from '../../core/api.types';
 import { VEHICLE_DOC_TYPES } from '../../core/expense-catalog';
 import { formatXof } from '../../core/format.util';
 
+/** Local calendar date as YYYY-MM-DD for date inputs (avoids UTC shift from toISOString). */
 function localIsoDate(date = new Date()): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -14,6 +15,10 @@ function localIsoDate(date = new Date()): string {
   return `${y}-${m}-${d}`;
 }
 
+/**
+ * Fleet management: register vehicles, assign primary drivers, track renewal documents.
+ * State: `vehicles`, `drivers`, `expandedId`; forms: `createForm`, per-vehicle `driverForms` / `docForms`.
+ */
 @Component({
   selector: 'app-fleet-page',
   standalone: true,

@@ -43,6 +43,7 @@ public class Year1DataSeeder implements ApplicationRunner {
 	private final TripRepository tripRepository;
 	private final TransactionRepository transactionRepository;
 
+	/** Loads classpath JSON once; skips full import if the year-1 vehicle id already exists. */
 	@Override
 	@Transactional
 	public void run(ApplicationArguments args) throws Exception {

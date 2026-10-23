@@ -9,6 +9,10 @@ import { VehicleService } from '../../core/vehicle.service';
 import { StaffService } from '../../core/staff.service';
 import { AuthService } from '../../core/auth.service';
 
+/**
+ * LedgerPage component tests with mocked services: data loading, tab/forms,
+ * expense and revenue submission, edit/delete, styling helpers, and list errors.
+ */
 describe('LedgerPage component', () => {
   const txnApi = {
     list: vi.fn(),
@@ -56,6 +60,7 @@ describe('LedgerPage component', () => {
     }).compileComponents();
   });
 
+  /** Init filters to active fleet/staff, loads transactions, and grants write for owner. */
   it('loads active vehicles/drivers and transactions', async () => {
     txnApi.list.mockReturnValue(
       of([{ id: 'tx1', type: 'expense', amount: 10, txnDate: '2026-03-01', label: 'Fuel', categoryCode: 'bus' }])
@@ -71,6 +76,7 @@ describe('LedgerPage component', () => {
     expect(page.canWrite()).toBe(true);
   });
 
+  /** CSS tone helpers reflect revenue vs expense and fuel subcategory. */
   it('type and amount tone classes', async () => {
     const fixture = TestBed.createComponent(LedgerPage);
     fixture.detectChanges();
@@ -103,6 +109,7 @@ describe('LedgerPage component', () => {
     ).toContain('expense');
   });
 
+  /** Expense tab toggles validators for "other" subgroup and resets subcategory on category change. */
   it('switches tab and applies other subgroup validators', async () => {
     const fixture = TestBed.createComponent(LedgerPage);
     fixture.detectChanges();
@@ -119,6 +126,7 @@ describe('LedgerPage component', () => {
     expect(page.expenseForm.controls.subcategoryCode.value).toBe(page.expenseSubgroups()[0]);
   });
 
+  /** Valid expense form posts create with default label when label is empty. */
   it('submits expense create', async () => {
     txnApi.create.mockReturnValue(of({ id: 'e1' }));
     txnApi.list.mockReturnValue(of([]));
@@ -142,6 +150,7 @@ describe('LedgerPage component', () => {
     );
   });
 
+  /** Revenue flow creates a trip first, then links revenue transaction to tripId. */
   it('submits revenue create via trip', async () => {
     tripsApi.create.mockReturnValue(
       of({ id: 't1', vehicleId: 'v1', driverId: 'd1', departureDate: '2026-03-01', returnDate: '2026-03-02' })
@@ -169,6 +178,7 @@ describe('LedgerPage component', () => {
     );
   });
 
+  /** startEdit hydrates expense form; submitExpense calls update when editingId is set. */
   it('starts expense edit and updates', async () => {
     txnApi.update.mockReturnValue(of({ id: 'e1' }));
     const fixture = TestBed.createComponent(LedgerPage);
@@ -194,6 +204,7 @@ describe('LedgerPage component', () => {
     expect(txnApi.update).toHaveBeenCalled();
   });
 
+  /** Revenue edit loads trip details and preserves custom label on revenue form. */
   it('starts revenue edit from trip', async () => {
     tripsApi.get.mockReturnValue(
       of({
@@ -226,6 +237,7 @@ describe('LedgerPage component', () => {
     expect(page.revenueForm.controls.label.value).toBe('Custom');
   });
 
+  /** Deletion proceeds only after confirm; calls TransactionService.remove. */
   it('remove asks confirm and deletes', async () => {
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     txnApi.remove.mockReturnValue(of(undefined));
@@ -246,6 +258,7 @@ describe('LedgerPage component', () => {
     confirmSpy.mockRestore();
   });
 
+  /** Failed transaction list sets the page error signal. */
   it('sets error when list fails', async () => {
     txnApi.list.mockReturnValue(throwError(() => new Error('fail')));
     const fixture = TestBed.createComponent(LedgerPage);

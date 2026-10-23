@@ -4,6 +4,9 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TripService } from './trip.service';
 import { API_BASE_URL } from './api.config';
 
+/**
+ * TripService HTTP contract: list with query params, get by id, create, and PATCH update.
+ */
 describe('TripService', () => {
   let service: TripService;
   let http: HttpTestingController;
@@ -18,6 +21,7 @@ describe('TripService', () => {
 
   afterEach(() => http.verify());
 
+  /** Each method hits the expected /trips URL, method, and unwraps the API envelope. */
   it('list get create update', () => {
     service.list({ vehicleId: 'v1', monthKey: '2026-03' }).subscribe();
     const list = http.expectOne(

@@ -12,6 +12,10 @@ export interface StatsFilterParams {
   category?: string;
 }
 
+/**
+ * Aggregated financial statistics for dashboards and the stats page.
+ * Endpoints: GET /stats/summary, GET /stats/monthly?year=, GET /stats/yoy?year=.
+ */
 @Injectable({ providedIn: 'root' })
 export class StatsService {
   private readonly base = `${API_BASE_URL}/stats`;

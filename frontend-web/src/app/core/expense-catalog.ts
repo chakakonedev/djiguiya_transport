@@ -1,8 +1,13 @@
+/**
+ * Static codes for expense categories, subcategories, staff types, and vehicle document types.
+ * Values align with backend catalog keys and i18n paths under `catalog.*`.
+ */
+
 export const EXPENSE_GROUPS = ['bus', 'family', 'baba', 'other'] as const;
 
 export type ExpenseGroup = (typeof EXPENSE_GROUPS)[number];
 
-/** Custom subcategory: requires a free-text label and explanation. */
+/** Custom subcategory: requires a free-text label and explanation on the ledger form. */
 export const OTHER_SUBGROUP = 'other';
 
 export const SUBGROUPS_BY_GROUP: Record<ExpenseGroup, readonly string[]> = {

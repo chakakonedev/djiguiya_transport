@@ -6,6 +6,10 @@ import { ProfitSharePreview } from '../../core/api.types';
 import { fiscalStartYearContaining } from '../../core/fiscal-year.util';
 import { formatXof } from '../../core/format.util';
 
+/**
+ * Annual profit distribution preview for a fiscal start year.
+ * State: `preview`, `loading`, `error`; form: `year` (defaults to current fiscal year).
+ */
 @Component({
   selector: 'app-profit-share-page',
   standalone: true,

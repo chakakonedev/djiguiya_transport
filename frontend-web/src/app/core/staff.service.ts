@@ -4,6 +4,10 @@ import { map } from 'rxjs/operators';
 import { API_BASE_URL } from './api.config';
 import { ApiResponse, StaffCreateRequest, StaffMember } from './api.types';
 
+/**
+ * Staff directory (drivers, cashiers, etc.).
+ * Base path: GET|POST /staff, PUT /staff/:id.
+ */
 @Injectable({ providedIn: 'root' })
 export class StaffService {
   private readonly base = `${API_BASE_URL}/staff`;

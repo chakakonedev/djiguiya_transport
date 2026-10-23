@@ -21,6 +21,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * Unit tests for {@link PayrollService}: salary/bonus posts delegate to {@link TransactionService} with fixed codes.
+ */
 @ExtendWith(MockitoExtension.class)
 class PayrollServiceTest {
 
@@ -31,6 +34,7 @@ class PayrollServiceTest {
 	@InjectMocks
 	private PayrollService payrollService;
 
+	/** Builds a payroll expense with default label and salary subcategory. */
 	@Test
 	void postSalary_createsExpenseWithDefaults() {
 		when(staffService.findEntity("s1")).thenReturn(staff("s1"));
@@ -54,6 +58,7 @@ class PayrollServiceTest {
 		assertNull(txn.notes());
 	}
 
+	/** Passes custom label and notes through for bonus payments. */
 	@Test
 	void postBonus_usesCustomLabel() {
 		when(staffService.findEntity("s1")).thenReturn(staff("s1"));

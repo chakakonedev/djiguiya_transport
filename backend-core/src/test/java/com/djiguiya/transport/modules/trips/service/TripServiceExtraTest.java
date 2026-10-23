@@ -23,6 +23,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+/**
+ * Unit tests for {@link TripService} list/get/update and entity lookup; Mockito collaborators.
+ */
 @ExtendWith(MockitoExtension.class)
 class TripServiceExtraTest {
 
@@ -35,6 +38,7 @@ class TripServiceExtraTest {
 	@InjectMocks
 	private TripService tripService;
 
+	/** Lists trips with enriched names and applies update fields including replacement flag. */
 	@Test
 	void listAll_andGetById_andUpdate() {
 		TripEntity entity = new TripEntity();
@@ -68,6 +72,7 @@ class TripServiceExtraTest {
 		assertEquals(true, updated.replacement());
 	}
 
+	/** Throws when findEntity is called for a soft-deleted or missing trip. */
 	@Test
 	void findEntity_notFound() {
 		when(tripRepository.findByIdAndDeletedAtIsNull("x")).thenReturn(Optional.empty());

@@ -5,6 +5,7 @@ import com.djiguiya.transport.modules.finance.entities.ProfitShareRuleEntity;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+/** Profit-share rule with optional resolved beneficiary name for the UI. */
 public record ProfitShareRuleResponse(
 		String id,
 		String beneficiaryStaffId,

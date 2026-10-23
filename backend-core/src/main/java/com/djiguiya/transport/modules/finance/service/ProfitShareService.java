@@ -23,6 +23,11 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Computes a read-only fiscal-year profit-share preview from ledger totals and rules active
+ * on the last day of the fiscal year. Reserve is taken from {@code company_growth_reserve_pct};
+ * partner lines use {@code partner_profit_share_pct} on the distributable remainder.
+ */
 @Service
 @RequiredArgsConstructor
 public class ProfitShareService {
@@ -31,6 +36,10 @@ public class ProfitShareService {
 	private final ProfitShareRuleRepository profitShareRuleRepository;
 	private final StaffRepository staffRepository;
 
+	/**
+	 * Aggregates revenue/expense for the fiscal window, deducts reserve, splits distributable
+	 * profit among enabled partner-percent rules (other rule kinds are ignored in preview lines).
+	 */
 	@Transactional(readOnly = true)
 	public ProfitSharePreviewResponse preview(int fiscalStartYear) {
 		String fromMonth = FiscalYearUtil.startMonthKey(fiscalStartYear);

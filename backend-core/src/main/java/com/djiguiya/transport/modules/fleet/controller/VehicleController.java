@@ -19,6 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * REST API for fleet vehicles, primary driver assignments, and compliance documents.
+ */
 @RestController
 @RequestMapping("/api/v1/vehicles")
 @RequiredArgsConstructor
@@ -26,6 +29,7 @@ public class VehicleController {
 
 	private final VehicleService vehicleService;
 
+	/** Lists all vehicles with current primary driver id when one is assigned today. */
 	@GetMapping
 	public ApiResponse<List<VehicleResponse>> list() {
 		return ApiResponse.ok(vehicleService.listAll());
@@ -46,6 +50,7 @@ public class VehicleController {
 		return ApiResponse.ok("vehicle.updated", vehicleService.update(id, request));
 	}
 
+	/** Records a new primary driver period and closes any open assignment for the vehicle. */
 	@PostMapping("/{id}/primary-driver")
 	public ApiResponse<VehicleResponse> assignPrimaryDriver(
 			@PathVariable String id,
@@ -58,6 +63,7 @@ public class VehicleController {
 		return ApiResponse.ok(vehicleService.listDocuments(id));
 	}
 
+	/** Replaces or upserts the full document set sent in the request body. */
 	@PutMapping("/{id}/documents")
 	public ApiResponse<List<VehicleDocumentResponse>> replaceDocuments(
 			@PathVariable String id,

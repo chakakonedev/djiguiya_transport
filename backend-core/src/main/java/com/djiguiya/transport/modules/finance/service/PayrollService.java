@@ -8,6 +8,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Wraps payroll flows as expense transactions: category {@code payroll}, subcategory {@code salary}
+ * or {@code bonus}, with {@code driverId} holding the staff id and optional {@code payrollMonth}.
+ */
 @Service
 @RequiredArgsConstructor
 public class PayrollService {
@@ -19,11 +23,13 @@ public class PayrollService {
 	private final TransactionService transactionService;
 	private final StaffService staffService;
 
+	/** Validates staff exists, then creates a salary expense ledger entry. */
 	@Transactional
 	public TransactionResponse postSalary(PayrollPaymentRequest request) {
 		return postPayroll(request, KIND_SALARY, defaultLabel(request, "Salary payment"));
 	}
 
+	/** Same as salary but subcategory and payroll kind are {@code bonus}. */
 	@Transactional
 	public TransactionResponse postBonus(PayrollPaymentRequest request) {
 		return postPayroll(request, KIND_BONUS, defaultLabel(request, "Bonus payment"));

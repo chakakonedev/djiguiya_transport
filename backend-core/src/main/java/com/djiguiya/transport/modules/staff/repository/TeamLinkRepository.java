@@ -5,6 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
+/**
+ * Queries manager–driver team relationships ({@link TeamLinkEntity}).
+ */
 public interface TeamLinkRepository extends JpaRepository<TeamLinkEntity, String> {
 
 	List<TeamLinkEntity> findByManagerId(String managerId);

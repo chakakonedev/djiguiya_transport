@@ -1,3 +1,8 @@
+/**
+ * Role-based UI permissions derived from the logged-in user's roleCode.
+ * Used to gate ledger edits and staff management without server round-trips.
+ */
+
 /** Role codes from JWT / login response (lowercase). */
 export const RoleCodes = {
   OWNER: 'owner',

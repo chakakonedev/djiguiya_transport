@@ -5,6 +5,10 @@ import { FleetPage } from './fleet.page';
 import { VehicleService } from '../../core/vehicle.service';
 import { StaffService } from '../../core/staff.service';
 
+/**
+ * FleetPage: vehicle list, primary-driver assignment (with startDate),
+ * document forms, and create flow — action errors must not wipe the list.
+ */
 describe('FleetPage', () => {
   const vehiclesApi = {
     list: vi.fn(),
@@ -36,6 +40,7 @@ describe('FleetPage', () => {
     }).compileComponents();
   });
 
+  /** Assign primary driver forwards startDate to the API. */
   it('sends startDate when saving primary driver', () => {
     vehiclesApi.setPrimaryDriver.mockReturnValue(
       of({ id: 'v1', name: 'bus1', status: 'active', primaryDriverId: 'd1' })
@@ -54,6 +59,7 @@ describe('FleetPage', () => {
     });
   });
 
+  /** Expanding a row pre-fills startDate with today's ISO date. */
   it('defaults startDate to today in the assign form', () => {
     const fixture = TestBed.createComponent(FleetPage);
     const page = fixture.componentInstance;
@@ -64,6 +70,7 @@ describe('FleetPage', () => {
     expect(startDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
+  /** Assign failure is an actionError; list stays loaded (not loadError). */
   it('keeps the vehicle list visible when assign fails', () => {
     vehiclesApi.setPrimaryDriver.mockReturnValue(throwError(() => new Error('fail')));
     const fixture = TestBed.createComponent(FleetPage);
@@ -79,6 +86,7 @@ describe('FleetPage', () => {
     expect(page.vehicles().length).toBe(1);
   });
 
+  /** Create then reloads the vehicle list. */
   it('creates a vehicle and reloads', () => {
     vehiclesApi.create.mockReturnValue(of({ id: 'v2', name: 'Bus 2', status: 'active' }));
     const fixture = TestBed.createComponent(FleetPage);
@@ -97,6 +105,7 @@ describe('FleetPage', () => {
     expect(vehiclesApi.list.mock.calls.length).toBeGreaterThan(1);
   });
 
+  /** Prefer primaryDriverName when present; else resolve from staff list. */
   it('resolves driver display name from staff list', () => {
     const fixture = TestBed.createComponent(FleetPage);
     const page = fixture.componentInstance;
@@ -109,6 +118,7 @@ describe('FleetPage', () => {
     );
   });
 
+  /** Document save only includes rows that have expiresOn set. */
   it('saves documents with expiresOn only', () => {
     vehiclesApi.saveDocuments.mockReturnValue(of([]));
     const fixture = TestBed.createComponent(FleetPage);
@@ -133,6 +143,7 @@ describe('FleetPage', () => {
     );
   });
 
+  /** Initial list failure sets loadError. */
   it('sets loadError when list fails', () => {
     vehiclesApi.list.mockReturnValue(throwError(() => new Error('fail')));
     const fixture = TestBed.createComponent(FleetPage);

@@ -1,5 +1,6 @@
 package com.djiguiya.transport.modules.finance.dto;
 
+/** Net profit for a calendar month versus the prior month in the current year. */
 public record StatsCompareMonthResponse(
 		int monthIndex,
 		int year,

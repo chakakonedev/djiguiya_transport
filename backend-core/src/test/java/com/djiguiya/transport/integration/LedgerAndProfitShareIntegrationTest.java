@@ -21,6 +21,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Integration tests for transaction ledger rules and finance stats/profit-share HTTP endpoints.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -59,6 +62,7 @@ class LedgerAndProfitShareIntegrationTest {
 		tripId = createTrip(vehicleId);
 	}
 
+	/** Enforces revenue/trip coupling and reflects revenue/expense in stats summary. */
 	@Test
 	void revenueRequiresTrip_expenseCreatesCategoryBreakdown() throws Exception {
 		mockMvc.perform(post("/api/v1/transactions")
@@ -96,6 +100,7 @@ class LedgerAndProfitShareIntegrationTest {
 				.andExpect(jsonPath("$.data.netProfit").value(800000));
 	}
 
+	/** Smoke-tests compare-month, YoY, and profit-share preview after posting revenue. */
 	@Test
 	void compareMonthAndYoyAndProfitPreview_returnOk() throws Exception {
 		mockMvc.perform(post("/api/v1/transactions")

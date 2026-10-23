@@ -1,6 +1,10 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth.guard';
 
+/**
+ * Application routes: public login, lazy-loaded shell for authenticated area,
+ * and feature pages loaded on demand to keep initial bundle small.
+ */
 export const routes: Routes = [
   {
     path: 'login',

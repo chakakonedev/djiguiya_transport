@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * REST API for staff members (drivers, managers, etc.): list, read, and owner-only create/update.
+ */
 @RestController
 @RequestMapping("/api/v1/staff")
 @RequiredArgsConstructor
@@ -25,22 +28,26 @@ public class StaffController {
 
 	private final StaffService staffService;
 
+	/** Returns all staff records. */
 	@GetMapping
 	public ApiResponse<List<StaffResponse>> list() {
 		return ApiResponse.ok(staffService.listAll());
 	}
 
+	/** Returns a single staff member by id. */
 	@GetMapping("/{id}")
 	public ApiResponse<StaffResponse> get(@PathVariable String id) {
 		return ApiResponse.ok(staffService.getById(id));
 	}
 
+	/** Creates a new staff member (owner role only). */
 	@PostMapping
 	@PreAuthorize(AppRoles.OWNER_ONLY)
 	public ApiResponse<StaffResponse> create(@Valid @RequestBody StaffRequest request) {
 		return ApiResponse.ok("staff.created", staffService.create(request));
 	}
 
+	/** Updates an existing staff member (owner role only). */
 	@PutMapping("/{id}")
 	@PreAuthorize(AppRoles.OWNER_ONLY)
 	public ApiResponse<StaffResponse> update(@PathVariable String id, @Valid @RequestBody StaffRequest request) {

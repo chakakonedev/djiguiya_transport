@@ -4,6 +4,9 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { StaffService } from './staff.service';
 import { API_BASE_URL } from './api.config';
 
+/**
+ * StaffService HTTP contract: list all staff, create, and PATCH update by id.
+ */
 describe('StaffService', () => {
   let service: StaffService;
   let http: HttpTestingController;
@@ -18,6 +21,7 @@ describe('StaffService', () => {
 
   afterEach(() => http.verify());
 
+  /** list, create, and update hit /staff with expected methods and body shapes. */
   it('list create update', () => {
     service.list().subscribe();
     http.expectOne(`${API_BASE_URL}/staff`).flush({ success: true, messageKey: null, data: [] });

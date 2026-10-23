@@ -4,6 +4,10 @@ import { provideTranslateService } from '@ngx-translate/core';
 import { ShellLayout } from './shell.layout';
 import { AuthService } from '../../core/auth.service';
 
+/**
+ * App chrome (nav + auth): ensures main routes are linked and AuthService
+ * is available for the header (user display / logout).
+ */
 describe('ShellLayout', () => {
   it('exposes nav links and auth', async () => {
     const auth = { user: () => ({ fullName: 'Owner' }), logout: vi.fn() };

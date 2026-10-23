@@ -16,12 +16,17 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Parses {@code Authorization: Bearer} tokens and installs a Spring {@code Authentication}
+ * (user id + {@code ROLE_*}). Invalid tokens clear the context so protected routes return 401, not 500.
+ */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final JwtService jwtService;
 
+	/** Non-blocking: always continues the chain; missing/ bad JWT simply leaves the user unauthenticated. */
 	@Override
 	protected void doFilterInternal(
 			HttpServletRequest request,

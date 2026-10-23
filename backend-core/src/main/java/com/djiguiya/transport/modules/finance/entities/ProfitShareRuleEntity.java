@@ -10,6 +10,11 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+/**
+ * Configures how annual profit is reserved and shared. {@code ratePercent} applies to reserve
+ * or partner rules; {@code salaryMonthsEquivalent} supports quarterly salary bonus rules.
+ * Effective dates bound which rules apply on a given calendar day.
+ */
 @Entity
 @Table(name = "profit_share_rules")
 @Getter

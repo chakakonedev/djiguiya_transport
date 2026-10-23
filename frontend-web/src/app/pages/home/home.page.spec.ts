@@ -5,6 +5,9 @@ import { HomePage } from './home.page';
 import { StatsService } from '../../core/stats.service';
 import { AuthService } from '../../core/auth.service';
 
+/**
+ * HomePage dashboard: loads stats summary on init and handles summary API errors.
+ */
 describe('HomePage', () => {
   const statsMock = { summary: vi.fn() };
   const authMock = { user: vi.fn(() => ({ fullName: 'Test User' })) };
@@ -21,6 +24,7 @@ describe('HomePage', () => {
     }).compileComponents();
   });
 
+  /** ngOnInit calls StatsService.summary and exposes netProfit when data arrives. */
   it('loads summary on init', async () => {
     statsMock.summary.mockReturnValue(
       of({
@@ -38,6 +42,7 @@ describe('HomePage', () => {
     expect(fixture.componentInstance.loading()).toBe(false);
   });
 
+  /** Summary failure sets error signal and ends loading. */
   it('shows error when summary fails', async () => {
     statsMock.summary.mockReturnValue(throwError(() => new Error('fail')));
     const fixture = TestBed.createComponent(HomePage);

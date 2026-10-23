@@ -16,6 +16,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 
+/**
+ * Authenticates users against stored credentials and manages password updates for active accounts.
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -24,6 +27,11 @@ public class AuthService {
 	private final PasswordEncoder passwordEncoder;
 	private final JwtService jwtService;
 
+	/**
+	 * Validates email/password for an active user and issues a signed access token.
+	 *
+	 * @throws ResponseStatusException 401 when credentials are invalid or the account is inactive
+	 */
 	public LoginResponse login(LoginRequest request) {
 		UserEntity user = userRepository.findByEmailIgnoreCase(request.email().trim())
 				.filter(UserEntity::isActive)
@@ -37,6 +45,11 @@ public class AuthService {
 		return new LoginResponse(token, user.getId(), user.getEmail(), user.getFullName(), user.getRoleCode());
 	}
 
+	/**
+	 * Changes the password for the currently authenticated user and marks {@code passwordChanged}.
+	 *
+	 * @throws ResponseStatusException 400 when current password is wrong or new password equals the old one
+	 */
 	@Transactional
 	public void changePassword(ChangePasswordRequest request) {
 		String userId = SecurityUtils.currentUserId()

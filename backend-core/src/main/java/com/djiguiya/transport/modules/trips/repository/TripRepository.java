@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
+/** Trip persistence with soft-delete filters and month-based queries for stats. */
 public interface TripRepository extends JpaRepository<TripEntity, String> {
 
 	List<TripEntity> findByDeletedAtIsNullOrderByDepartureDateDesc();

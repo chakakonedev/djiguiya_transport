@@ -21,6 +21,10 @@ interface ApiResponse<T> {
 const TOKEN_KEY = 'djiguiya_token';
 const USER_KEY = 'djiguiya_user';
 
+/**
+ * Session state: login against the API, persist JWT and user profile in localStorage,
+ * and expose a reactive `user` signal for templates and role checks.
+ */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   readonly user = signal<LoginResponse | null>(this.readUser());
@@ -30,6 +34,7 @@ export class AuthService {
     private readonly router: Router
   ) {}
 
+  /** POST /auth/login — stores token and user on success. */
   login(email: string, password: string) {
     return this.http
       .post<ApiResponse<LoginResponse>>(`${API_BASE_URL}/auth/login`, { email, password })
@@ -42,6 +47,7 @@ export class AuthService {
       );
   }
 
+  /** Clears persisted session and navigates to the login route. */
   logout(): void {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);

@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
+/** Persistence for {@link VehicleEntity} fleet records. */
 public interface VehicleRepository extends JpaRepository<VehicleEntity, String> {
 
 	List<VehicleEntity> findByStatusOrderByNameAsc(String status);

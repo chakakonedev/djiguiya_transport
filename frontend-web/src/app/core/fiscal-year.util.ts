@@ -1,3 +1,8 @@
+/**
+ * Fiscal calendar helpers (Aug–Jul). Stats and profit-share use fiscal start year
+ * rather than calendar year for filtering and labels.
+ */
+
 /** Fiscal year starts in August (1 Aug → 31 Jul). */
 export const FISCAL_START_MONTH = 8;
 

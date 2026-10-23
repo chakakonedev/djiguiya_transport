@@ -31,6 +31,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Flyway-backed integration tests: core staff seed, login, legacy passwords, and change-password flow.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("flyway-test")
@@ -49,6 +52,7 @@ class SeedOwnerFlywayIntegrationTest {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
+	/** Asserts seeded owner user/staff rows and successful login via MockMvc. */
 	@Test
 	void flywaySeed_ownerIdentityAndLogin() throws Exception {
 		UserEntity user = userRepository.findById(SeedOwnerCredentials.USER_ID)
@@ -79,6 +83,7 @@ class SeedOwnerFlywayIntegrationTest {
 				.andExpect(jsonPath("$.data.accessToken").isNotEmpty());
 	}
 
+	/** Verifies all core staff users, salaries, and profit-share rules exist after migration seed. */
 	@Test
 	void flywaySeed_allCoreStaffPresent() {
 		assertEquals(4, CoreStaffDefinitions.PEOPLE.size());
@@ -114,6 +119,7 @@ class SeedOwnerFlywayIntegrationTest {
 		}
 	}
 
+	/** Rejects login with deprecated v2/v3 seed passwords. */
 	@Test
 	void flywaySeed_legacyPasswordsRejected() throws Exception {
 		mockMvc.perform(post("/api/v1/auth/login")
@@ -129,6 +135,7 @@ class SeedOwnerFlywayIntegrationTest {
 				.andExpect(status().isUnauthorized());
 	}
 
+	/** Changes password via API, blocks old password, accepts new one, then restores seed password. */
 	@Test
 	void changePassword_thenLoginWithNewPassword() throws Exception {
 		MvcResult login = mockMvc.perform(post("/api/v1/auth/login")

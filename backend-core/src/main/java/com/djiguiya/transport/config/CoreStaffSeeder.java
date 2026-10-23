@@ -18,6 +18,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
+/**
+ * Startup upsert of core users, staff rows, and profit-share rules from {@link CoreStaffDefinitions}
+ * when {@code djiguiya.seed.core-staff-enabled} is true. Runs before {@link Year1DataSeeder} (order 100).
+ */
 @Component
 @Order(100)
 @EnableConfigurationProperties(CoreStaffSeedProperties.class)
@@ -31,6 +35,7 @@ public class CoreStaffSeeder implements ApplicationRunner {
 	private final ProfitShareRuleRepository profitShareRuleRepository;
 	private final PasswordEncoder passwordEncoder;
 
+	/** Idempotent upsert driven by fixed UUIDs in {@link CoreStaffDefinitions}. */
 	@Override
 	@Transactional
 	public void run(ApplicationArguments args) {
@@ -56,6 +61,7 @@ public class CoreStaffSeeder implements ApplicationRunner {
 				CoreStaffDefinitions.SHARE_RULES.size());
 	}
 
+	// Re-hash bootstrap password only for new users or those who have not changed password yet.
 	private void upsertUser(CoreStaffDefinitions.Person person, String defaultPassword) {
 		UserEntity user = userRepository.findById(person.userId()).orElseGet(UserEntity::new);
 		boolean created = user.getId() == null;

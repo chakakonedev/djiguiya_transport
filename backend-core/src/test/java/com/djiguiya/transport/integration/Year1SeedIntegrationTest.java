@@ -13,6 +13,9 @@ import org.springframework.test.context.TestPropertySource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Spring Boot integration test: verifies year-one seed data counts and totals in the test database.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -29,6 +32,7 @@ class Year1SeedIntegrationTest {
 	@Autowired
 	private TransactionRepository transactionRepository;
 
+	/** Asserts expected trip/transaction counts and revenue/expense sums after startup seeding. */
 	@Test
 	void year1DataIsLoadedIntoDatabase() {
 		assertTrue(vehicleRepository.existsById("00000000-0000-0000-0000-000000000301"));

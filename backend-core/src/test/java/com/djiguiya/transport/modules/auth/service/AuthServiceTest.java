@@ -19,6 +19,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+/**
+ * Unit tests for {@link AuthService#login}: mocked repositories and JWT issuance.
+ */
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
@@ -31,6 +34,7 @@ class AuthServiceTest {
 	@InjectMocks
 	private AuthService authService;
 
+	/** Returns an access token when credentials and active user are valid. */
 	@Test
 	void login_success() {
 		UserEntity user = new UserEntity();
@@ -49,6 +53,7 @@ class AuthServiceTest {
 		assertEquals("token", response.accessToken());
 	}
 
+	/** Rejects login when the password does not match the stored hash. */
 	@Test
 	void login_invalidPassword() {
 		UserEntity user = new UserEntity();

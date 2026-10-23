@@ -5,6 +5,10 @@ import { StatsService } from '../../core/stats.service';
 import { StatsSummary } from '../../core/api.types';
 import { formatXof } from '../../core/format.util';
 
+/**
+ * Dashboard home: welcome message and global KPI cards from stats summary (no month filter).
+ * State: `loading`, `error`, `summary`.
+ */
 @Component({
   selector: 'app-home-page',
   standalone: true,

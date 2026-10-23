@@ -4,6 +4,9 @@ import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth.service';
 
+/**
+ * Public login screen. State: `loading`, `error`; form fields email and password.
+ */
 @Component({
   selector: 'app-login-page',
   standalone: true,

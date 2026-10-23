@@ -22,18 +22,22 @@ public final class FiscalYearUtil {
 		return date.getYear() - 1;
 	}
 
+	/** First ledger month key in the fiscal year (August of {@code fiscalStartYear}). */
 	public static String startMonthKey(int fiscalStartYear) {
 		return MonthKeyUtil.forMonthYear(START_MONTH, fiscalStartYear);
 	}
 
+	/** Last ledger month key in the fiscal year (July of {@code fiscalStartYear + 1}). */
 	public static String endMonthKey(int fiscalStartYear) {
 		return MonthKeyUtil.forMonthYear(7, fiscalStartYear + 1);
 	}
 
+	/** Inclusive start date of the fiscal year (1 August). */
 	public static LocalDate startDate(int fiscalStartYear) {
 		return LocalDate.of(fiscalStartYear, START_MONTH, 1);
 	}
 
+	/** Inclusive end date of the fiscal year (last day of July). */
 	public static LocalDate endDate(int fiscalStartYear) {
 		return YearMonth.of(fiscalStartYear + 1, 7).atEndOfMonth();
 	}

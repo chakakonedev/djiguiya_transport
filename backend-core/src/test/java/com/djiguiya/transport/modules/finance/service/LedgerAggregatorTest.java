@@ -8,8 +8,16 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * Pure unit tests for {@link LedgerAggregator}: totals and expense grouping
+ * used by stats / finance summaries (no Spring, no DB).
+ */
 class LedgerAggregatorTest {
 
+	/**
+	 * Revenue/expense totals, net profit, and grouping rules:
+	 * blank/null categories collapse to {@code other}; real codes stay as-is.
+	 */
 	@Test
 	void aggregatesRevenueExpenseAndGroupsBlankCategoryAsOther() {
 		TransactionEntity revenue = txn(TransactionTypes.REVENUE, 1000L, null, null);
@@ -29,12 +37,14 @@ class LedgerAggregatorTest {
 		assertEquals(true, groups.stream().anyMatch(g -> "misc".equals(g.subcategoryCode())));
 	}
 
+	/** Expense grouping must ignore revenue rows entirely. */
 	@Test
 	void expenseByGroup_ignoresRevenue() {
 		var groups = LedgerAggregator.expenseByGroup(List.of(txn(TransactionTypes.REVENUE, 10L, "bus", "fuel")));
 		assertEquals(0, groups.size());
 	}
 
+	/** Minimal transaction fixture for aggregator inputs. */
 	private static TransactionEntity txn(String type, long amount, String category, String sub) {
 		TransactionEntity e = new TransactionEntity();
 		e.setType(type);

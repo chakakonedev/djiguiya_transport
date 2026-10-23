@@ -5,6 +5,10 @@ import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
 import { API_BASE_URL } from './api.config';
 
+/**
+ * AuthService: login persistence (token + user in localStorage), logout navigation,
+ * and resilience when stored user JSON is corrupt.
+ */
 describe('AuthService', () => {
   let service: AuthService;
   let http: HttpTestingController;
@@ -29,6 +33,7 @@ describe('AuthService', () => {
     localStorage.clear();
   });
 
+  /** Successful login hydrates signals from the API payload. */
   it('login stores token and user', () => {
     const payload = {
       accessToken: 'jwt-token',
@@ -51,6 +56,7 @@ describe('AuthService', () => {
     expect(service.isLoggedIn()).toBe(true);
   });
 
+  /** Logout clears session state and redirects to /login. */
   it('logout clears session and navigates to login', () => {
     localStorage.setItem('djiguiya_token', 'x');
     localStorage.setItem('djiguiya_user', JSON.stringify({ fullName: 'X' }));
@@ -62,16 +68,17 @@ describe('AuthService', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith('/login');
   });
 
+  /** Logged-in state is driven by token presence in storage. */
   it('isLoggedIn reflects token presence', () => {
     expect(service.isLoggedIn()).toBe(false);
     localStorage.setItem('djiguiya_token', 'jwt');
     expect(service.isLoggedIn()).toBe(true);
   });
 
+  /** Corrupt JSON in storage must not crash bootstrap — user stays null. */
   it('ignores corrupt stored user JSON', () => {
     localStorage.setItem('djiguiya_user', '{not-json');
-    const fresh = TestBed.inject(AuthService);
-    // existing instance already constructed; construct via new providers
+    // Rebuild the service so constructor re-reads localStorage
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [

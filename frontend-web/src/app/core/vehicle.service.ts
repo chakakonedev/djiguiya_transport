@@ -10,6 +10,11 @@ import {
   VehicleDocument
 } from './api.types';
 
+/**
+ * Fleet vehicles REST client: CRUD, primary driver assignment, and compliance documents.
+ * Base path: GET|POST /vehicles, PUT /vehicles/:id, POST /vehicles/:id/primary-driver,
+ * GET|PUT /vehicles/:id/documents.
+ */
 @Injectable({ providedIn: 'root' })
 export class VehicleService {
   private readonly base = `${API_BASE_URL}/vehicles`;

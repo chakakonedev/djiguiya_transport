@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
+/** Upsert payload for a single document type on a vehicle. */
 public record VehicleDocumentRequest(
 		@NotBlank @Size(max = 40) String docType,
 		@NotNull LocalDate expiresOn,

@@ -23,6 +23,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Broad MockMvc integration coverage: staff, payroll, transactions, stats, profit-share, fleet, and trips.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -53,6 +56,7 @@ class ControllersCoverageIntegrationTest {
 		accessToken = root.path("data").path("accessToken").asText();
 	}
 
+	/** Hits staff CRUD, payroll, transactions, stats, profit-share, health, and validation error paths. */
 	@Test
 	void staffPayrollTransactionsStatsAndHealthEndpoints() throws Exception {
 		String staffJson = """
@@ -171,6 +175,7 @@ class ControllersCoverageIntegrationTest {
 				.andExpect(jsonPath("$.messageKey").value("common.validation_failed"));
 	}
 
+	/** Covers vehicle/trip CRUD, primary driver assignment, and vehicle document endpoints. */
 	@Test
 	void vehicleAndTripCrud_coversControllers() throws Exception {
 		String staffJson = """

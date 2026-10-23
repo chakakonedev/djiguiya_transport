@@ -8,12 +8,21 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * JPA access to ledger rows. All analytics queries exclude soft-deleted records
+ * ({@code deletedAt} is null).
+ */
 public interface TransactionRepository extends JpaRepository<TransactionEntity, String> {
 
+	/** Active row by primary key. */
 	Optional<TransactionEntity> findByIdAndDeletedAtIsNull(String id);
 
+	/** Full ledger listing for admin views. */
 	List<TransactionEntity> findByDeletedAtIsNullOrderByTxnDateDesc();
 
+	/**
+	 * Optional filters: null parameters are ignored. Used by stats summary and ad-hoc reporting.
+	 */
 	@Query("""
 			select t from TransactionEntity t
 			where t.deletedAt is null
@@ -30,6 +39,7 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
 			@Param("categoryCode") String categoryCode,
 			@Param("type") String type);
 
+	/** Matches {@code monthKey} values starting with {@code yearPrefix} (e.g. calendar year). */
 	@Query("""
 			select t from TransactionEntity t
 			where t.deletedAt is null
@@ -42,6 +52,9 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
 			@Param("vehicleId") String vehicleId,
 			@Param("driverId") String driverId);
 
+	/**
+	 * Inclusive {@code monthKey} range for fiscal-year loads ({@code yyyy-MM} lexicographic order).
+	 */
 	@Query("""
 			select t from TransactionEntity t
 			where t.deletedAt is null

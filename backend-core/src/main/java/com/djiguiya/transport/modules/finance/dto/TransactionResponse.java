@@ -4,6 +4,7 @@ import com.djiguiya.transport.modules.finance.entities.TransactionEntity;
 
 import java.time.LocalDate;
 
+/** API view of a persisted ledger row. */
 public record TransactionResponse(
 		String id,
 		String type,

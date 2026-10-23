@@ -13,6 +13,9 @@ import lombok.Setter;
 import java.time.Instant;
 import java.time.LocalDate;
 
+/**
+ * Physical asset in the fleet. Referenced by trips and primary driver assignments; documents hang off {@code id}.
+ */
 @Entity
 @Table(name = "vehicles")
 @EntityListeners(AuditingListener.class)

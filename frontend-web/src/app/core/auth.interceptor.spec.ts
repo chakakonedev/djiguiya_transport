@@ -4,12 +4,16 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { authInterceptor } from './auth.interceptor';
 import { AuthService } from './auth.service';
 
+/**
+ * authInterceptor: attaches Bearer token when AuthService has one; otherwise passes through.
+ */
 describe('authInterceptor', () => {
   let http: HttpClient;
   let httpMock: HttpTestingController;
 
   afterEach(() => httpMock.verify());
 
+  /** Outgoing requests include Authorization: Bearer when token() returns a value. */
   it('adds Authorization when token present', () => {
     TestBed.configureTestingModule({
       providers: [
@@ -27,6 +31,7 @@ describe('authInterceptor', () => {
     req.flush({});
   });
 
+  /** No Authorization header when token() is null. */
   it('leaves request unchanged without token', () => {
     TestBed.configureTestingModule({
       providers: [

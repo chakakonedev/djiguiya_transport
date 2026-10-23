@@ -8,8 +8,10 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 import java.util.List;
 
+/** Persistence for profit-share rule definitions and effective-dating queries. */
 public interface ProfitShareRuleRepository extends JpaRepository<ProfitShareRuleEntity, String> {
 
+	/** Rules that are enabled and effective on {@code onDate} (inclusive window). */
 	@Query("""
 			select r from ProfitShareRuleEntity r
 			where r.enabled = true

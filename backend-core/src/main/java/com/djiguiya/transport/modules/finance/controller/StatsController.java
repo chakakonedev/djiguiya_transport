@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * REST endpoints for ledger analytics: filtered summaries, fiscal-year monthly series,
+ * month-over-month comparison, and year-over-year net profit.
+ */
 @RestController
 @RequestMapping("/api/v1/stats")
 @RequiredArgsConstructor
@@ -19,6 +23,10 @@ public class StatsController {
 
 	private final StatsService statsService;
 
+	/**
+	 * Aggregates revenue, expense, net profit, trip count, and expense breakdown for optional
+	 * filters (single calendar month, entire fiscal year, vehicle, driver, category).
+	 */
 	@GetMapping("/summary")
 	public ApiResponse<StatsSummaryResponse> summary(
 			@RequestParam(required = false) String vehicleId,
@@ -29,7 +37,10 @@ public class StatsController {
 		return ApiResponse.ok(statsService.summary(vehicleId, driverId, month, year, category));
 	}
 
-	/** Fiscal-year monthly series (1 Aug → 31 Jul), ordered Aug…Jul. */
+	/**
+	 * Returns twelve monthly data points for the fiscal year starting in {@code year}
+	 * (August through July), optionally scoped to a vehicle or driver.
+	 */
 	@GetMapping("/monthly")
 	public ApiResponse<StatsMonthlySeriesResponse> monthly(
 			@RequestParam int year,
@@ -38,6 +49,10 @@ public class StatsController {
 		return ApiResponse.ok(statsService.monthlySeries(year, vehicleId, driverId));
 	}
 
+	/**
+	 * Compares net profit for the given calendar month index in the current year
+	 * against the immediately preceding calendar month.
+	 */
 	@GetMapping("/compare-month")
 	public ApiResponse<StatsCompareMonthResponse> compareMonth(
 			@RequestParam int monthIndex,
@@ -46,6 +61,10 @@ public class StatsController {
 		return ApiResponse.ok(statsService.compareMonth(monthIndex, vehicleId, driverId));
 	}
 
+	/**
+	 * Compares total net profit for fiscal year {@code year} against the prior fiscal year,
+	 * including absolute delta and percentage change when the baseline is non-zero.
+	 */
 	@GetMapping("/yoy")
 	public ApiResponse<StatsYoyResponse> yoy(
 			@RequestParam int year,

@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
+/** Payload to create or update a ledger transaction (revenue or expense). */
 public record TransactionRequest(
 		@NotBlank @Size(max = 20) String type,
 		@NotNull LocalDate txnDate,

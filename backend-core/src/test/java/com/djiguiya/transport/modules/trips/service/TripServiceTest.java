@@ -23,6 +23,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * Unit tests for {@link TripService#create}: driver resolution, validation, and month keys; mocked deps.
+ */
 @ExtendWith(MockitoExtension.class)
 class TripServiceTest {
 
@@ -35,6 +38,7 @@ class TripServiceTest {
 	@InjectMocks
 	private TripService tripService;
 
+	/** Resolves driver from vehicle primary assignment when request omits driverId. */
 	@Test
 	void create_usesPrimaryDriverWhenDriverMissing() {
 		VehicleEntity vehicle = new VehicleEntity();
@@ -63,6 +67,7 @@ class TripServiceTest {
 		assertEquals("2026-03", captor.getValue().getMonthKey());
 	}
 
+	/** Rejects create when no driver is given and no primary driver exists. */
 	@Test
 	void create_failsWithoutPrimaryDriver() {
 		when(vehicleService.findVehicle("v1")).thenReturn(new VehicleEntity());
@@ -72,12 +77,14 @@ class TripServiceTest {
 		assertThrows(BusinessException.class, () -> tripService.create(request));
 	}
 
+	/** Rejects create when departure date is after return date. */
 	@Test
 	void create_failsWhenDepartureAfterReturn() {
 		var request = new TripRequest("v1", LocalDate.of(2026, 3, 5), LocalDate.of(2026, 3, 1), null, false, null, null);
 		assertThrows(BusinessException.class, () -> tripService.create(request));
 	}
 
+	/** Uses the explicit driverId from the request without primary-driver lookup. */
 	@Test
 	void create_usesExplicitDriverWhenProvided() {
 		VehicleEntity vehicle = new VehicleEntity();

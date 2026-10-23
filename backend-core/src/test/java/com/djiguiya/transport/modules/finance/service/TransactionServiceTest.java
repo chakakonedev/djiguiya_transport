@@ -24,6 +24,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * Unit tests for {@link TransactionService} validation, enrichment, CRUD, and soft delete; mocked repos.
+ */
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceTest {
 
@@ -34,6 +37,7 @@ class TransactionServiceTest {
 	@InjectMocks
 	private TransactionService transactionService;
 
+	/** Rejects expense with subcategory other when label and notes are both absent. */
 	@Test
 	void create_rejectsOtherSubcategoryWithoutLabelAndNotes() {
 		TransactionRequest request = expenseOther(null, null);
@@ -42,6 +46,7 @@ class TransactionServiceTest {
 		assertEquals("transaction.other_requires_details", ex.getMessageKey());
 	}
 
+	/** Allows other subcategory when both label and notes are provided. */
 	@Test
 	void create_acceptsOtherSubcategoryWithLabelAndNotes() {
 		TransactionRequest request = expenseOther("Réparation spéciale", "Remplacement câble");
@@ -52,6 +57,7 @@ class TransactionServiceTest {
 		verify(transactionRepository).save(any(TransactionEntity.class));
 	}
 
+	/** Rejects revenue rows that omit tripId. */
 	@Test
 	void create_rejectsRevenueWithoutTrip() {
 		TransactionRequest request = new TransactionRequest(
@@ -62,6 +68,7 @@ class TransactionServiceTest {
 		assertEquals("transaction.revenue_requires_trip", ex.getMessageKey());
 	}
 
+	/** Rejects revenue dated before the linked trip return date. */
 	@Test
 	void create_rejectsRevenueBeforeTripReturn() {
 		TripEntity trip = trip("trip-1", "v1", "d1", LocalDate.of(2026, 3, 10), LocalDate.of(2026, 3, 12));
@@ -75,6 +82,7 @@ class TransactionServiceTest {
 		assertEquals("transaction.payment_before_trip", ex.getMessageKey());
 	}
 
+	/** Copies vehicle and driver from trip and sets default revenue label and month key. */
 	@Test
 	void create_enrichesVehicleAndDriverFromTrip() {
 		TripEntity trip = trip("trip-1", "v1", "d1", LocalDate.of(2026, 3, 10), LocalDate.of(2026, 3, 12));
@@ -96,6 +104,7 @@ class TransactionServiceTest {
 		assertEquals("2026-03", captor.getValue().getMonthKey());
 	}
 
+	/** Rejects expenses missing top-level categoryCode. */
 	@Test
 	void create_rejectsExpenseWithoutCategory() {
 		TransactionRequest request = new TransactionRequest(
@@ -106,6 +115,7 @@ class TransactionServiceTest {
 		assertEquals("common.validation_failed", ex.getMessageKey());
 	}
 
+	/** Lists active transactions, fetches by id, and soft-deletes by setting deletedAt. */
 	@Test
 	void listAll_andGetById_andDelete() {
 		TransactionEntity entity = new TransactionEntity();
@@ -127,6 +137,7 @@ class TransactionServiceTest {
 		assertNotNull(entity.getDeletedAt());
 	}
 
+	/** Rewrites amount, month key, and label from an update request. */
 	@Test
 	void update_rewritesFields() {
 		TransactionEntity entity = new TransactionEntity();
@@ -145,6 +156,7 @@ class TransactionServiceTest {
 		assertEquals("Diesel", updated.label());
 	}
 
+	/** Throws when getById targets a missing or deleted transaction. */
 	@Test
 	void getById_notFound() {
 		when(transactionRepository.findByIdAndDeletedAtIsNull("x")).thenReturn(Optional.empty());

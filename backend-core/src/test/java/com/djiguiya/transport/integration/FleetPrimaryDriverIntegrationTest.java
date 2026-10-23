@@ -21,6 +21,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Integration tests for fleet primary-driver validation and vehicle document API contract.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -51,6 +54,7 @@ class FleetPrimaryDriverIntegrationTest {
 		accessToken = root.path("data").path("accessToken").asText();
 	}
 
+	/** Returns 400 when primary-driver assignment omits required startDate. */
 	@Test
 	void assignPrimaryDriver_requiresStartDate() throws Exception {
 		String driverId = createDriver();
@@ -65,6 +69,7 @@ class FleetPrimaryDriverIntegrationTest {
 				.andExpect(status().isBadRequest());
 	}
 
+	/** Succeeds and echoes assigned driver when startDate is provided. */
 	@Test
 	void assignPrimaryDriver_withStartDateSucceeds() throws Exception {
 		String driverId = createDriver();
@@ -81,6 +86,7 @@ class FleetPrimaryDriverIntegrationTest {
 				.andExpect(jsonPath("$.data.primaryDriverId").value(driverId));
 	}
 
+	/** Accepts JSON array document payload matching the frontend shape. */
 	@Test
 	void replaceDocuments_acceptsArrayPayloadLikeFrontend() throws Exception {
 		String vehicleId = createVehicle();

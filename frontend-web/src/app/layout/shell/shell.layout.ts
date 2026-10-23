@@ -3,6 +3,9 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth.service';
 
+/**
+ * Authenticated app chrome: top bar, primary navigation, and nested feature routes.
+ */
 @Component({
   selector: 'app-shell-layout',
   standalone: true,

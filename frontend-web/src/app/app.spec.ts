@@ -5,6 +5,9 @@ import { provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { App } from './app';
 
+/**
+ * Root App component smoke test with HTTP client and ngx-translate providers.
+ */
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -18,6 +21,7 @@ describe('App', () => {
     }).compileComponents();
   });
 
+  /** App instantiates when translation and HTTP testing modules are configured. */
   it('should create the app', () => {
     const fixture = TestBed.createComponent(App);
     expect(fixture.componentInstance).toBeTruthy();

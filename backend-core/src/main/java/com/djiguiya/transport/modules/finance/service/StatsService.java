@@ -21,12 +21,20 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * Builds dashboard statistics from filtered ledger rows. Uses {@link LedgerAggregator} for
+ * totals and expense grouping; fiscal-year windows follow {@code FiscalYearUtil} (Aug–Jul).
+ */
 @Service
 @RequiredArgsConstructor
 public class StatsService {
 
 	private final TransactionRepository transactionRepository;
 
+	/**
+	 * Summary for optional month+year, fiscal year only, or unbounded ledger with vehicle/driver/category filters.
+	 * Expense {@code groups} are category totals plus subcategory drill-down rows.
+	 */
 	@Transactional(readOnly = true)
 	public StatsSummaryResponse summary(
 			String vehicleId,
@@ -52,7 +60,10 @@ public class StatsService {
 				LedgerAggregator.expenseByGroup(rows));
 	}
 
-	/** Twelve fiscal-year months (Aug → Jul) with revenue / expense / net. */
+	/**
+	 * Loads one fiscal year of transactions once, then buckets by {@code monthKey} for each
+	 * of twelve months in fiscal order (August first).
+	 */
 	@Transactional(readOnly = true)
 	public StatsMonthlySeriesResponse monthlySeries(int fiscalStartYear, String vehicleId, String driverId) {
 		List<TransactionEntity> all = loadFiscalYear(fiscalStartYear, vehicleId, driverId);
@@ -80,7 +91,7 @@ public class StatsService {
 		return new StatsMonthlySeriesResponse(fiscalStartYear, months);
 	}
 
-	/** Distinct trips linked to revenue rows in the filtered ledger. */
+	/** Counts distinct non-blank {@code tripId} values on revenue transactions only. */
 	private static int countTrips(List<TransactionEntity> rows) {
 		return (int) rows.stream()
 				.filter(t -> TransactionTypes.REVENUE.equalsIgnoreCase(t.getType()))
@@ -91,6 +102,10 @@ public class StatsService {
 				.count();
 	}
 
+	/**
+	 * Month-over-month net profit for calendar month {@code monthIndex} in the current year
+	 * versus the previous calendar month (same vehicle/driver filters when provided).
+	 */
 	@Transactional(readOnly = true)
 	public StatsCompareMonthResponse compareMonth(int monthIndex, String vehicleId, String driverId) {
 		int year = LocalDate.now().getYear();
@@ -112,6 +127,10 @@ public class StatsService {
 				currentNet - previousNet);
 	}
 
+	/**
+	 * Fiscal year-over-year: compares net profit for {@code fiscalStartYear} against
+	 * {@code fiscalStartYear - 1}; {@code percentChange} is null when prior-year net is zero.
+	 */
 	@Transactional(readOnly = true)
 	public StatsYoyResponse yearOverYear(int fiscalStartYear, String vehicleId, String driverId) {
 		List<TransactionEntity> current = loadFiscalYear(fiscalStartYear, vehicleId, driverId);

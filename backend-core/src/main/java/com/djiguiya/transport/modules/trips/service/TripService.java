@@ -16,6 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Manages trip lifecycle: validates fleet/staff references, derives accounting month key, and enriches API responses.
+ */
 @Service
 @RequiredArgsConstructor
 public class TripService {
@@ -60,6 +63,7 @@ public class TripService {
 		return toResponse(tripRepository.save(entity));
 	}
 
+	/** Loads a non-deleted trip; used by finance and other modules. */
 	public TripEntity findEntity(String id) {
 		return tripRepository.findByIdAndDeletedAtIsNull(id)
 				.orElseThrow(() -> new BusinessException("trip.not_found", HttpStatus.NOT_FOUND));
@@ -77,6 +81,7 @@ public class TripService {
 		}
 	}
 
+	/** Explicit driver wins; otherwise use primary assignment effective on departure date. */
 	private String resolveDriverId(TripRequest request) {
 		if (request.driverId() != null && !request.driverId().isBlank()) {
 			return request.driverId();

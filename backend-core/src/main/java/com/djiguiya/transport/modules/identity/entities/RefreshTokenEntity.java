@@ -9,6 +9,9 @@ import lombok.Setter;
 
 import java.time.Instant;
 
+/**
+ * Persisted refresh token metadata. Only the hash of the raw token is stored; links to {@link UserEntity} by {@code userId}.
+ */
 @Entity
 @Table(name = "refresh_tokens")
 @Getter
