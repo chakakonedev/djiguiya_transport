@@ -43,7 +43,35 @@
     "select": "Choisir…",
     "notSet": "Non renseigné",
     "expand": "Détails",
-    "collapse": "Masquer"
+    "collapse": "Masquer",
+    "months": {
+      "1": "Janvier",
+      "2": "Février",
+      "3": "Mars",
+      "4": "Avril",
+      "5": "Mai",
+      "6": "Juin",
+      "7": "Juillet",
+      "8": "Août",
+      "9": "Septembre",
+      "10": "Octobre",
+      "11": "Novembre",
+      "12": "Décembre"
+    },
+    "monthsShort": {
+      "1": "Jan",
+      "2": "Fév",
+      "3": "Mar",
+      "4": "Avr",
+      "5": "Mai",
+      "6": "Juin",
+      "7": "Juil",
+      "8": "Aoû",
+      "9": "Sep",
+      "10": "Oct",
+      "11": "Nov",
+      "12": "Déc"
+    }
   },
   "fleet": {
     "title": "Flotte",
@@ -141,31 +169,33 @@
   },
   "stats": {
     "title": "Statistiques",
-    "subtitle": "Filtres, ventilation par groupes, comparaison et évolution.",
+    "subtitle": "Exercice fiscal (1er août → 31 juillet) · recettes, dépenses et ventilation.",
     "applyFilters": "Appliquer",
     "allVehicles": "Tous les bus",
     "allDrivers": "Tous les chauffeurs",
+    "allMonths": "Année",
     "monthChips": "Mois :",
-    "groupsTitle": "Ventilation par groupes",
-    "compareTitle": "Comparaison mensuelle",
-    "yoyTitle": "Évolution année sur année",
-    "noGroups": "Aucune donnée groupée.",
-    "noCompare": "Pas de comparaison disponible.",
-    "noYoy": "Pas de données YoY.",
+    "fiscalPeriod": "Exercice {{start}} → {{end}}",
+    "monthlyTitle": "Rentabilité mensuelle",
+    "monthlyHint": "Recettes, dépenses et résultat net par mois de l’exercice.",
+    "groupsTitle": "Dépenses par groupe",
+    "subgroupsTitle": "Sous-groupes",
+    "noGroups": "Aucune dépense groupée sur cette période.",
+    "noMonthly": "Pas de données mensuelles.",
     "unknownGroup": "Autre",
+    "legend": {
+      "revenue": "Recettes",
+      "expense": "Dépenses",
+      "net": "Résultat"
+    },
     "fields": {
       "vehicle": "Bus",
       "driver": "Chauffeur",
-      "year": "Année",
-      "compareMonth": "Mois comparé (1–12)"
+      "year": "Exercice (année de début)"
     },
     "columns": {
       "group": "Groupe",
-      "amount": "Montant",
-      "month": "Mois",
-      "currentYear": "Année courante",
-      "previousYear": "Année précédente",
-      "delta": "Écart"
+      "amount": "Montant"
     }
   },
   "profitShare": {

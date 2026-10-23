@@ -28,27 +28,39 @@
         {{ 'stats.fields.year' | translate }}
         <input type="number" formControlName="year" />
       </label>
-      <label>
-        {{ 'stats.fields.compareMonth' | translate }}
-        <input type="number" min="1" max="12" formControlName="compareMonthIndex" />
-      </label>
-      <div class="form-actions span-2">
+      <div class="form-actions">
         <button type="submit" class="btn-primary" [disabled]="loading()">
           {{ 'stats.applyFilters' | translate }}
         </button>
       </div>
     </form>
 
+    <p class="muted fiscal-hint">
+      {{
+        'stats.fiscalPeriod'
+          | translate
+            : { start: fiscalLabel().start, end: fiscalLabel().end }
+      }}
+    </p>
+
     <div class="chip-row">
       <span class="chip-label">{{ 'stats.monthChips' | translate }}</span>
-      @for (m of monthChips; track m) {
+      <button
+        type="button"
+        class="chip"
+        [class.active]="filters.controls.month.value === null"
+        (click)="selectMonth(null)"
+      >
+        {{ 'stats.allMonths' | translate }}
+      </button>
+      @for (m of fiscalMonths; track m) {
         <button
           type="button"
           class="chip"
           [class.active]="filters.controls.month.value === m"
           (click)="selectMonth(m)"
         >
-          {{ m }}
+          {{ monthI18nKey(m) | translate }}
         </button>
       }
     </div>
@@ -62,95 +74,112 @@
     <div class="kpi-grid">
       <article class="card kpi">
         <span class="kpi-label">{{ 'home.kpi.revenue' | translate }}</span>
-        <strong>{{ formatXof(summary()?.totalRevenue) }}</strong>
+        <strong class="tone-rev">{{ formatXof(summary()?.totalRevenue) }}</strong>
       </article>
       <article class="card kpi">
         <span class="kpi-label">{{ 'home.kpi.expense' | translate }}</span>
-        <strong>{{ formatXof(summary()?.totalExpense) }}</strong>
+        <strong class="tone-exp">{{ formatXof(summary()?.totalExpense) }}</strong>
       </article>
       <article class="card kpi">
         <span class="kpi-label">{{ 'home.kpi.net' | translate }}</span>
-        <strong>{{ formatXof(summary()?.netProfit) }}</strong>
+        <strong class="tone-net">{{ formatXof(summary()?.netProfit) }}</strong>
+      </article>
+      <article class="card kpi">
+        <span class="kpi-label">{{ 'home.kpi.trips' | translate }}</span>
+        <strong>{{ summary()?.tripCount ?? 0 }}</strong>
       </article>
     </div>
 
     <article class="card">
-      <h2>{{ 'stats.groupsTitle' | translate }}</h2>
-      <div class="table-wrap">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>{{ 'stats.columns.group' | translate }}</th>
-              <th>{{ 'stats.columns.amount' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of summary()?.groups ?? []; track $index) {
-              <tr>
-                <td>{{ groupLabel(row) | translate }}</td>
-                <td>{{ formatXof(row.amount) }}</td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="2" class="muted">{{ 'stats.noGroups' | translate }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </article>
-
-    <article class="card">
-      <h2>{{ 'stats.compareTitle' | translate }}</h2>
-      @if (compare(); as c) {
-        <p class="muted">{{ c.monthKey }}</p>
-        <div class="compare-grid">
-          <div>
-            <span>{{ 'home.kpi.revenue' | translate }}</span>
-            <strong>{{ formatXof(c.totalRevenue) }}</strong>
-          </div>
-          <div>
-            <span>{{ 'home.kpi.expense' | translate }}</span>
-            <strong>{{ formatXof(c.totalExpense) }}</strong>
-          </div>
-          <div>
-            <span>{{ 'home.kpi.net' | translate }}</span>
-            <strong>{{ formatXof(c.netProfit) }}</strong>
-          </div>
+      <h2>{{ 'stats.monthlyTitle' | translate }}</h2>
+      <p class="muted section-hint">{{ 'stats.monthlyHint' | translate }}</p>
+      @if (monthPoints().length) {
+        <div class="hist-legend">
+          <span><i class="swatch rev"></i>{{ 'stats.legend.revenue' | translate }}</span>
+          <span><i class="swatch exp"></i>{{ 'stats.legend.expense' | translate }}</span>
+          <span><i class="swatch net"></i>{{ 'stats.legend.net' | translate }}</span>
+        </div>
+        <div class="hist" role="img" [attr.aria-label]="'stats.monthlyTitle' | translate">
+          @for (m of monthPoints(); track m.monthKey) {
+            <div class="hist-col">
+              <div class="hist-bars">
+                <div
+                  class="bar rev"
+                  [style.height.%]="histPct(m.totalRevenue)"
+                  [title]="formatXof(m.totalRevenue)"
+                ></div>
+                <div
+                  class="bar exp"
+                  [style.height.%]="histPct(m.totalExpense)"
+                  [title]="formatXof(m.totalExpense)"
+                ></div>
+                <div
+                  class="bar net"
+                  [style.height.%]="histPct(m.netProfit)"
+                  [title]="formatXof(m.netProfit)"
+                ></div>
+              </div>
+              <span class="hist-label">{{ monthShortI18nKey(m.calendarMonth) | translate }}</span>
+            </div>
+          }
         </div>
       } @else {
-        <p class="muted">{{ 'stats.noCompare' | translate }}</p>
+        <p class="muted">{{ 'stats.noMonthly' | translate }}</p>
       }
     </article>
 
-    <article class="card">
-      <h2>{{ 'stats.yoyTitle' | translate }}</h2>
-      <div class="table-wrap">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>{{ 'stats.columns.month' | translate }}</th>
-              <th>{{ 'stats.columns.currentYear' | translate }}</th>
-              <th>{{ 'stats.columns.previousYear' | translate }}</th>
-              <th>{{ 'stats.columns.delta' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of yoyRows(); track row.monthIndex) {
+    <div class="split-grid">
+      <article class="card">
+        <h2>{{ 'stats.groupsTitle' | translate }}</h2>
+        @for (row of orderedCategoryGroups(); track row.categoryCode) {
+          <div class="bar-row">
+            <div class="top">
+              <span>{{ groupLabel(row) | translate }}</span>
+              <strong>{{ formatXof(row.amount) }}</strong>
+            </div>
+            <div class="bar-track">
+              <div
+                class="bar-fill"
+                [style.width.%]="barPct(row.amount)"
+                [style.background]="groupColor(row.categoryCode)"
+              ></div>
+            </div>
+          </div>
+        } @empty {
+          <p class="muted">{{ 'stats.noGroups' | translate }}</p>
+        }
+      </article>
+
+      <article class="card">
+        <h2>{{ 'stats.subgroupsTitle' | translate }}</h2>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
               <tr>
-                <td>{{ row.monthKey }}</td>
-                <td>{{ formatXof(row.currentYearAmount) }}</td>
-                <td>{{ formatXof(row.previousYearAmount) }}</td>
-                <td>{{ formatXof(row.delta) }}</td>
+                <th>{{ 'stats.columns.group' | translate }}</th>
+                <th>{{ 'stats.columns.amount' | translate }}</th>
               </tr>
-            } @empty {
-              <tr>
-                <td colspan="4" class="muted">{{ 'stats.noYoy' | translate }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </article>
+            </thead>
+            <tbody>
+              @for (row of subgroupRows(); track $index) {
+                <tr>
+                  <td>
+                    <span class="sub-meta">{{
+                      'catalog.groups.' + (row.categoryCode || 'other') | translate
+                    }}</span>
+                    {{ groupLabel(row) | translate }}
+                  </td>
+                  <td>{{ formatXof(row.amount) }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="2" class="muted">{{ 'stats.noGroups' | translate }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </div>
   }
 </section>

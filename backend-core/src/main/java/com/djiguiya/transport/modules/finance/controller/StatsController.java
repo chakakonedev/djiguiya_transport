@@ -1,6 +1,7 @@
 package com.djiguiya.transport.modules.finance.controller;
 
 import com.djiguiya.transport.modules.finance.dto.StatsCompareMonthResponse;
+import com.djiguiya.transport.modules.finance.dto.StatsMonthlySeriesResponse;
 import com.djiguiya.transport.modules.finance.dto.StatsSummaryResponse;
 import com.djiguiya.transport.modules.finance.dto.StatsYoyResponse;
 import com.djiguiya.transport.modules.finance.service.StatsService;
@@ -26,6 +27,15 @@ public class StatsController {
 			@RequestParam(required = false) Integer year,
 			@RequestParam(required = false) String category) {
 		return ApiResponse.ok(statsService.summary(vehicleId, driverId, month, year, category));
+	}
+
+	/** Fiscal-year monthly series (1 Aug → 31 Jul), ordered Aug…Jul. */
+	@GetMapping("/monthly")
+	public ApiResponse<StatsMonthlySeriesResponse> monthly(
+			@RequestParam int year,
+			@RequestParam(required = false) String vehicleId,
+			@RequestParam(required = false) String driverId) {
+		return ApiResponse.ok(statsService.monthlySeries(year, vehicleId, driverId));
 	}
 
 	@GetMapping("/compare-month")

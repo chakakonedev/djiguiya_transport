@@ -1,9 +1,17 @@
+.fiscal-hint {
+  margin: 0.85rem 0 0;
+}
+
+.section-hint {
+  margin: -0.35rem 0 0.85rem;
+}
+
 .chip-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.35rem;
-  margin-top: 1rem;
+  margin-top: 0.85rem;
 }
 
 .chip-label {
@@ -14,7 +22,7 @@
 
 .chip {
   min-width: 2rem;
-  padding: 0.35rem 0.55rem;
+  padding: 0.4rem 0.7rem;
   border: 1px solid #c5d2d6;
   border-radius: 999px;
   background: #fff;
@@ -29,14 +37,147 @@
   color: #fff;
 }
 
-.compare-grid {
+.tone-rev {
+  color: #0369a1;
+}
+
+.tone-exp {
+  color: #c2410c;
+}
+
+.tone-net {
+  color: #15803d;
+}
+
+.hist-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.hist-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.swatch {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 2px;
+}
+
+.swatch.rev {
+  background: #0369a1;
+}
+
+.swatch.exp {
+  background: #c2410c;
+}
+
+.swatch.net {
+  background: #15803d;
+}
+
+.hist {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 0.35rem;
+  align-items: end;
+  min-height: 180px;
+  padding-top: 0.5rem;
+}
+
+.hist-col {
+  display: grid;
+  gap: 0.4rem;
+  justify-items: center;
+}
+
+.hist-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 150px;
+  width: 100%;
+  justify-content: center;
+}
+
+.hist-bars .bar {
+  width: 28%;
+  max-width: 12px;
+  min-height: 3px;
+  border-radius: 3px 3px 0 0;
+}
+
+.hist-bars .bar.rev {
+  background: #0369a1;
+}
+
+.hist-bars .bar.exp {
+  background: #c2410c;
+}
+
+.hist-bars .bar.net {
+  background: #15803d;
+}
+
+.hist-label {
+  font-size: 0.68rem;
+  color: #64748b;
+  text-align: center;
+}
+
+.split-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
 
-.compare-grid span {
+.bar-row {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.bar-row .top {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.88rem;
+}
+
+.bar-track {
+  height: 10px;
+  border-radius: 999px;
+  background: #e8eef0;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  min-width: 0;
+  transition: width 0.35s ease;
+}
+
+.sub-meta {
   display: block;
-  font-size: 0.85rem;
-  color: #64748b;
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+
+@media (max-width: 800px) {
+  .split-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hist {
+    overflow-x: auto;
+    grid-template-columns: repeat(12, minmax(2.2rem, 1fr));
+  }
 }

@@ -113,6 +113,8 @@ export interface TransactionCreateRequest {
 }
 
 export interface StatsSummary {
+  monthKey?: string | null;
+  year?: number | null;
   totalRevenue: number;
   totalExpense: number;
   netProfit: number;
@@ -124,26 +126,31 @@ export interface StatsSummary {
 export interface StatsGroupRow {
   categoryCode?: string | null;
   subcategoryCode?: string | null;
-  type?: TransactionType;
   amount: number;
-  label?: string | null;
 }
 
-export interface CompareMonthRow {
+export interface StatsMonthPoint {
   monthKey: string;
-  monthIndex: number;
+  calendarMonth: number;
+  calendarYear: number;
   totalRevenue: number;
   totalExpense: number;
   netProfit: number;
+  tripCount: number;
 }
 
-export interface YoyRow {
-  monthIndex: number;
-  monthKey: string;
-  currentYearAmount: number;
-  previousYearAmount: number;
-  delta: number;
-  deltaPercent?: number | null;
+export interface StatsMonthlySeries {
+  fiscalStartYear: number;
+  months: StatsMonthPoint[];
+}
+
+export interface StatsYoy {
+  year: number;
+  previousYear: number;
+  currentNetProfit: number;
+  previousNetProfit: number;
+  deltaNetProfit: number;
+  percentChange?: number | null;
 }
 
 export interface ProfitShareLine {

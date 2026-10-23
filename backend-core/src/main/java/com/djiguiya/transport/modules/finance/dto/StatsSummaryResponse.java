@@ -1,5 +1,7 @@
 package com.djiguiya.transport.modules.finance.dto;
 
+import java.util.List;
+
 public record StatsSummaryResponse(
 		String monthKey,
 		Integer year,
@@ -10,6 +12,7 @@ public record StatsSummaryResponse(
 		long totalExpense,
 		long netProfit,
 		int tripCount,
-		int transactionCount
+		int transactionCount,
+		List<StatsGroupRowResponse> groups
 ) {
 }

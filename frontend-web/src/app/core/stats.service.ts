@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { API_BASE_URL } from './api.config';
-import { ApiResponse, CompareMonthRow, StatsSummary, YoyRow } from './api.types';
+import { ApiResponse, StatsMonthlySeries, StatsSummary, StatsYoy } from './api.types';
 
 export interface StatsFilterParams {
   vehicleId?: string;
@@ -24,11 +24,11 @@ export class StatsService {
       .pipe(map((res) => res.data));
   }
 
-  compareMonth(monthIndex: number, filters: Omit<StatsFilterParams, 'month'> = {}) {
+  monthly(fiscalStartYear: number, filters: Omit<StatsFilterParams, 'year' | 'month'> = {}) {
     let params = this.toParams(filters);
-    params = params.set('monthIndex', String(monthIndex));
+    params = params.set('year', String(fiscalStartYear));
     return this.http
-      .get<ApiResponse<CompareMonthRow>>(`${this.base}/compare-month`, { params })
+      .get<ApiResponse<StatsMonthlySeries>>(`${this.base}/monthly`, { params })
       .pipe(map((res) => res.data));
   }
 
@@ -36,8 +36,8 @@ export class StatsService {
     let params = this.toParams(filters);
     params = params.set('year', String(year));
     return this.http
-      .get<ApiResponse<YoyRow[]>>(`${this.base}/yoy`, { params })
-      .pipe(map((res) => res.data ?? []));
+      .get<ApiResponse<StatsYoy>>(`${this.base}/yoy`, { params })
+      .pipe(map((res) => res.data));
   }
 
   private toParams(filters: StatsFilterParams): HttpParams {

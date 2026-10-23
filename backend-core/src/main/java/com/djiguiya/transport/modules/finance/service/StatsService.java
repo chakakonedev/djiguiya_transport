@@ -2,6 +2,8 @@ package com.djiguiya.transport.modules.finance.service;
 
 import com.djiguiya.transport.modules.finance.domain.TransactionTypes;
 import com.djiguiya.transport.modules.finance.dto.StatsCompareMonthResponse;
+import com.djiguiya.transport.modules.finance.dto.StatsMonthPointResponse;
+import com.djiguiya.transport.modules.finance.dto.StatsMonthlySeriesResponse;
 import com.djiguiya.transport.modules.finance.dto.StatsSummaryResponse;
 import com.djiguiya.transport.modules.finance.dto.StatsYoyResponse;
 import com.djiguiya.transport.modules.finance.entities.TransactionEntity;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -45,7 +48,36 @@ public class StatsService {
 				expense,
 				revenue - expense,
 				countTrips(rows),
-				rows.size());
+				rows.size(),
+				LedgerAggregator.expenseByGroup(rows));
+	}
+
+	/** Twelve fiscal-year months (Aug → Jul) with revenue / expense / net. */
+	@Transactional(readOnly = true)
+	public StatsMonthlySeriesResponse monthlySeries(int fiscalStartYear, String vehicleId, String driverId) {
+		List<TransactionEntity> all = loadFiscalYear(fiscalStartYear, vehicleId, driverId);
+		List<StatsMonthPointResponse> months = new ArrayList<>(12);
+		for (int offset = 0; offset < 12; offset++) {
+			int calendarMonth = ((FiscalYearUtil.START_MONTH - 1 + offset) % 12) + 1;
+			int calendarYear = calendarMonth >= FiscalYearUtil.START_MONTH
+					? fiscalStartYear
+					: fiscalStartYear + 1;
+			String key = MonthKeyUtil.forMonthYear(calendarMonth, calendarYear);
+			List<TransactionEntity> monthRows = all.stream()
+					.filter(t -> key.equals(t.getMonthKey()))
+					.collect(Collectors.toList());
+			long revenue = LedgerAggregator.totalRevenue(monthRows);
+			long expense = LedgerAggregator.totalExpense(monthRows);
+			months.add(new StatsMonthPointResponse(
+					key,
+					calendarMonth,
+					calendarYear,
+					revenue,
+					expense,
+					revenue - expense,
+					countTrips(monthRows)));
+		}
+		return new StatsMonthlySeriesResponse(fiscalStartYear, months);
 	}
 
 	/** Distinct trips linked to revenue rows in the filtered ledger. */

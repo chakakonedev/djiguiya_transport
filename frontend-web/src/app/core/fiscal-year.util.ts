@@ -1,6 +1,9 @@
 /** Fiscal year starts in August (1 Aug → 31 Jul). */
 export const FISCAL_START_MONTH = 8;
 
+/** Calendar months in fiscal order: Aug … Jul. */
+export const FISCAL_MONTHS = [8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6, 7] as const;
+
 /** Calendar year in which the fiscal year starts (e.g. 2025 for Aug 2025–Jul 2026). */
 export function fiscalStartYearContaining(date = new Date()): number {
   const year = date.getFullYear();
@@ -13,4 +16,20 @@ export function fiscalPeriodLabel(fiscalStartYear: number): { start: string; end
     start: `${fiscalStartYear}-08`,
     end: `${fiscalStartYear + 1}-07`
   };
+}
+
+/** Calendar year for a month inside a fiscal year (Jan–Jul → fiscalStart + 1). */
+export function calendarYearForFiscalMonth(
+  fiscalStartYear: number,
+  calendarMonth: number
+): number {
+  return calendarMonth >= FISCAL_START_MONTH ? fiscalStartYear : fiscalStartYear + 1;
+}
+
+export function monthI18nKey(calendarMonth: number): string {
+  return `common.months.${calendarMonth}`;
+}
+
+export function monthShortI18nKey(calendarMonth: number): string {
+  return `common.monthsShort.${calendarMonth}`;
 }
